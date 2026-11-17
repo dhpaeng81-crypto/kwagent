@@ -1,0 +1,81 @@
+# 매주 목요일 07:10 KST: 지난 예측 채점 → 이번 주 예측 → 웹사이트 갱신 → GitHub Pages 배포
+# 예측·검증 기록(data/store.sqlite, data/models, reports/)은 저장소에 커밋해 다음 주로 이어진다.
+name: weekly-forecast
+
+on:
+  schedule:
+    - cron: "10 22 * * 3"        # 수 22:10 UTC = 목 07:10 KST
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "발표일 (YYYY-MM-DD, 비우면 최근 목요일)"
+        required: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: kwagent
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Seoul
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  forecast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 한글 글꼴
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-nanum && rm -rf ~/.cache/matplotlib
+
+      - name: 설치
+        run: pip install -e ".[llm]"
+
+      - name: ERA5·지수 캐시 복원
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: kwagent-cache-${{ github.run_id }}
+          restore-keys: kwagent-cache-
+
+      - name: 최초 1회 학습 (모델이 없을 때만)
+        run: test -f data/models/statistical_korea.joblib || kwagent train
+
+      - name: 검증 + 예측
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "${{ inputs.issue }}" ]; then
+            kwagent verify && kwagent forecast --issue "${{ inputs.issue }}"
+          else
+            kwagent run
+          fi
+
+      - name: 웹사이트 생성
+        run: kwagent site
+
+      - name: 기록 커밋
+        run: |
+          git config user.name  "kwagent-bot"
+          git config user.email "kwagent-bot@users.noreply.github.com"
+          git add data/store.sqlite data/models reports
+          git commit -m "forecast $(date +%F)" || echo "변경 없음"
+          git push
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4

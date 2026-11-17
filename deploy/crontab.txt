@@ -1,0 +1,4 @@
+# 매주 목요일 07:10 KST — 검증 → 예측 → 보고서 (서버 시간대가 Asia/Seoul 일 때)
+10 7 * * 4  cd /opt/kwagent && . .venv/bin/activate && kwagent run && kwagent site >> logs/run.log 2>&1
+# 분기마다(1·4·7·10월 1일) 통계모델 재학습
+30 3 1 1,4,7,10 *  cd /opt/kwagent && . .venv/bin/activate && kwagent train >> logs/train.log 2>&1

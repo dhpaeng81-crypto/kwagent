@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kwagent"
+version = "0.2.0"
+description = "한국 1개월(주별 4주) 확률 기상예측 에이전트 — 기온·운량·강수·강수형태"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24", "pandas>=2.0", "scikit-learn>=1.3", "requests>=2.31",
+  "pyyaml>=6.0", "matplotlib>=3.7", "joblib>=1.3", "tabulate>=0.9",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.40"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+kwagent = "kwagent.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["kwagent*"]
