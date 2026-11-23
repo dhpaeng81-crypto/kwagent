@@ -12,9 +12,49 @@
           "vars": {
             "temp": {
               "prob": [
-                0.218,
-                0.267,
-                0.514
+                0.149,
+                0.23,
+                0.621
+              ],
+              "display": [
+                20,
+                20,
+                60
+              ],
+              "normal_range": [
+                3.2,
+                5.2
+              ],
+              "ens_mean_corrected": 8.2,
+              "weights": {
+                "statistical": 0.46,
+                "ec46": 0.37,
+                "gefs": 0.17
+              },
+              "sources": {
+                "statistical": [
+                  0.18,
+                  0.25,
+                  0.57
+                ],
+                "ec46": [
+                  0.01,
+                  0.22,
+                  0.78
+                ],
+                "gefs": [
+                  0.01,
+                  0.01,
+                  0.98
+                ]
+              },
+              "shrink": 0.25
+            },
+            "cloud": {
+              "prob": [
+                0.167,
+                0.358,
+                0.474
               ],
               "display": [
                 20,
@@ -22,55 +62,39 @@
                 50
               ],
               "normal_range": [
-                3.2,
-                5.2
-              ],
-              "ens_mean_corrected": null,
-              "weights": {
-                "statistical": 1.0
-              },
-              "sources": {
-                "statistical": [
-                  0.18,
-                  0.25,
-                  0.57
-                ]
-              },
-              "shrink": 0.25
-            },
-            "cloud": {
-              "prob": [
-                0.254,
-                0.36,
-                0.386
-              ],
-              "display": [
-                20,
-                40,
-                40
-              ],
-              "normal_range": [
                 41.5,
                 53.5
               ],
-              "ens_mean_corrected": null,
+              "ens_mean_corrected": 54.3,
               "weights": {
-                "statistical": 1.0
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
               },
               "sources": {
                 "statistical": [
                   0.23,
                   0.37,
                   0.4
+                ],
+                "ec46": [
+                  0.08,
+                  0.37,
+                  0.54
+                ],
+                "gefs": [
+                  0.14,
+                  0.35,
+                  0.51
                 ]
               },
               "shrink": 0.25
             },
             "precip": {
               "prob": [
-                0.259,
-                0.301,
-                0.44
+                0.287,
+                0.355,
+                0.358
               ],
               "display": [
                 30,
@@ -81,24 +105,36 @@
                 3.5,
                 10.7
               ],
-              "ens_mean_corrected": null,
+              "ens_mean_corrected": 11.2,
               "weights": {
-                "statistical": 1.0
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
               },
               "sources": {
                 "statistical": [
                   0.23,
                   0.29,
                   0.48
+                ],
+                "ec46": [
+                  0.35,
+                  0.39,
+                  0.26
+                ],
+                "gefs": [
+                  0.1,
+                  0.32,
+                  0.57
                 ]
               },
               "shrink": 0.25
             }
           },
           "ptype": {
-            "p_snow": 0.14,
-            "rain_days": 1.54,
-            "snow_days": 0.17,
+            "p_snow": 0.19,
+            "rain_days": 1.56,
+            "snow_days": 0.23,
             "climatology": {
               "p_snow": 0.14,
               "rain_days": 1.54,
@@ -114,9 +150,9 @@
           "vars": {
             "temp": {
               "prob": [
-                0.227,
-                0.267,
-                0.506
+                0.234,
+                0.322,
+                0.445
               ],
               "display": [
                 20,
@@ -127,80 +163,116 @@
                 1.8,
                 3.9
               ],
-              "ens_mean_corrected": null,
+              "ens_mean_corrected": 4.2,
               "weights": {
-                "statistical": 1.0
+                "statistical": 0.41,
+                "ec46": 0.41,
+                "gefs": 0.18
               },
               "sources": {
                 "statistical": [
                   0.17,
                   0.23,
                   0.6
+                ],
+                "ec46": [
+                  0.24,
+                  0.41,
+                  0.35
+                ],
+                "gefs": [
+                  0.07,
+                  0.29,
+                  0.64
                 ]
               },
               "shrink": 0.35
             },
             "cloud": {
               "prob": [
-                0.269,
-                0.356,
-                0.375
+                0.166,
+                0.249,
+                0.585
               ],
               "display": [
-                30,
-                30,
-                40
+                20,
+                20,
+                60
               ],
               "normal_range": [
                 41.4,
                 53.4
               ],
-              "ens_mean_corrected": null,
+              "ens_mean_corrected": 61.2,
               "weights": {
-                "statistical": 1.0
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
               },
               "sources": {
                 "statistical": [
                   0.23,
                   0.37,
                   0.4
+                ],
+                "ec46": [
+                  0.03,
+                  0.18,
+                  0.79
+                ],
+                "gefs": [
+                  0.14,
+                  0.2,
+                  0.67
                 ]
               },
               "shrink": 0.35
             },
             "precip": {
               "prob": [
-                0.25,
-                0.315,
-                0.435
+                0.24,
+                0.287,
+                0.473
               ],
               "display": [
+                20,
                 30,
-                30,
-                40
+                50
               ],
               "normal_range": [
                 2.7,
                 8.1
               ],
-              "ens_mean_corrected": null,
+              "ens_mean_corrected": 12.5,
               "weights": {
-                "statistical": 1.0
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
               },
               "sources": {
                 "statistical": [
                   0.21,
                   0.31,
                   0.49
+                ],
+                "ec46": [
+                  0.14,
+                  0.26,
+                  0.6
+                ],
+                "gefs": [
+                  0.29,
+                  0.26,
+                  0.45
                 ]
               },
               "shrink": 0.35
             }
           },
           "ptype": {
-            "p_snow": 0.17,
-            "rain_days": 1.22,
-            "snow_days": 0.19,
+            "p_snow": 0.15,
+            "rain_days": 1.5,
+            "snow_days": 0.22,
             "climatology": {
               "p_snow": 0.17,
               "rain_days": 1.22,
@@ -216,9 +288,49 @@
           "vars": {
             "temp": {
               "prob": [
-                0.257,
-                0.285,
-                0.458
+                0.311,
+                0.299,
+                0.39
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                0.7,
+                2.9
+              ],
+              "ens_mean_corrected": 2.1,
+              "weights": {
+                "statistical": 0.42,
+                "ec46": 0.4,
+                "gefs": 0.18
+              },
+              "sources": {
+                "statistical": [
+                  0.19,
+                  0.24,
+                  0.56
+                ],
+                "ec46": [
+                  0.41,
+                  0.31,
+                  0.28
+                ],
+                "gefs": [
+                  0.26,
+                  0.23,
+                  0.51
+                ]
+              },
+              "shrink": 0.45
+            },
+            "cloud": {
+              "prob": [
+                0.205,
+                0.319,
+                0.476
               ],
               "display": [
                 20,
@@ -226,83 +338,79 @@
                 50
               ],
               "normal_range": [
-                0.7,
-                2.9
-              ],
-              "ens_mean_corrected": null,
-              "weights": {
-                "statistical": 1.0
-              },
-              "sources": {
-                "statistical": [
-                  0.19,
-                  0.24,
-                  0.56
-                ]
-              },
-              "shrink": 0.45
-            },
-            "cloud": {
-              "prob": [
-                0.275,
-                0.358,
-                0.368
-              ],
-              "display": [
-                30,
-                30,
-                40
-              ],
-              "normal_range": [
                 40.2,
                 52.7
               ],
-              "ens_mean_corrected": null,
+              "ens_mean_corrected": 56.8,
               "weights": {
-                "statistical": 1.0
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
               },
               "sources": {
                 "statistical": [
                   0.23,
                   0.38,
                   0.4
+                ],
+                "ec46": [
+                  0.06,
+                  0.28,
+                  0.66
+                ],
+                "gefs": [
+                  0.14,
+                  0.35,
+                  0.51
                 ]
               },
               "shrink": 0.45
             },
             "precip": {
               "prob": [
-                0.254,
-                0.319,
-                0.427
+                0.258,
+                0.279,
+                0.463
               ],
               "display": [
+                20,
                 30,
-                30,
-                40
+                50
               ],
               "normal_range": [
                 2.4,
                 5.7
               ],
-              "ens_mean_corrected": null,
+              "ens_mean_corrected": 12.2,
               "weights": {
-                "statistical": 1.0
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
               },
               "sources": {
                 "statistical": [
                   0.19,
                   0.31,
                   0.5
+                ],
+                "ec46": [
+                  0.24,
+                  0.2,
+                  0.56
+                ],
+                "gefs": [
+                  0.1,
+                  0.29,
+                  0.6
                 ]
               },
               "shrink": 0.45
             }
           },
           "ptype": {
-            "p_snow": 0.19,
-            "rain_days": 1.0,
-            "snow_days": 0.21,
+            "p_snow": 0.24,
+            "rain_days": 1.25,
+            "snow_days": 0.31,
             "climatology": {
               "p_snow": 0.19,
               "rain_days": 1.0,
@@ -318,9 +426,9 @@
           "vars": {
             "temp": {
               "prob": [
-                0.273,
-                0.301,
-                0.426
+                0.31,
+                0.327,
+                0.363
               ],
               "display": [
                 30,
@@ -331,52 +439,76 @@
                 -0.0,
                 2.2
               ],
-              "ens_mean_corrected": null,
+              "ens_mean_corrected": 1.0,
               "weights": {
-                "statistical": 1.0
+                "statistical": 0.45,
+                "ec46": 0.38,
+                "gefs": 0.17
               },
               "sources": {
                 "statistical": [
                   0.21,
                   0.27,
                   0.52
+                ],
+                "ec46": [
+                  0.37,
+                  0.35,
+                  0.28
+                ],
+                "gefs": [
+                  0.29,
+                  0.39,
+                  0.32
                 ]
               },
               "shrink": 0.5
             },
             "cloud": {
               "prob": [
-                0.273,
-                0.371,
-                0.356
+                0.21,
+                0.293,
+                0.497
               ],
               "display": [
+                20,
                 30,
-                40,
-                30
+                50
               ],
               "normal_range": [
                 40.0,
                 50.8
               ],
-              "ens_mean_corrected": null,
+              "ens_mean_corrected": 54.8,
               "weights": {
-                "statistical": 1.0
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
               },
               "sources": {
                 "statistical": [
                   0.21,
                   0.41,
                   0.38
+                ],
+                "ec46": [
+                  0.04,
+                  0.2,
+                  0.76
+                ],
+                "gefs": [
+                  0.14,
+                  0.32,
+                  0.54
                 ]
               },
               "shrink": 0.5
             },
             "precip": {
               "prob": [
-                0.269,
-                0.314,
-                0.417
+                0.264,
+                0.292,
+                0.445
               ],
               "display": [
                 30,
@@ -387,15 +519,27 @@
                 1.6,
                 4.8
               ],
-              "ens_mean_corrected": null,
+              "ens_mean_corrected": 9.7,
               "weights": {
-                "statistical": 1.0
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
               },
               "sources": {
                 "statistical": [
                   0.2,
                   0.29,
                   0.5
+                ],
+                "ec46": [
+                  0.22,
+                  0.14,
+                  0.64
+                ],
+                "gefs": [
+                  0.14,
+                  0.48,
+                  0.39
                 ]
               },
               "shrink": 0.5
@@ -403,8 +547,8 @@
           },
           "ptype": {
             "p_snow": 0.2,
-            "rain_days": 0.8,
-            "snow_days": 0.24,
+            "rain_days": 1.0,
+            "snow_days": 0.27,
             "climatology": {
               "p_snow": 0.2,
               "rain_days": 0.8,
@@ -413,7 +557,10 @@
           }
         }
       ],
-      "dynamical_sources": []
+      "dynamical_sources": [
+        "ec46",
+        "gefs"
+      ]
     }
   },
   "indices": {
@@ -422,5 +569,5 @@
     "rmm1": 0.0,
     "rmm2": 0.0
   },
-  "narrative": "## 해설 (자동 요약)\n**전국**\n- 1주 (11.30~12.06): 기온 평년보다 높음, 운량 평년과 비슷하거나 많음, 강수량 평년보다 대체로 많음\n- 2주 (12.07~12.13): 기온 평년보다 높음, 운량 평년보다 대체로 많음, 강수량 평년보다 대체로 많음\n- 3주 (12.14~12.20): 기온 평년보다 높음, 운량 평년보다 대체로 많음, 강수량 평년보다 대체로 많음\n- 4주 (12.21~12.27): 기온 평년보다 대체로 높음, 운량 평년과 대체로 비슷, 강수량 평년보다 대체로 많음"
+  "narrative": "## 해설 (자동 요약)\n**전국**\n- 1주 (11.30~12.06): 기온 평년보다 높음, 운량 평년보다 많음, 강수량 평년보다 대체로 많음\n- 2주 (12.07~12.13): 기온 평년보다 높음, 운량 평년보다 많음, 강수량 평년보다 많음\n- 3주 (12.14~12.20): 기온 평년보다 대체로 높음, 운량 평년보다 많음, 강수량 평년보다 많음\n- 4주 (12.21~12.27): 기온 평년보다 대체로 높음, 운량 평년보다 많음, 강수량 평년보다 대체로 많음"
 }
