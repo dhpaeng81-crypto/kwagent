@@ -30,7 +30,7 @@ env:
 jobs:
   forecast:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 170
     steps:
       - uses: actions/checkout@v4
 
@@ -68,6 +68,8 @@ jobs:
       - name: ERA5 과거 자료 받기 (처음엔 여러 번에 나눠 받음)
         id: backfill
         if: steps.mode.outputs.skip != 'true'
+        env:
+          KWAGENT_BACKFILL_MINUTES: "105"   # 한 번에 최대 105분 받고 저장 (나머지는 다음 실행)
         run: kwagent backfill
 
       - name: 최초 1회 학습 (모델이 없을 때만)
@@ -97,6 +99,7 @@ jobs:
           for f in data/era5 data/store.sqlite data/models reports; do if [ -e "$f" ]; then git add "$f"; fi; done
           if [ "${{ steps.backfill.outputs.complete }}" = "true" ]; then msg="forecast $(date +%F)"; else msg="ERA5 자료 이어 받기 $(date +%F' '%H:%M)"; fi
           git commit -m "$msg" || echo "변경 없음"
+          git pull --rebase --autostash origin main || true
           git push
 
       - uses: actions/configure-pages@v5

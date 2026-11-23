@@ -59,6 +59,10 @@ def _backfill(agent: Agent) -> bool:
     from .data import openmeteo as om
     from .regions import POINTS
     complete = True
+    minutes = float(os.environ.get("KWAGENT_BACKFILL_MINUTES", "0") or 0)
+    if minutes > 0:
+        import time
+        om.DEADLINE = time.time() + minutes * 60
     if not agent.offline:
         try:
             agent.obs()

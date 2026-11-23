@@ -32,7 +32,11 @@ _MEMBER_RE = re.compile(r"^(?P<var>.+?)(?:_member(?P<m>\d+))?$")
 
 
 class QuotaError(RuntimeError):
-    """Open-Meteo 시간·일 한도 초과. 받은 데까지 저장하고 다음 실행에서 이어 받는다."""
+    """Open-Meteo 시간·일 한도 초과(또는 이번 실행 시간 상한). 받은 데까지 저장하고 다음 실행에서 이어 받는다."""
+
+
+# 과거 자료 받기의 이번 실행 마감 시각(time.time() 기준, None 이면 무제한) — kwagent backfill 이 설정
+DEADLINE: float | None = None
 
 
 def _get(url: str, params: dict, retries: int = 3, pause: float = 1.0,
@@ -121,6 +125,8 @@ def fetch_archive(points: list[Point], start: date, end: date, cfg, cache_dir: P
         if not have.empty:
             fetch_from = max(start, (have["date"].max() + pd.Timedelta(days=1)).date() - timedelta(days=10))
         while fetch_from <= end:
+            if DEADLINE is not None and time.time() > DEADLINE:
+                raise QuotaError("이번 실행의 자료 받기 시간 상한 도달")
             chunk_end = min(end, date(fetch_from.year, 12, 31))
             js = _get(om["archive_url"], {
                 "latitude": p.lat, "longitude": p.lon,
