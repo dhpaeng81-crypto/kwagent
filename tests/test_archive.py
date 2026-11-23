@@ -12,7 +12,8 @@ def _fake_daily(params):
     d = pd.date_range(params["start_date"], params["end_date"], freq="D")
     n = len(d)
     return {"daily": {"time": [x.strftime("%Y-%m-%d") for x in d],
-                      "temperature_2m_mean": [10.0] * n, "cloud_cover_mean": [50.0] * n,
+                      "temperature_2m_mean": [10.0] * n,
+                      "temperature_2m_max": [14.0] * n, "temperature_2m_min": [6.0] * n, "cloud_cover_mean": [50.0] * n,
                       "shortwave_radiation_sum": [12.0] * n,
                       "precipitation_sum": [1.0] * n, "rain_sum": [1.0] * n,
                       "snowfall_sum": [0.0] * n}}

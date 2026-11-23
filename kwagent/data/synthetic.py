@@ -54,6 +54,7 @@ class SyntheticProvider:
             pr = np.where(wet, rng.gamma(0.8, 6 + 18 * wet_season), 0.0)
             rain = np.where(t > 1.0, pr, np.where(t > -1.0, pr * 0.5, 0.0))
             frames.append(pd.DataFrame({"date": idx, "point": p.name, "member": -1, "temp": t,
+                                        "tmax": t + 4.5 - 0.03 * (cloud - 50), "tmin": t - 4.5 + 0.03 * (cloud - 50),
                                         "cloud": cloud, "srad": srad, "precip": pr, "rain": rain}))
         self.truth = pd.concat(frames, ignore_index=True)
         self.rng = rng
@@ -82,6 +83,8 @@ class SyntheticProvider:
             df = truth.copy()
             df["member"] = m
             df["temp"] = df["temp"] + e + bias_t
+            df["tmax"] = df["tmax"] + e + bias_t
+            df["tmin"] = df["tmin"] + e + bias_t
             df["cloud"] = np.clip(df["cloud"] + 8 * e / 2 + 5, 0, 100)
             df["srad"] = np.clip(df["srad"] - 0.6 * e - 0.8, 0.1, None)
             scale = np.exp(0.25 * e) * 0.8

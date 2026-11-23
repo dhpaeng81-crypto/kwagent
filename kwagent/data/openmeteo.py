@@ -4,7 +4,7 @@
 - seasonal : ECMWF EC46(46일) / SEAS5 — 일별 앙상블 멤버
 - ensemble : NOAA GEFS 0.5° (35일, 31멤버)
 
-모든 결과는 '긴 형식' DataFrame: date, point, member, temp, cloud, srad, precip, rain
+모든 결과는 '긴 형식' DataFrame: date, point, member, temp, tmax, tmin, cloud, srad, precip, rain
 (관측은 member = -1)
 """
 from __future__ import annotations
@@ -22,6 +22,8 @@ from ..regions import Point
 
 DAILY_VARS = {
     "temperature_2m_mean": "temp",
+    "temperature_2m_max": "tmax",             # 일 최고기온 (2주 일별 예측용)
+    "temperature_2m_min": "tmin",             # 일 최저기온
     "cloud_cover_mean": "cloud",
     "shortwave_radiation_sum": "srad",       # 일사량 MJ/m²/일
     "precipitation_sum": "precip",
@@ -96,14 +98,14 @@ def _parse_daily(js: dict, point: str) -> pd.DataFrame:
 
 
 def _finish(df: pd.DataFrame) -> pd.DataFrame:
-    for c in ("temp", "cloud", "srad", "precip", "rain", "snow_cm"):
+    for c in ("temp", "tmax", "tmin", "cloud", "srad", "precip", "rain", "snow_cm"):
         if c not in df:
             df[c] = float("nan")
     # rain 이 없으면 강설로부터 추정
     miss = df["rain"].isna() & df["precip"].notna()
     df.loc[miss, "rain"] = (df.loc[miss, "precip"]
                             - df.loc[miss, "snow_cm"].fillna(0) / SNOW_CM_PER_MM).clip(lower=0)
-    return df[["date", "point", "member", "temp", "cloud", "srad", "precip", "rain"]]
+    return df[["date", "point", "member", "temp", "tmax", "tmin", "cloud", "srad", "precip", "rain"]]
 
 
 # ---------------------------------------------------------------- 관측(ERA5)
@@ -112,8 +114,8 @@ def archive_file(cache_dir: Path, p: Point) -> Path:
 
 
 # 이 열이 모두 채워진 마지막 날까지를 '받은 것'으로 본다.
-# 새 변수(예: 2026-11 일사량 srad)를 추가하면 옛 파일은 그 열이 비어 있으므로 처음부터 다시 받는다.
-REQUIRED_COLS = ("temp", "srad")
+# 새 변수(예: 2026-11 일사량 srad, 최고·최저기온 tmax/tmin)를 추가하면 옛 파일은 그 열이 비어 있으므로 처음부터 다시 받는다.
+REQUIRED_COLS = ("temp", "tmax", "tmin", "srad")
 
 
 def _last_complete(have: pd.DataFrame) -> pd.Timestamp | None:
