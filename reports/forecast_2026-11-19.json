@@ -1,0 +1,426 @@
+{
+  "issue": "2026-11-19",
+  "generated": "2026-11-23",
+  "regions": {
+    "korea": {
+      "weeks": [
+        {
+          "lead": 1,
+          "start": "2026-11-30",
+          "end": "2026-12-06",
+          "label": "1주 (11.30~12.06)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.218,
+                0.267,
+                0.514
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                3.2,
+                5.2
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.18,
+                  0.25,
+                  0.57
+                ]
+              },
+              "shrink": 0.25
+            },
+            "cloud": {
+              "prob": [
+                0.254,
+                0.36,
+                0.386
+              ],
+              "display": [
+                20,
+                40,
+                40
+              ],
+              "normal_range": [
+                41.5,
+                53.5
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.23,
+                  0.37,
+                  0.4
+                ]
+              },
+              "shrink": 0.25
+            },
+            "precip": {
+              "prob": [
+                0.259,
+                0.301,
+                0.44
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                3.5,
+                10.7
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.23,
+                  0.29,
+                  0.48
+                ]
+              },
+              "shrink": 0.25
+            }
+          },
+          "ptype": {
+            "p_snow": 0.14,
+            "rain_days": 1.54,
+            "snow_days": 0.17,
+            "climatology": {
+              "p_snow": 0.14,
+              "rain_days": 1.54,
+              "snow_days": 0.17
+            }
+          }
+        },
+        {
+          "lead": 2,
+          "start": "2026-12-07",
+          "end": "2026-12-13",
+          "label": "2주 (12.07~12.13)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.227,
+                0.267,
+                0.506
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                1.8,
+                3.9
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.17,
+                  0.23,
+                  0.6
+                ]
+              },
+              "shrink": 0.35
+            },
+            "cloud": {
+              "prob": [
+                0.269,
+                0.356,
+                0.375
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                41.4,
+                53.4
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.23,
+                  0.37,
+                  0.4
+                ]
+              },
+              "shrink": 0.35
+            },
+            "precip": {
+              "prob": [
+                0.25,
+                0.315,
+                0.435
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                2.7,
+                8.1
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.21,
+                  0.31,
+                  0.49
+                ]
+              },
+              "shrink": 0.35
+            }
+          },
+          "ptype": {
+            "p_snow": 0.17,
+            "rain_days": 1.22,
+            "snow_days": 0.19,
+            "climatology": {
+              "p_snow": 0.17,
+              "rain_days": 1.22,
+              "snow_days": 0.19
+            }
+          }
+        },
+        {
+          "lead": 3,
+          "start": "2026-12-14",
+          "end": "2026-12-20",
+          "label": "3주 (12.14~12.20)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.257,
+                0.285,
+                0.458
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                0.7,
+                2.9
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.19,
+                  0.24,
+                  0.56
+                ]
+              },
+              "shrink": 0.45
+            },
+            "cloud": {
+              "prob": [
+                0.275,
+                0.358,
+                0.368
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                40.2,
+                52.7
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.23,
+                  0.38,
+                  0.4
+                ]
+              },
+              "shrink": 0.45
+            },
+            "precip": {
+              "prob": [
+                0.254,
+                0.319,
+                0.427
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                2.4,
+                5.7
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.19,
+                  0.31,
+                  0.5
+                ]
+              },
+              "shrink": 0.45
+            }
+          },
+          "ptype": {
+            "p_snow": 0.19,
+            "rain_days": 1.0,
+            "snow_days": 0.21,
+            "climatology": {
+              "p_snow": 0.19,
+              "rain_days": 1.0,
+              "snow_days": 0.21
+            }
+          }
+        },
+        {
+          "lead": 4,
+          "start": "2026-12-21",
+          "end": "2026-12-27",
+          "label": "4주 (12.21~12.27)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.273,
+                0.301,
+                0.426
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                -0.0,
+                2.2
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.21,
+                  0.27,
+                  0.52
+                ]
+              },
+              "shrink": 0.5
+            },
+            "cloud": {
+              "prob": [
+                0.273,
+                0.371,
+                0.356
+              ],
+              "display": [
+                30,
+                40,
+                30
+              ],
+              "normal_range": [
+                40.0,
+                50.8
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.21,
+                  0.41,
+                  0.38
+                ]
+              },
+              "shrink": 0.5
+            },
+            "precip": {
+              "prob": [
+                0.269,
+                0.314,
+                0.417
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                1.6,
+                4.8
+              ],
+              "ens_mean_corrected": null,
+              "weights": {
+                "statistical": 1.0
+              },
+              "sources": {
+                "statistical": [
+                  0.2,
+                  0.29,
+                  0.5
+                ]
+              },
+              "shrink": 0.5
+            }
+          },
+          "ptype": {
+            "p_snow": 0.2,
+            "rain_days": 0.8,
+            "snow_days": 0.24,
+            "climatology": {
+              "p_snow": 0.2,
+              "rain_days": 0.8,
+              "snow_days": 0.24
+            }
+          }
+        }
+      ],
+      "dynamical_sources": []
+    }
+  },
+  "indices": {
+    "nino34": 3.24,
+    "ao": 1.03,
+    "rmm1": 0.0,
+    "rmm2": 0.0
+  },
+  "narrative": "## 해설 (자동 요약)\n**전국**\n- 1주 (11.30~12.06): 기온 평년보다 높음, 운량 평년과 비슷하거나 많음, 강수량 평년보다 대체로 많음\n- 2주 (12.07~12.13): 기온 평년보다 높음, 운량 평년보다 대체로 많음, 강수량 평년보다 대체로 많음\n- 3주 (12.14~12.20): 기온 평년보다 높음, 운량 평년보다 대체로 많음, 강수량 평년보다 대체로 많음\n- 4주 (12.21~12.27): 기온 평년보다 대체로 높음, 운량 평년과 대체로 비슷, 강수량 평년보다 대체로 많음"
+}
