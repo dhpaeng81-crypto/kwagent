@@ -2,7 +2,7 @@
 
 예측인자
 - 추세: 연도 (온난화로 '높음'이 잦아지는 경향)
-- 지속성: 발표 전 14일 영역평균 편차 (기온·운량·강수)
+- 지속성: 발표 전 14일 영역평균 편차 (기온·운량·일사량·강수)
 - 기후지수: Niño3.4, AO(7일), MJO RMM1/RMM2
 - 계절성: sin/cos(연중일) 및 지수×계절 상호작용 (겨울에 AO 영향이 큰 점 반영)
 
@@ -30,7 +30,7 @@ from ..verify import rps, rpss
 log = logging.getLogger(__name__)
 OBS_LAG_DAYS = 5   # ERA5 공개 지연 — 발표 시점에 실제로 쓸 수 있는 자료만 사용
 
-FEATURES = ["year", "a_temp", "a_cloud", "a_precip", "nino34", "ao", "rmm1", "rmm2",
+FEATURES = ["year", "a_temp", "a_cloud", "a_srad", "a_precip", "nino34", "ao", "rmm1", "rmm2",
             "sin", "cos", "nino_cos", "ao_cos", "ao_sin"]
 
 
@@ -43,7 +43,7 @@ def make_features(issue: date, cdoy: int, obs_daily: pd.DataFrame, clim: Climato
     s, c = np.sin(ang), np.cos(ang)
     return {
         "year": (issue.year - 2005) / 10, "a_temp": an["temp"], "a_cloud": an["cloud"],
-        "a_precip": an["precip"], **ix, "sin": s, "cos": c,
+        "a_srad": an["srad"], "a_precip": an["precip"], **ix, "sin": s, "cos": c,
         "nino_cos": ix["nino34"] * c, "ao_cos": ix["ao"] * c, "ao_sin": ix["ao"] * s,
     }
 
@@ -73,6 +73,7 @@ class StatisticalModel:
         self.C = C
         self.models: dict[tuple[str, int], object] = {}
         self.cv_rpss: dict[tuple[str, int], float] = {}
+        self.features = list(FEATURES)
 
     C_GRID = (0.003, 0.01, 0.03, 0.1, 0.5)
 
@@ -117,15 +118,18 @@ class StatisticalModel:
         m = self.models.get((var, lead))
         if m is None:
             return np.full(3, 1 / 3)
-        x = np.array([[feats[f] for f in FEATURES]])
+        x = np.array([[feats.get(f, 0.0) for f in self.features]])
         return m.predict_proba(x)[0]
 
     def save(self, path):
-        joblib.dump({"C": self.C, "models": self.models, "cv_rpss": self.cv_rpss}, path)
+        joblib.dump({"C": self.C, "models": self.models, "cv_rpss": self.cv_rpss,
+                     "features": self.features}, path)
 
     @classmethod
     def load(cls, path) -> "StatisticalModel":
         d = joblib.load(path)
         obj = cls(d["C"])
         obj.models, obj.cv_rpss = d["models"], d["cv_rpss"]
+        # 일사량 추가 전(2026-11) 모델은 a_srad 없이 학습됨
+        obj.features = d.get("features", [f for f in FEATURES if f != "a_srad"])
         return obj

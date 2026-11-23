@@ -13,6 +13,7 @@ def _fake_daily(params):
     n = len(d)
     return {"daily": {"time": [x.strftime("%Y-%m-%d") for x in d],
                       "temperature_2m_mean": [10.0] * n, "cloud_cover_mean": [50.0] * n,
+                      "shortwave_radiation_sum": [12.0] * n,
                       "precipitation_sum": [1.0] * n, "rain_sum": [1.0] * n,
                       "snowfall_sum": [0.0] * n}}
 
@@ -63,3 +64,22 @@ def test_refresh_marker_skips_same_day(tmp_path, monkeypatch):
     assert df["date"].max() == pd.Timestamp(end) and len(df) == 2 * ((end - start).days + 1)
     om.fetch_archive(pts, start, date(2023, 3, 11), cfg, tmp_path, marker_dir=tmp_path)
     assert len(calls) == n + 2                                       # 날짜가 바뀌면 갱신
+
+
+def test_new_variable_refetches_from_start(tmp_path, monkeypatch):
+    """일사량(srad) 추가 전 파일은 처음부터 다시 받아 열을 채운다."""
+    monkeypatch.setattr(om.time, "sleep", lambda s: None)
+    cfg = {"sources": {"openmeteo": {"archive_url": "x", "timezone": "Asia/Seoul"}}}
+    pts = POINTS[:1]
+    start, end = date(2021, 12, 1), date(2022, 6, 30)
+    old = pd.DataFrame({"date": pd.date_range(start, end), "point": pts[0].name, "member": -1,
+                        "temp": 1.0, "cloud": 50.0, "precip": 0.0, "rain": 0.0})
+    old.to_csv(om.archive_file(tmp_path, pts[0]), index=False)
+    assert om.archive_progress(pts, start, tmp_path)[pts[0].name] is None
+    calls = []
+    monkeypatch.setattr(om, "_get", lambda url, params, **kw: (calls.append(params["start_date"]),
+                                                              [_fake_daily(params)])[1])
+    df = om.fetch_archive(pts, start, end, cfg, tmp_path)
+    assert calls[0] == "2021-12-01"
+    assert df["srad"].notna().all() and df["date"].is_unique
+    assert om.archive_progress(pts, start, tmp_path)[pts[0].name] == "2022-06-30"

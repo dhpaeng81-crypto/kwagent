@@ -20,7 +20,8 @@ from pathlib import Path
 import pandas as pd
 
 from .regions import REGION_LABELS
-from .report import VAR_LABEL, _verdict
+from .features import VARS
+from .report import VAR_LABEL, _verdict, result_vars
 
 SOURCE_LABEL = {"combined": "최종(결합)", "statistical": "통계모델", "ec46": "ECMWF EC46",
                 "gefs": "NOAA GEFS", "blend_raw": "결합(수축 전)"}
@@ -99,6 +100,8 @@ def _prob_cells(display: list[int], var: str) -> str:
         colors = ("#9c6b3c", "var(--normal)", "#2e8a5a")
     elif var == "cloud":
         colors = ("#c99a2e", "var(--normal)", "#56657a")
+    elif var == "srad":
+        colors = ("#6f7d96", "var(--normal)", "#d9831a")
     top = max(range(3), key=lambda k: display[k])
     cells = []
     for k, v in enumerate(display):
@@ -126,7 +129,7 @@ def forecast_body(result: dict, img_prefix: str) -> str:
         parts.append(f'<h2 id="{region}">{REGION_LABELS.get(region, region)}</h2>')
         parts.append(f'<img class="chart" alt="{REGION_LABELS.get(region, region)} 확률" '
                      f'src="{img_prefix}forecast_{issue}_{region}.png">')
-        for v in ("temp", "cloud", "precip"):
+        for v in result_vars(rd):
             name, lo, mid, hi, unit = VAR_LABEL[v]
             rows = []
             for wk in rd["weeks"]:
@@ -166,7 +169,7 @@ def verification_body(store, img_dir: Path) -> str:
     order = [r for r in ("korea", "central", "south") if r in set(summ["region"])]
     for region in order + [r for r in summ["region"].unique() if r not in order]:
         parts.append(f"<h2>{REGION_LABELS.get(region, region)}</h2>")
-        for v in ("temp", "cloud", "precip"):
+        for v in VARS:
             sub = summ[(summ["region"] == region) & (summ["var"] == v)]
             if sub.empty:
                 continue
@@ -202,9 +205,11 @@ def _plot_verification(summ: pd.DataFrame, path: Path):
     from .report import _korean_font
     _korean_font()
     region = "korea" if "korea" in set(summ["region"]) else summ["region"].iloc[0]
-    fig, axes = plt.subplots(1, 3, figsize=(12, 3.4), sharey=True)
+    vs = [v for v in VARS if v in set(summ["var"])] or list(VARS)
+    fig, axes = plt.subplots(1, len(vs), figsize=(4 * len(vs), 3.4), sharey=True, squeeze=False)
+    axes = axes[0]
     colors = {"combined": "#2f6fdb", "statistical": "#8a939c", "ec46": "#c9473b", "gefs": "#2e8a5a"}
-    for ax, v in zip(axes, ("temp", "cloud", "precip")):
+    for ax, v in zip(axes, vs):
         sub = summ[(summ["region"] == region) & (summ["var"] == v)]
         for s, c in colors.items():
             d = sub[sub["source"] == s].sort_values("lead")

@@ -6,7 +6,7 @@ import pandas as pd
 
 from .regions import points_for
 
-VARS = ("temp", "cloud", "precip")
+VARS = ("temp", "cloud", "srad", "precip")   # srad = 일사량(MJ/m²/일, 주평균)
 CATS = ("below", "normal", "above")
 
 
@@ -14,7 +14,7 @@ def area_mean(df: pd.DataFrame, region: str) -> pd.DataFrame:
     """지점별 일자료 → 영역평균 일자료 (member 별)."""
     names = {p.name for p in points_for(region)}
     sub = df[df["point"].isin(names)]
-    return (sub.groupby(["member", "date"])[["temp", "cloud", "precip", "rain"]]
+    return (sub.groupby(["member", "date"])[[*VARS, "rain"]]
             .mean().reset_index())
 
 
@@ -32,6 +32,7 @@ def weekly_rolling(daily: pd.DataFrame, wet_mm: float, snow_thr: float) -> pd.Da
     roll = pd.DataFrame({
         "temp": d["temp"].rolling(7).mean(),
         "cloud": d["cloud"].rolling(7).mean(),
+        "srad": d["srad"].rolling(7).mean(),
         "precip": d["precip"].rolling(7).sum(),
         "rain_days": rain_day.astype(float).rolling(7).sum(),
         "snow_days": snow_day.astype(float).rolling(7).sum(),
@@ -51,6 +52,7 @@ def week_values(daily: pd.DataFrame, start, wet_mm: float, snow_thr: float) -> p
             continue
         rain_day, snow_day = classify_day(g["precip"], g["rain"], wet_mm, snow_thr)
         rows.append({"member": m, "temp": g["temp"].mean(), "cloud": g["cloud"].mean(),
+                     "srad": g["srad"].mean(),
                      "precip": g["precip"].sum(), "rain_days": rain_day.sum(),
                      "snow_days": snow_day.sum()})
     return pd.DataFrame(rows)
@@ -68,7 +70,7 @@ class Climatology:
         # 일별 평년(지속성 편차용): 31일 이동평균 평활
         dd = obs_daily.set_index("date")
         dd = dd[(dd.index.year >= period[0]) & (dd.index.year <= period[1])]
-        doy = dd.groupby(dd.index.dayofyear)[["temp", "cloud", "precip"]].mean()
+        doy = dd.groupby(dd.index.dayofyear)[list(VARS)].mean()
         doy = doy.reindex(range(1, 367)).interpolate(limit_direction="both")
         ext = pd.concat([doy.tail(15), doy, doy.head(15)])
         self.daily_normal = ext.rolling(31, center=True).mean().iloc[15:-15]
@@ -103,5 +105,5 @@ class Climatology:
         if d.empty:
             return {v: 0.0 for v in VARS}
         norm = self.daily_normal.reindex(d.index.dayofyear).values
-        anom = d[["temp", "cloud", "precip"]].values - norm
+        anom = d[list(VARS)].values - norm
         return dict(zip(VARS, np.nanmean(anom, axis=0).astype(float)))

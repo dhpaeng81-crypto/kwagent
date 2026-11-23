@@ -8,7 +8,7 @@ import json
 import logging
 import os
 
-from .report import VAR_LABEL, _verdict
+from .report import VAR_LABEL, _verdict, result_vars
 from .regions import REGION_LABELS
 
 log = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ SYSTEM = """당신은 기상청 기후예측과 예보관입니다. 주어진 JS
 1개월(주별 4주) 전망 해설을 한국어로 씁니다.
 규칙:
 - 확률·평년범위 숫자를 바꾸거나 새로 만들지 마세요.
-- 주별로 기온·운량·강수량·강수형태(비/눈)를 각 1~2문장으로 쓰고, 근거가 되는 기후지수
+- 주별로 기온·운량·일사량·강수량·강수형태(비/눈)를 각 1~2문장으로 쓰고, 근거가 되는 기후지수
   (Niño3.4, AO, MJO)를 일반적인 기후학 지식 수준에서만 설명하세요. 확실하지 않은 인과는 '가능성'으로 표현하세요.
 - 3~4주차는 예측성이 낮다는 점을 밝히고, 확률이 40% 이하로 고르면 '불확실성이 크다'고 쓰세요.
 - 마지막에 '검증 현황' 한 문단: verification 의 RPSS(0보다 크면 평년 예보보다 나음)를 그대로 인용.
@@ -30,7 +30,7 @@ def rule_based(result: dict) -> str:
         lines.append(f"**{REGION_LABELS.get(region, region)}**")
         for wk in rd["weeks"]:
             parts = [f"{VAR_LABEL[v][0]} {_verdict(wk['vars'][v]['display'], v)}"
-                     for v in ("temp", "cloud", "precip")]
+                     for v in result_vars(rd)]
             p = wk["ptype"]
             if p["p_snow"] >= 0.3:
                 parts.append(f"눈 올 확률 {p['p_snow']*100:.0f}%")

@@ -3,10 +3,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .features import VARS
 from .regions import REGION_LABELS
 
 VAR_LABEL = {"temp": ("기온", "낮음", "비슷", "높음", "°C"),
              "cloud": ("운량", "적음", "비슷", "많음", "%"),
+             "srad": ("일사량", "적음", "비슷", "많음", "MJ/m²"),
              "precip": ("강수량", "적음", "비슷", "많음", "mm")}
 
 
@@ -25,6 +27,12 @@ def _verdict(display: list[int], var: str) -> str:
     return f"평년보다 {words[i]}" if display[i] >= 50 else f"평년보다 대체로 {words[i]}"
 
 
+def result_vars(rd: dict) -> list[str]:
+    """이 예측에 들어 있는 변수 (일사량이 없던 옛 예측도 그대로 표시)."""
+    have = rd["weeks"][0]["vars"] if rd.get("weeks") else {}
+    return [v for v in VARS if v in have]
+
+
 def to_markdown(result: dict) -> str:
     L = [f"# 1개월 기상전망 (발표 {result['issue']})", ""]
     ix = result.get("indices", {})
@@ -34,7 +42,7 @@ def to_markdown(result: dict) -> str:
         L.append("")
     for region, rd in result["regions"].items():
         L += [f"## {REGION_LABELS.get(region, region)}", ""]
-        for v in ("temp", "cloud", "precip"):
+        for v in result_vars(rd):
             name, lo, mid, hi, unit = VAR_LABEL[v]
             L += [f"### {name}", "", f"| 주 | 평년비슷범위({unit}) | {lo} | {mid} | {hi} | 전망 |",
                   "|---|---|---|---|---|---|"]
@@ -72,10 +80,13 @@ def plot(result: dict, out_dir: Path) -> list[str]:
     _korean_font()
     paths = []
     colors = {"temp": ("#4a7bd0", "#b5b5b5", "#d0574a"), "cloud": ("#e0b34a", "#b5b5b5", "#6b7a8f"),
+              "srad": ("#7d8aa3", "#b5b5b5", "#e08a1e"),
               "precip": ("#b07d4a", "#b5b5b5", "#3f9a6b")}
     for region, rd in result["regions"].items():
-        fig, axes = plt.subplots(1, 3, figsize=(12, 3.6), sharey=True)
-        for ax, v in zip(axes, ("temp", "cloud", "precip")):
+        vs = result_vars(rd)
+        fig, axes = plt.subplots(1, len(vs), figsize=(4 * len(vs), 3.6), sharey=True, squeeze=False)
+        axes = axes[0]
+        for ax, v in zip(axes, vs):
             name, lo, mid, hi, _ = VAR_LABEL[v]
             labels = [f"{w['lead']}주" for w in rd["weeks"]]
             bottom = [0] * len(labels)

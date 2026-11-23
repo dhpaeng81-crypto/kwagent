@@ -4,7 +4,7 @@
 - seasonal : ECMWF EC46(46일) / SEAS5 — 일별 앙상블 멤버
 - ensemble : NOAA GEFS 0.5° (35일, 31멤버)
 
-모든 결과는 '긴 형식' DataFrame: date, point, member, temp, cloud, precip, rain
+모든 결과는 '긴 형식' DataFrame: date, point, member, temp, cloud, srad, precip, rain
 (관측은 member = -1)
 """
 from __future__ import annotations
@@ -23,6 +23,7 @@ from ..regions import Point
 DAILY_VARS = {
     "temperature_2m_mean": "temp",
     "cloud_cover_mean": "cloud",
+    "shortwave_radiation_sum": "srad",       # 일사량 MJ/m²/일
     "precipitation_sum": "precip",
     "rain_sum": "rain",
     "snowfall_sum": "snow_cm",
@@ -95,19 +96,35 @@ def _parse_daily(js: dict, point: str) -> pd.DataFrame:
 
 
 def _finish(df: pd.DataFrame) -> pd.DataFrame:
-    for c in ("temp", "cloud", "precip", "rain", "snow_cm"):
+    for c in ("temp", "cloud", "srad", "precip", "rain", "snow_cm"):
         if c not in df:
             df[c] = float("nan")
     # rain 이 없으면 강설로부터 추정
     miss = df["rain"].isna() & df["precip"].notna()
     df.loc[miss, "rain"] = (df.loc[miss, "precip"]
                             - df.loc[miss, "snow_cm"].fillna(0) / SNOW_CM_PER_MM).clip(lower=0)
-    return df[["date", "point", "member", "temp", "cloud", "precip", "rain"]]
+    return df[["date", "point", "member", "temp", "cloud", "srad", "precip", "rain"]]
 
 
 # ---------------------------------------------------------------- 관측(ERA5)
 def archive_file(cache_dir: Path, p: Point) -> Path:
     return cache_dir / f"era5_{p.stn}.csv.gz"
+
+
+# 이 열이 모두 채워진 마지막 날까지를 '받은 것'으로 본다.
+# 새 변수(예: 2026-11 일사량 srad)를 추가하면 옛 파일은 그 열이 비어 있으므로 처음부터 다시 받는다.
+REQUIRED_COLS = ("temp", "srad")
+
+
+def _last_complete(have: pd.DataFrame) -> pd.Timestamp | None:
+    """처음부터 연속으로 필수 열이 다 있는 마지막 날짜 (없으면 None)."""
+    if have.empty or any(c not in have for c in REQUIRED_COLS):
+        return None
+    ok = have[list(REQUIRED_COLS)].notna().all(axis=1).to_numpy()
+    if not ok[0]:
+        return None
+    first_bad = ok.argmin() if not ok.all() else len(ok)
+    return have["date"].iloc[first_bad - 1]
 
 
 def fetch_archive(points: list[Point], start: date, end: date, cfg, cache_dir: Path,
@@ -134,8 +151,12 @@ def fetch_archive(points: list[Point], start: date, end: date, cfg, cache_dir: P
         have = pd.read_csv(cache, parse_dates=["date"]) if cache.exists() else pd.DataFrame()
         fetch_from = start
         if not have.empty:
-            fetch_from = max(start, (have["date"].max() + pd.Timedelta(days=1)).date() - timedelta(days=10))
-            if done.get(p.name) == end.isoformat() and have["date"].min() <= pd.Timestamp(start):
+            have = have.sort_values("date").reset_index(drop=True)
+            last = _last_complete(have)
+            if last is not None:
+                fetch_from = max(start, (last + pd.Timedelta(days=1)).date() - timedelta(days=10))
+            if (last is not None and done.get(p.name) == end.isoformat()
+                    and have["date"].min() <= pd.Timestamp(start)):
                 fetch_from = end + timedelta(days=1)          # 오늘 이미 갱신함
         while fetch_from <= end:
             if DEADLINE is not None and time.time() > DEADLINE:
@@ -170,9 +191,10 @@ def archive_progress(points: list[Point], start: date, cache_dir: Path) -> dict[
         if not f.exists():
             out[p.name] = None
             continue
-        d = pd.read_csv(f, usecols=["date"], parse_dates=["date"])["date"]
-        out[p.name] = None if d.empty or d.min() > pd.Timestamp(start) + pd.Timedelta(days=7) \
-            else f"{d.max():%Y-%m-%d}"
+        have = pd.read_csv(f, parse_dates=["date"]).sort_values("date").reset_index(drop=True)
+        last = _last_complete(have)
+        out[p.name] = None if last is None or have["date"].min() > pd.Timestamp(start) + pd.Timedelta(days=7) \
+            else f"{last:%Y-%m-%d}"
     return out
 
 

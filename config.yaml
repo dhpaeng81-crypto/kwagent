@@ -18,6 +18,7 @@ n_weeks: 4
 variables:
   temp:   {label: "기온",   unit: "°C", agg: mean}
   cloud:  {label: "운량",   unit: "%",  agg: mean}
+  srad:   {label: "일사량", unit: "MJ/m²", agg: mean}   # 하루 일사량(MJ/m²)의 주평균
   precip: {label: "강수량", unit: "mm", agg: sum}
 
 # 강수일 기준(일강수량, mm)과 눈으로 볼 비율(강수 중 비가 아닌 비율)

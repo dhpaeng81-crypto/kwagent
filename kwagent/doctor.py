@@ -28,7 +28,7 @@ def run(cfg) -> list[str]:
     try:
         df = om.fetch_archive(seoul, end - timedelta(days=20), end, cfg, cache)
         last = df.dropna(subset=["temp"])["date"].max()
-        nan = df[["temp", "cloud", "precip", "rain"]].isna().mean().round(2).to_dict()
+        nan = df[["temp", "cloud", "srad", "precip", "rain"]].isna().mean().round(2).to_dict()
         out.append(_line(not df.empty, "ERA5", f"{len(df)}일, 마지막 자료 {last:%Y-%m-%d}, 결측률 {nan}"))
     except Exception as e:
         out.append(_line(False, "ERA5", str(e)[:300]))
@@ -37,7 +37,7 @@ def run(cfg) -> list[str]:
             df = fn(POINTS[:2], cfg)
             nm = df["member"].nunique()
             span = f"{df['date'].min():%m-%d}~{df['date'].max():%m-%d}"
-            nan = df[["temp", "cloud", "precip", "rain"]].isna().mean().round(2).to_dict()
+            nan = df[["temp", "cloud", "srad", "precip", "rain"]].isna().mean().round(2).to_dict()
             out.append(_line(nm >= 10, name, f"멤버 {nm}개, 기간 {span}, 지점 {df['point'].nunique()}, 결측률 {nan}"))
         except Exception as e:
             out.append(_line(False, name, str(e)[:300]))

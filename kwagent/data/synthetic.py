@@ -47,12 +47,14 @@ class SyntheticProvider:
             off = (37.5 - p.lat) * 1.2
             t = base_t + off + rng.normal(0, 1.2, n)
             cloud = np.clip(48 + 20 * wet_season + 6 * anom / 2 + rng.normal(0, 18, n), 0, 100)
+            # 일사량(MJ/m²/일): 여름 ~22, 겨울 ~8, 구름이 많을수록 적음
+            srad = np.clip((15 - 7 * np.cos(ang)) * (1.25 - 0.6 * cloud / 100) + rng.normal(0, 1.5, n), 0.3, None)
             pwet = np.clip(0.18 + 0.25 * wet_season + 0.004 * (cloud - 50), 0.02, 0.9)
             wet = rng.random(n) < pwet
             pr = np.where(wet, rng.gamma(0.8, 6 + 18 * wet_season), 0.0)
             rain = np.where(t > 1.0, pr, np.where(t > -1.0, pr * 0.5, 0.0))
             frames.append(pd.DataFrame({"date": idx, "point": p.name, "member": -1, "temp": t,
-                                        "cloud": cloud, "precip": pr, "rain": rain}))
+                                        "cloud": cloud, "srad": srad, "precip": pr, "rain": rain}))
         self.truth = pd.concat(frames, ignore_index=True)
         self.rng = rng
 
@@ -81,6 +83,7 @@ class SyntheticProvider:
             df["member"] = m
             df["temp"] = df["temp"] + e + bias_t
             df["cloud"] = np.clip(df["cloud"] + 8 * e / 2 + 5, 0, 100)
+            df["srad"] = np.clip(df["srad"] - 0.6 * e - 0.8, 0.1, None)
             scale = np.exp(0.25 * e) * 0.8
             df["precip"] = df["precip"] * scale
             df["rain"] = np.where(df["temp"] > 0.5, df["precip"], 0.0)
