@@ -46,3 +46,20 @@ def test_chunked_resume(tmp_path, monkeypatch):
     assert calls[0] == "2021-12-22"                                  # 이어 받기(10일 겹침)
     assert df["date"].min() == pd.Timestamp(start) and df["date"].max() == pd.Timestamp(end)
     assert df["date"].is_unique
+
+
+def test_refresh_marker_skips_same_day(tmp_path, monkeypatch):
+    monkeypatch.setattr(om.time, "sleep", lambda s: None)
+    cfg = {"sources": {"openmeteo": {"archive_url": "x", "timezone": "Asia/Seoul"}}}
+    calls = []
+    monkeypatch.setattr(om, "_get", lambda url, params, **kw: (calls.append(params["start_date"]),
+                                                              [_fake_daily(params)])[1])
+    pts = POINTS[:2]
+    start, end = date(2022, 12, 1), date(2023, 3, 10)
+    om.fetch_archive(pts, start, end, cfg, tmp_path, marker_dir=tmp_path)
+    n = len(calls)
+    df = om.fetch_archive(pts, start, end, cfg, tmp_path, marker_dir=tmp_path)
+    assert len(calls) == n                                           # 같은 날 다시 받지 않음
+    assert df["date"].max() == pd.Timestamp(end) and len(df) == 2 * ((end - start).days + 1)
+    om.fetch_archive(pts, start, date(2023, 3, 11), cfg, tmp_path, marker_dir=tmp_path)
+    assert len(calls) == n + 2                                       # 날짜가 바뀌면 갱신

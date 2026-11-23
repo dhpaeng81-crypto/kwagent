@@ -21,14 +21,16 @@ class OpenMeteoProvider:
         self.cfg, self.cache = cfg, cache_dir
 
     def archive(self, points: list[Point], start: date, end: date) -> pd.DataFrame:
-        return om.fetch_archive(points, start, end, self.cfg, self.cfg.path("era5"))
+        return om.fetch_archive(points, start, end, self.cfg, self.cfg.path("era5"),
+                                marker_dir=self.cfg.path("cache"))
 
     def indices(self) -> pd.DataFrame:
         return ix.fetch_indices(self.cfg, self.cache)
 
     def ensemble(self, source: str, points: list[Point], issue: date) -> pd.DataFrame | None:
-        # 공개 API 는 '현재' 예측만 준다 → 과거 발표일 재현(백테스트)에는 쓸 수 없음
-        if abs((today_kst() - issue).days) > 3:
+        # 공개 API 는 '현재' 예측만 준다 → 과거 발표일 재현(백테스트)에는 쓸 수 없음.
+        # 가장 최근 발표일(목)은 오늘로부터 최대 6일 전 → 수동 실행(예: 월요일)도 역학모델 사용
+        if not -3 <= (today_kst() - issue).days <= 6:
             return None
         try:
             fn = {"ec46": om.fetch_ec46, "gefs": om.fetch_gefs}[source]

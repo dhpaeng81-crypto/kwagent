@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import re
+import json
 import time
 from datetime import date, timedelta
 from pathlib import Path
@@ -109,14 +110,24 @@ def archive_file(cache_dir: Path, p: Point) -> Path:
     return cache_dir / f"era5_{p.stn}.csv.gz"
 
 
-def fetch_archive(points: list[Point], start: date, end: date, cfg, cache_dir: Path) -> pd.DataFrame:
+def fetch_archive(points: list[Point], start: date, end: date, cfg, cache_dir: Path,
+                  marker_dir: Path | None = None) -> pd.DataFrame:
     """지점별 파일(data/era5, 저장소에 커밋)을 증분 갱신하며 ERA5 일별 자료를 반환.
 
     요청은 1년 단위로 나누고, 조각마다 파일에 저장한다. 한도(QuotaError)에 걸리면
     그때까지 받은 것은 남고 예외가 올라간다 → 다음 실행이 이어서 받는다.
+    marker_dir 가 주어지면 같은 end 로 이미 갱신한 지점은 다시 받지 않는다
+    (backfill → train → run 이 각각 같은 최근 10일을 다시 받던 낭비 방지).
     """
     om = cfg["sources"]["openmeteo"]
     chunk_pause = float(om.get("archive_chunk_pause_s", 4.0))
+    marker = Path(marker_dir) / "era5_refreshed.json" if marker_dir is not None else None
+    done = {}
+    if marker is not None and marker.exists():
+        try:
+            done = json.loads(marker.read_text())
+        except ValueError:
+            done = {}
     frames = []
     for p in points:
         cache = archive_file(cache_dir, p)
@@ -124,6 +135,8 @@ def fetch_archive(points: list[Point], start: date, end: date, cfg, cache_dir: P
         fetch_from = start
         if not have.empty:
             fetch_from = max(start, (have["date"].max() + pd.Timedelta(days=1)).date() - timedelta(days=10))
+            if done.get(p.name) == end.isoformat() and have["date"].min() <= pd.Timestamp(start):
+                fetch_from = end + timedelta(days=1)          # 오늘 이미 갱신함
         while fetch_from <= end:
             if DEADLINE is not None and time.time() > DEADLINE:
                 raise QuotaError("이번 실행의 자료 받기 시간 상한 도달")
@@ -141,6 +154,9 @@ def fetch_archive(points: list[Point], start: date, end: date, cfg, cache_dir: P
             fetch_from = chunk_end + timedelta(days=1)
             # 남은 조각이 있으면 분당 한도(600회)에 안 걸리게 쉬어 간다 (1년 조각 ≈ 26회)
             time.sleep(chunk_pause if fetch_from <= end else om.get("request_pause_s", 1.0))
+        if marker is not None and not have.empty:
+            done[p.name] = end.isoformat()
+            marker.write_text(json.dumps(done, ensure_ascii=False))
         have["point"] = p.name
         frames.append(have[(have["date"] >= pd.Timestamp(start)) & (have["date"] <= pd.Timestamp(end))])
     return pd.concat(frames, ignore_index=True)
