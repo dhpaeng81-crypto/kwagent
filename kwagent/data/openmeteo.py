@@ -39,7 +39,7 @@ class QuotaError(RuntimeError):
 DEADLINE: float | None = None
 
 
-def _get(url: str, params: dict, retries: int = 3, pause: float = 1.0,
+def _get(url: str, params: dict, retries: int = 6, pause: float = 2.0,
          minutely_waits: int = 5) -> list[dict]:
     """GET + 재시도. 429 분당 한도는 1분 기다려 재시도, 시간·일 한도는 QuotaError.
 
