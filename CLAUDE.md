@@ -74,6 +74,14 @@ kwagent/
 | MJO | BoM rmm.74toRealtime.txt `y m d rmm1 rmm2 ...` | doctor (BoM 이 http→https 또는 주소 변경 가능) |
 | 사용 조건 | Open-Meteo 무료 = 비상업, 일 1만 호출 | GitHub 공유 IP 에서 429 가능 → 재시도/대기 늘리기 |
 
+### P0 점검 결과 (2026-11-23, `kwagent doctor` 실자료)
+- ERA5·EC46(`ecmwf_ec46`, 51멤버, 46일)·GEFS(`ncep_gefs05`, 31멤버, 35일): **정상**. daily 키 =
+  5개 변수 × 멤버(컨트롤 무접미사 + `_member01..`) → 가정대로. seasonal API 에도 rain_sum 있음.
+- Niño3.4: 정상(약 1~2주 지연). AO: 정상, 단 파일이 월 1회 갱신이라 최대 ~6주 지연.
+- **MJO(BoM RMM): 파일이 2024-02-24 에서 갱신 중단**, 게다가 python-requests 를 403 으로 차단(curl 은 200).
+  → `indices.predictors_at` 에 지수별 최대 자료 나이(`_PRED_SPEC`)를 추가해, 오래된 값은 0(기후값).
+  (전에는 2년 묵은 RMM 값이 그대로 예측인자로 들어갔음.) 대체 MJO 출처(예: NOAA OMI) 찾기는 P1.
+
 ## 할 일 (우선순위)
 **P0 — 첫 실운영**
 1. 사용자와 함께 GitHub 저장소 생성·푸시, Pages(Source=GitHub Actions) 켜기, `weekly-forecast` 수동 실행.

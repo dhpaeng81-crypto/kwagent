@@ -45,8 +45,8 @@ sources:
     nino34_url: https://www.cpc.ncep.noaa.gov/data/indices/wksst9120.for
     # 일별 북극진동(AO) 지수 (CPC)
     ao_url: https://ftp.cpc.ncep.noaa.gov/cwlinks/norm.daily.ao.index.b500101.current.ascii
-    # MJO RMM 지수 (호주 기상청)
-    mjo_url: http://www.bom.gov.au/climate/mjo/graphics/rmm.74toRealtime.txt
+    # MJO RMM 지수 (호주 기상청) — 2026-11 확인: 2024-02-24 이후 갱신 멈춤. 오래된 값은 자동으로 무시됨
+    mjo_url: https://www.bom.gov.au/climate/mjo/graphics/rmm.74toRealtime.txt
   kma:
     # 기상청 API허브 키를 받으면 환경변수 KMA_API_KEY 로 설정 → ASOS 관측으로 정답 교체 가능
     enabled: false

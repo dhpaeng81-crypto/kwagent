@@ -45,12 +45,19 @@ def run(cfg) -> list[str]:
     for key, parser in (("nino34", ix.parse_nino34), ("ao", ix.parse_ao), ("mjo", ix.parse_rmm)):
         url = src[f"{key}_url"]
         try:
-            r = requests.get(url, timeout=60)
+            r = requests.get(url, timeout=60, headers=ix.HEADERS)
             r.raise_for_status()
             s = parser(r.text)
             last = s.index.max() if len(s) else None
-            out.append(_line(len(s) > 100, key, f"{len(s)}행, 마지막 {last:%Y-%m-%d}" if last is not None
-                             else "파싱 결과 0행 — 형식 확인 필요"))
+            if last is None:
+                out.append(_line(False, key, "파싱 결과 0행 — 형식 확인 필요"))
+                continue
+            age = (pd.Timestamp(today_kst()) - last).days
+            max_age = ix._PRED_SPEC["rmm1" if key == "mjo" else key][1]
+            msg = f"{len(s)}행, 마지막 {last:%Y-%m-%d} ({age}일 전)"
+            if age > max_age:
+                msg += f" — {max_age}일보다 오래됨: 예측에서 0(평년)으로 처리"
+            out.append(_line(len(s) > 100 and age <= max_age, key, msg))
         except Exception as e:
             out.append(_line(False, key, f"{url}: {str(e)[:200]}"))
     return out
