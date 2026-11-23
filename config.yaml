@@ -26,6 +26,8 @@ snow_fraction_threshold: 0.5
 
 paths:
   cache: data/cache
+  # ERA5 과거 자료(지점별 csv.gz) — 저장소에 커밋해 보관 (처음 받는 데 무료 한도로 몇 시간 걸림)
+  era5: data/era5
   store: data/store.sqlite
   models: data/models
   reports: reports
@@ -40,6 +42,8 @@ sources:
     gefs_model: ncep_gefs05
     timezone: Asia/Seoul
     request_pause_s: 1.0
+    # ERA5 를 1년씩 나눠 받을 때 조각 사이 쉬는 시간(초) — 분당 한도 600회 대비
+    archive_chunk_pause_s: 4.0
   indices:
     # 주간 Niño3.4 (OISST, CPC)
     nino34_url: https://www.cpc.ncep.noaa.gov/data/indices/wksst9120.for

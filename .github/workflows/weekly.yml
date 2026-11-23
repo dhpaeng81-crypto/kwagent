@@ -1,10 +1,13 @@
 # 매주 목요일 07:10 KST: 지난 예측 채점 → 이번 주 예측 → 웹사이트 갱신 → GitHub Pages 배포
-# 예측·검증 기록(data/store.sqlite, data/models, reports/)은 저장소에 커밋해 다음 주로 이어진다.
+# 예측·검증 기록(data/store.sqlite, data/models, reports/)과 ERA5 과거 자료(data/era5)는 저장소에 커밋해 이어진다.
+# 처음에는 ERA5 과거 자료(1991~)를 Open-Meteo 무료 한도 안에서 나눠 받아야 해서, 2시간마다 이어 받다가
+# 다 받으면 그 실행에서 학습 → 예측 → 웹사이트 배포까지 한다. 모델이 생긴 뒤 2시간 실행은 바로 끝난다.
 name: weekly-forecast
 
 on:
   schedule:
     - cron: "10 22 * * 3"        # 수 22:10 UTC = 목 07:10 KST
+    - cron: "17 */2 * * *"       # 처음 자료 받기용 (모델이 생기면 바로 종료)
   workflow_dispatch:
     inputs:
       issue:
@@ -31,28 +34,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: 할 일 판단
+        id: mode
+        run: |
+          if [ "${{ github.event.schedule }}" = "17 */2 * * *" ] && [ -f data/models/statistical_korea.joblib ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"; echo "이미 준비 완료 — 이번 2시간 실행은 건너뜀"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-python@v5
+        if: steps.mode.outputs.skip != 'true'
         with:
           python-version: "3.12"
           cache: pip
 
       - name: 한글 글꼴
+        if: steps.mode.outputs.skip != 'true'
         run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-nanum && rm -rf ~/.cache/matplotlib
 
       - name: 설치
+        if: steps.mode.outputs.skip != 'true'
         run: pip install -e ".[llm]"
 
       - name: ERA5·지수 캐시 복원
+        if: steps.mode.outputs.skip != 'true'
         uses: actions/cache@v4
         with:
           path: data/cache
           key: kwagent-cache-${{ github.run_id }}
           restore-keys: kwagent-cache-
 
+      - name: ERA5 과거 자료 받기 (처음엔 여러 번에 나눠 받음)
+        id: backfill
+        if: steps.mode.outputs.skip != 'true'
+        run: kwagent backfill
+
       - name: 최초 1회 학습 (모델이 없을 때만)
+        if: steps.backfill.outputs.complete == 'true'
         run: test -f data/models/statistical_korea.joblib || kwagent train
 
       - name: 검증 + 예측
+        if: steps.backfill.outputs.complete == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
@@ -63,19 +86,25 @@ jobs:
           fi
 
       - name: 웹사이트 생성
+        if: steps.backfill.outputs.complete == 'true'
         run: kwagent site
 
-      - name: 기록 커밋
+      - name: 기록 커밋 (실패해도 받은 자료는 저장)
+        if: always() && steps.mode.outputs.skip != 'true'
         run: |
           git config user.name  "kwagent-bot"
           git config user.email "kwagent-bot@users.noreply.github.com"
-          git add data/store.sqlite data/models reports
-          git commit -m "forecast $(date +%F)" || echo "변경 없음"
+          for f in data/era5 data/store.sqlite data/models reports; do if [ -e "$f" ]; then git add "$f"; fi; done
+          if [ "${{ steps.backfill.outputs.complete }}" = "true" ]; then msg="forecast $(date +%F)"; else msg="ERA5 자료 이어 받기 $(date +%F' '%H:%M)"; fi
+          git commit -m "$msg" || echo "변경 없음"
           git push
 
       - uses: actions/configure-pages@v5
+        if: steps.backfill.outputs.complete == 'true'
       - uses: actions/upload-pages-artifact@v3
+        if: steps.backfill.outputs.complete == 'true'
         with:
           path: site
       - id: deploy
+        if: steps.backfill.outputs.complete == 'true'
         uses: actions/deploy-pages@v4

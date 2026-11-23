@@ -1,5 +1,6 @@
 """명령행 진입점.
 
+  kwagent backfill              # ERA5 과거 자료 이어 받기 (무료 한도에 걸리면 받은 데까지 저장)
   kwagent train                 # 1991~ 자료 수집 + 통계모델 학습 (최초 1회, 이후 분기마다)
   kwagent run                   # 매주 목요일: 지난 예측 검증 → 이번 주 예측 → 보고서·해설
   kwagent forecast --issue 2026-11-19
@@ -49,9 +50,39 @@ def publish(agent: Agent, result: dict) -> dict:
     return {"markdown": str(p), "png": pngs}
 
 
+def _backfill(agent: Agent) -> bool:
+    """ERA5 과거 자료를 받을 수 있는 만큼 받는다. 다 받았으면 True.
+
+    GitHub Actions 에서는 결과를 GITHUB_OUTPUT 의 complete=true/false 로 남긴다.
+    """
+    import os
+    from .data import openmeteo as om
+    from .regions import POINTS
+    complete = True
+    if not agent.offline:
+        try:
+            agent.obs()
+        except om.QuotaError as e:
+            complete = False
+            logging.warning("Open-Meteo 무료 한도 도달 — 받은 데까지 저장, 다음 실행에서 이어 받음 (%s)", e)
+        start = date(min(agent.cfg["train_start_year"], agent.cfg["normal_period"][0]) - 1, 12, 1)
+        prog = om.archive_progress(POINTS, start, agent.cfg.path("era5"))
+        done = sum(1 for v in prog.values() if v and v >= f"{agent.obs_end - timedelta(days=15)}")
+        print(f"ERA5 과거 자료: {done}/{len(prog)} 지점 완료")
+        for k, v in prog.items():
+            print(f"  {k:<6} {v or '아직 없음'}")
+        complete = complete and done == len(prog)
+    gh = os.environ.get("GITHUB_OUTPUT")
+    if gh:
+        with open(gh, "a") as f:
+            f.write(f"complete={'true' if complete else 'false'}\n")
+    print("완료" if complete else "미완료 — 다음 실행에서 이어 받습니다")
+    return complete
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="kwagent")
-    ap.add_argument("command", choices=["train", "run", "forecast", "verify", "backtest", "status",
+    ap.add_argument("command", choices=["backfill", "train", "run", "forecast", "verify", "backtest", "status",
                                         "site", "doctor"])
     ap.add_argument("--config", default=None)
     ap.add_argument("--issue", type=_d)
@@ -80,6 +111,9 @@ def main(argv=None):
         return
 
     agent = Agent(cfg, offline=a.offline, asof=a.asof)
+    if a.command == "backfill":
+        _backfill(agent)
+        return
     if a.command == "train":
         print(agent.train().to_string(index=False))
     elif a.command == "verify":

@@ -21,7 +21,7 @@ class Config:
 
     def path(self, name: str) -> Path:
         p = self.root / self.raw["paths"][name]
-        if name in ("cache", "models", "reports"):
+        if name in ("cache", "models", "reports", "era5"):
             p.mkdir(parents=True, exist_ok=True)
         else:
             p.parent.mkdir(parents=True, exist_ok=True)

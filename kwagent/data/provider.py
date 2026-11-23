@@ -21,7 +21,7 @@ class OpenMeteoProvider:
         self.cfg, self.cache = cfg, cache_dir
 
     def archive(self, points: list[Point], start: date, end: date) -> pd.DataFrame:
-        return om.fetch_archive(points, start, end, self.cfg, self.cache)
+        return om.fetch_archive(points, start, end, self.cfg, self.cfg.path("era5"))
 
     def indices(self) -> pd.DataFrame:
         return ix.fetch_indices(self.cfg, self.cache)

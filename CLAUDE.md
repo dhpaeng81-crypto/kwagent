@@ -82,6 +82,12 @@ kwagent/
   → `indices.predictors_at` 에 지수별 최대 자료 나이(`_PRED_SPEC`)를 추가해, 오래된 값은 0(기후값).
   (전에는 2년 묵은 RMM 값이 그대로 예측인자로 들어갔음.) 대체 MJO 출처(예: NOAA OMI) 찾기는 P1.
 
+- **첫 Actions 실행 실패(429)**: Open-Meteo 무료판은 요청을 '지점 × 2주 = 1회'로 센다. 1991~ 한 지점 ≈ 940회라
+  분당 600 초과, 21지점 ≈ 2만 회라 일 1만도 초과. → `fetch_archive` 를 1년 조각 + 조각마다 저장으로 바꾸고,
+  시간·일 한도는 `QuotaError` 로 멈춤. ERA5 는 `data/era5/*.csv.gz` 로 **저장소에 커밋**(Actions 캐시는 실패 시 저장 안 되고 소멸 가능).
+  `kwagent backfill` 이 GITHUB_OUTPUT 에 complete 를 남기고, weekly.yml 의 2시간 cron 이 다 받을 때까지 이어 받은 뒤
+  학습·예측·배포. 모델이 생기면 2시간 cron 은 바로 끝남.
+
 ## 할 일 (우선순위)
 **P0 — 첫 실운영**
 1. 사용자와 함께 GitHub 저장소 생성·푸시, Pages(Source=GitHub Actions) 켜기, `weekly-forecast` 수동 실행.
@@ -111,7 +117,7 @@ kwagent/
 - `store.py` 스키마를 바꾸면 기존 `data/store.sqlite` 마이그레이션을 같이 작성(운영 기록이 곧 자산).
 - 날짜는 `today_kst()` 사용. `date.today()` 금지(Actions=UTC).
 - 출력 문구·웹사이트는 한국어. 확률 표기는 기상청 관례(낮음/비슷/높음, 적음/비슷/많음).
-- `data/cache/`, `site/` 는 커밋하지 않음. `data/store.sqlite`, `data/models/`, `reports/` 는 워크플로가 커밋.
+- `data/cache/`, `site/` 는 커밋하지 않음. `data/era5/`, `data/store.sqlite`, `data/models/`, `reports/` 는 워크플로가 커밋.
 
 ## 자주 쓰는 명령
 ```bash
