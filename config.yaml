@@ -75,3 +75,16 @@ narrative:
   provider: anthropic
   model: claude-sonnet-5-5
   max_tokens: 1500
+
+# 2주 일별 예측 (kwagent daily, 매일 06:40 KST)
+# 모델 id 는 Open-Meteo ensemble API 기준 — `kwagent doctor` 로 확인. 실패한 모델은 빼고 진행한다.
+daily:
+  days: 14
+  models:
+    ecmwf_ens:  {api: ensemble, model: ecmwf_ifs025,  days: 15, weight: 0.40}
+    ecmwf_aifs: {api: ensemble, model: ecmwf_aifs025, days: 15, weight: 0.25}
+    gefs:       {api: ensemble, model: ncep_gefs025,  days: 16, weight: 0.20}
+    icon_eps:   {api: ensemble, model: icon_seamless, days: 7,  weight: 0.15}
+  bias_window: 60        # 편향 보정에 쓰는 최근 채점 수 (같은 모델·변수·예보일 ±1일)
+  bias_min_n: 10         # 이만큼 쌓이면 편향 보정 시작
+  keep_reports_days: 30  # reports/daily 에 남길 기간 (채점 기록은 store 에 모두 남음)

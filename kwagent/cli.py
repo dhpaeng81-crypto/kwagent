@@ -8,6 +8,7 @@
   kwagent backtest --start 2024-01-04 --end 2025-12-25   # 과거 재현 (실자료는 통계모델만)
   kwagent status                # 예측원별 검증 성적표
   kwagent doctor                # 실제 자료원(ERA5·EC46·GEFS·지수) 연결과 형식 점검
+  kwagent daily                 # 매일: 지난 일별 예측 채점 → 2주 일별 예측 → reports/daily
   kwagent site                  # reports/ + 검증 기록 → site/ 정적 웹사이트 (GitHub Pages)
 
   --offline : 합성 자료로 전체 흐름 시험 (네트워크 불필요)
@@ -87,7 +88,7 @@ def _backfill(agent: Agent) -> bool:
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="kwagent")
     ap.add_argument("command", choices=["backfill", "train", "run", "forecast", "verify", "backtest", "status",
-                                        "site", "doctor"])
+                                        "site", "doctor", "daily"])
     ap.add_argument("--config", default=None)
     ap.add_argument("--issue", type=_d)
     ap.add_argument("--asof", type=_d, help="기준일(기본: 어제)")
@@ -117,6 +118,16 @@ def main(argv=None):
     agent = Agent(cfg, offline=a.offline, asof=a.asof)
     if a.command == "backfill":
         _backfill(agent)
+        return
+    if a.command == "daily":
+        import os
+        import time
+        from . import daily
+        from .data import openmeteo as om
+        minutes = float(os.environ.get("KWAGENT_BACKFILL_MINUTES", "0") or 0)
+        if minutes > 0:          # ERA5 갱신에 쓸 시간 상한 (넘으면 받아 둔 자료로 진행)
+            om.DEADLINE = time.time() + minutes * 60
+        print(json.dumps(daily.run(agent, a.issue), ensure_ascii=False, indent=2))
         return
     if a.command == "train":
         print(agent.train().to_string(index=False))

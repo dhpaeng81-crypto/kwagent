@@ -213,6 +213,25 @@ def _fetch_members(url: str, model: str, points: list[Point], days: int, cfg) ->
     return pd.concat([f for f in frames if not f.empty], ignore_index=True)
 
 
+def fetch_short(points: list[Point], spec: dict, cfg) -> pd.DataFrame:
+    """단기(2주) 앙상블. spec = config daily.models 항목 {api, model, days}. 오늘 포함 days+1 일."""
+    om = cfg["sources"]["openmeteo"]
+    url = om[f"{spec.get('api', 'ensemble')}_url"]
+    return _fetch_members(url, spec["model"], points, int(spec["days"]) + 1, cfg)
+
+
+def read_archive(points: list[Point], cache_dir: Path) -> pd.DataFrame:
+    """받아 둔 ERA5 파일만 읽기 (네트워크 없이 — 한도에 걸렸을 때 대신 씀)."""
+    frames = []
+    for p in points:
+        f = archive_file(cache_dir, p)
+        if f.exists():
+            d = pd.read_csv(f, parse_dates=["date"])
+            d["point"] = p.name
+            frames.append(d)
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+
 def fetch_ec46(points: list[Point], cfg) -> pd.DataFrame:
     om = cfg["sources"]["openmeteo"]
     return _fetch_members(om["seasonal_url"], om["ec46_model"], points, 46, cfg)

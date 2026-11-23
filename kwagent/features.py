@@ -14,7 +14,8 @@ def area_mean(df: pd.DataFrame, region: str) -> pd.DataFrame:
     """지점별 일자료 → 영역평균 일자료 (member 별)."""
     names = {p.name for p in points_for(region)}
     sub = df[df["point"].isin(names)]
-    return (sub.groupby(["member", "date"])[[*VARS, "rain"]]
+    cols = [c for c in (*VARS, "tmax", "tmin", "rain") if c in sub]
+    return (sub.groupby(["member", "date"])[cols]
             .mean().reset_index())
 
 

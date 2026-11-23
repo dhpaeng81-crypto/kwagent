@@ -41,6 +41,17 @@ def run(cfg) -> list[str]:
             out.append(_line(nm >= 10, name, f"멤버 {nm}개, 기간 {span}, 지점 {df['point'].nunique()}, 결측률 {nan}"))
         except Exception as e:
             out.append(_line(False, name, str(e)[:300]))
+    for name, spec in cfg.raw.get("daily", {}).get("models", {}).items():
+        try:
+            df = om.fetch_short(POINTS[:2], spec, cfg)
+            nm = df["member"].nunique()
+            span = f"{df['date'].min():%m-%d}~{df['date'].max():%m-%d}"
+            cols = ["temp", "tmax", "tmin", "cloud", "srad", "precip", "rain"]
+            nan = df[cols].isna().mean().round(2).to_dict()
+            out.append(_line(nm >= 10, f"단기 {name}({spec['model']})",
+                             f"멤버 {nm}개, 기간 {span}, 결측률 {nan}"))
+        except Exception as e:
+            out.append(_line(False, f"단기 {name}({spec['model']})", str(e)[:300]))
     src = cfg["sources"]["indices"]
     for key, parser in (("nino34", ix.parse_nino34), ("ao", ix.parse_ao), ("mjo", ix.parse_rmm)):
         url = src[f"{key}_url"]

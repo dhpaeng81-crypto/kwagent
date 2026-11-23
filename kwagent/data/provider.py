@@ -44,6 +44,20 @@ class OpenMeteoProvider:
             return pd.read_csv(cache, parse_dates=["date"]) if cache.exists() else None
 
 
+    def short_ensemble(self, name: str, spec: dict, points: list[Point], issue: date) -> pd.DataFrame | None:
+        """2주 일별 예측용 앙상블. 공개 API 는 '현재' 예측만 주므로 오늘·어제 발표만."""
+        if not 0 <= (today_kst() - issue).days <= 1:
+            return None
+        cache = self.cache / f"short_{name}_{issue}.csv"
+        try:
+            df = om.fetch_short(points, spec, self.cfg)
+            df.to_csv(cache, index=False)
+            return df
+        except Exception as e:
+            log.warning("%s(단기) 수집 실패 — 이 모델 없이 진행: %s", name, e)
+            return pd.read_csv(cache, parse_dates=["date"]) if cache.exists() else None
+
+
 def make_provider(cfg, cache_dir, offline: bool = False):
     if offline:
         from .synthetic import SyntheticProvider
