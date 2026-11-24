@@ -48,6 +48,7 @@ kwagent/
   verify.py       RPS/RPSS/신뢰도/Brier
   narrative.py    LLM 해설(ANTHROPIC_API_KEY 있을 때, 없으면 규칙 기반)
   report.py       md 표 + matplotlib 확률 막대(noscript·보고서용) + to_excel(1개월 → site/forecast_<발표일>.xlsx)
+  ui.py           화면 부품: 날씨 그림(SVG), 2주 '한눈에' 문장(daily_headlines), 1개월 경향 낱말·색깔표(month_chips/month_cell)
   site.py         정적 웹사이트(site/): index(=2주 일별, 기본), daily(같은 내용·옛 주소), month(1개월), f/<날짜>, archive, verification
                   엑셀: daily_<발표일>.xlsx, forecast_<발표일>.xlsx, verification.xlsx(요약 + 채점 기록, 일별은 최근 120일)
   static/         홈 화면 아이콘(icon.svg 원본 → PNG 들, mkicons.js 로 다시 렌더), chart.umd.min.js(Chart.js 4.4.4, npm 에서 복사),
@@ -124,6 +125,8 @@ kwagent/
   편향 보정(기온·운량·일사량 차감, 강수 비율 0.5~2). 표 `daily_forecasts.mean_raw` 를 지우지 말 것.
 - 저장소 표 `daily_forecasts`, `daily_verification` 은 CREATE IF NOT EXISTS 로 추가(기존 DB 자동 이행).
 - 웹사이트: index.html = 2주 일별(2026-11-24 사용자 요청으로 기본 화면), 1개월은 month.html. 모바일 홈 화면 추가용 manifest·아이콘 포함.
+  **디자인 원칙(2026-11-24 사용자 승인)**: 빽빽하지 않게 — 맨 위에 결론(한눈에 요약), 그래프는 버튼으로 골라 보기(_seg_card),
+  표·설명·해설은 접기(_fold, details.about). 내용은 줄이지 않고 '먼저 보이는 것'과 '눌러서 보는 것'을 나눈다.
   일별 화면은 변수별 카드 4개(기온·강수·운량·일사량) 대화형 그래프(마우스 올리면 수치) + 표 + '엑셀로 받기'
   (site 빌드 때 `daily.to_excel` 로 daily_<발표일>.xlsx 생성, openpyxl). matplotlib PNG 는 noscript·보고서용으로 유지.
   정확도 탭 아래 일별 성적(1~3/4~7/8~14일: 평균오차, 평년 대비 개선, 범위 적중률, 강수확률 Brier).
