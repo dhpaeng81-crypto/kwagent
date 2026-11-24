@@ -29,10 +29,23 @@ jobs:
             fi
             echo
           }
-          for d in 20261119 20261112; do
-            try "https://www.weather.go.kr/w/repositary/xml/fct/mon/fct_mon1_108_${d}.pdf"
+          # 권역별 PDF 번호 찾기: 전국 108 외에 지역 번호를 시험 (있으면 제목·첫 주 확률만 출력)
+          for c in 108 109 105 101 131 133 146 156 143 159 184 11B 11D 11C 11F 11H 11G 10 20 30 40 50 60 70 80 90; do
+            u="https://www.weather.go.kr/w/repositary/xml/fct/mon/fct_mon1_${c}_20261119.pdf"
+            code=$(curl -s -L -m 30 -A "$UA" -o r.bin -w "%{http_code}|%{content_type}" "$u")
+            if file r.bin | grep -qi pdf; then
+              pdftotext -layout r.bin r.txt
+              echo "== $c PDF: $(grep -m1 -E '전망|예보' r.txt | tr -s ' ') / $(grep -m3 '확률전망' r.txt | tr -s ' ' | tr '\n' ';')"
+              grep -m6 -E '(서울|인천|경기|강원|충청|충북|충남|대전|세종|전라|전북|전남|광주|경상|경북|경남|부산|대구|울산|제주)' r.txt | tr -s ' ' | head -6
+            else
+              echo "-- $c 없음 ($code)"
+            fi
           done
-          try "https://www.weather.go.kr/w/weather/forecast/long-term/1month.do"
-          try "https://www.weather.go.kr/w/weather/forecast/long-term/1month-forecast.do"
-          try "https://www.weather.go.kr/w/weather/forecast/long-term.do"
-          try "https://apihub.kma.go.kr/"
+          # 지난 발표분이 다른 이름으로 남아 있는지
+          for u in "https://www.weather.go.kr/w/repositary/xml/fct/mon/fct_mon1_108_20261112.pdf" \
+                   "https://www.weather.go.kr/w/repositary/xml/fct/mon/fct_mon1_108.pdf"; do
+            echo "== $u -> $(curl -s -L -m 30 -A "$UA" -o r.bin -w '%{http_code}|%{content_type}|%{size_download}' "$u")"
+          done
+          # 기상청 API허브의 AI용 안내(장기예보 API 여부)
+          curl -s -m 30 -A "$UA" https://apihub.kma.go.kr/llms.txt | grep -n -i -E "장기|1개월|월간|long|mon" | head -30
+          curl -s -m 60 -A "$UA" https://apihub.kma.go.kr/specs/openapi.yml | grep -n -i -E "장기|1개월|월간|longterm|fct_mon|mon1" | head -30
