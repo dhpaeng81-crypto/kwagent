@@ -80,12 +80,15 @@ narrative:
 # 2주 일별 예측 (kwagent daily, 매일 06:40 KST)
 # 모델 id 는 Open-Meteo ensemble API 기준 (2026-11-24 실자료 확인). 실패하거나 기간이 끝난 모델은 빼고 진행한다.
 daily:
-  days: 14
+  days: 28               # 1~14일: 날짜별 값 · 15~28일: 경향(5일 평균이 평년 삼분위 어디에 들지 확률)
+  trend_from: 15         # 이 날부터는 '경향'으로 보여 줌
+  trend_window: 5        # 경향 계산에 쓰는 이동평균 일수(가운데 정렬)
   models:
     ecmwf_ens:  {api: ensemble, model: ecmwf_ifs025,  days: 15, weight: 0.40}
     ecmwf_aifs: {api: ensemble, model: ecmwf_aifs025, days: 15, weight: 0.25}
-    gefs:       {api: ensemble, model: ncep_gefs_seamless, days: 16, weight: 0.20}   # 0.25°(9일)+0.5° 이어붙임
+    gefs:       {api: ensemble, model: ncep_gefs_seamless, days: 31, weight: 0.20}   # 0.25°(9일)+0.5°(35일) 이어붙임
     icon_eps:   {api: ensemble, model: icon_seamless, days: 7,  weight: 0.15}
+    ec46:       {api: seasonal, model: ecmwf_ec46, days: 31, weight: 0.45, from_lead: 14}   # 46일 ECMWF, 매일 00UTC 실행 (ECMWF 15일 예측이 13일째에 끝나 14일부터)
   bias_window: 60        # 편향 보정에 쓰는 최근 채점 수 (같은 모델·변수·예보일 ±1일)
   bias_min_n: 10         # 이만큼 쌓이면 편향 보정 시작
   keep_reports_days: 30  # reports/daily 에 남길 기간 (채점 기록은 store 에 모두 남음)

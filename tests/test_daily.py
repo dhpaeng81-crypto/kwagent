@@ -37,9 +37,12 @@ def test_daily_end_to_end(cfg):
         daily.verify(agent, until=issue - timedelta(days=5), obs=obs)
         result = daily.forecast(agent, issue, obs=obs)
     days = result["regions"]["korea"]["days"]
-    assert len(days) == 14 and days[0]["date"] == str(issues[-1] + timedelta(days=1))
+    assert len(days) == 28 and days[0]["date"] == str(issues[-1] + timedelta(days=1))
     assert set(days[0]["models"]) == {"ecmwf_ens", "ecmwf_aifs", "gefs", "icon_eps"}
     assert set(days[10]["models"]) == {"ecmwf_ens", "ecmwf_aifs", "gefs"}       # ICON 은 7일까지
+    assert set(days[20]["models"]) == {"gefs", "ec46"}                          # 15일부터 EC46·GEFS
+    assert "trend" not in days[13] and set(days[20]["trend"]) == {"temp", "precip", "cloud", "srad"}
+    assert abs(sum(days[20]["trend"]["temp"]["p"]) - 1) < 0.02
     for d in days:
         for var in daily.DVARS:
             v = d["vars"][var]
@@ -56,7 +59,7 @@ def test_daily_end_to_end(cfg):
     assert b == pytest.approx(-0.9, abs=0.6)
     s = daily.summary(agent.store)
     comb = s[(s["source"] == "combined") & (s["var"] == "temp") & (s["region"] == "korea")]
-    assert set(comb["bin"]) == {"1~3일", "4~7일", "8~14일"}
+    assert {"1~3일", "4~7일", "8~14일"} <= set(comb["bin"])
     near = comb.set_index("bin").loc["1~3일"]
     assert near["skill"] > 0.3                                             # 1~3일은 평년보다 훨씬 나음
 
@@ -70,7 +73,7 @@ def test_daily_end_to_end(cfg):
     assert "c-korea-temp" in html and "daily.js" in html and (s / "chart.umd.min.js").exists()
     import pandas as pd
     xl = pd.read_excel(s / f"daily_{result['issue']}.xlsx", sheet_name=None)
-    assert {"전국", "중부", "호남", "설명"} <= set(xl) and len(xl["전국"]) == 14 and "최고기온(°C)" in xl["전국"]
+    assert {"전국", "중부", "호남", "설명"} <= set(xl) and len(xl["전국"]) == 28 and "최고기온(°C)" in xl["전국"]
     vh = (s / "verification.html").read_text(encoding="utf-8")
     assert "2주 일별 예측" in vh and "v-daily-skill-honam" in vh and "verify.js" in vh
     vx = pd.read_excel(s / "verification.xlsx", sheet_name=None)

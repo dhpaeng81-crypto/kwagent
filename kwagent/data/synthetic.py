@@ -74,7 +74,7 @@ class SyntheticProvider:
 
     # 2주 일별용: 모델마다 다른 멤버 수·편향·실력
     SHORT = {"ecmwf_ens": (51, 0.6, 1.2), "ecmwf_aifs": (51, -0.4, 1.1), "gefs": (31, -0.9, 0.9),
-             "icon_eps": (40, 0.3, 0.8)}
+             "icon_eps": (40, 0.3, 0.8), "ec46": (51, 0.2, 0.9)}
 
     def short_ensemble(self, name: str, spec: dict, points: list[Point], issue: date) -> pd.DataFrame:
         members, bias_t, skill = self.SHORT.get(name, (21, 0.0, 1.0))

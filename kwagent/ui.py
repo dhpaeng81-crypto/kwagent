@@ -60,7 +60,8 @@ def _dates(days) -> str:
 def daily_headlines(days: list[dict]) -> list[tuple[str, str]]:
     """2주 일별 예측의 핵심을 2~4줄로: [(종류, 문장)]. 종류는 warm|cool|rain|snow|calm."""
     out = []
-    for name, sel in (("이번 주", [d for d in days if d["lead"] <= 7]), ("다음 주", [d for d in days if d["lead"] > 7])):
+    near = [d for d in days if "trend" not in d]
+    for name, sel in (("이번 주", [d for d in near if d["lead"] <= 7]), ("다음 주", [d for d in near if d["lead"] > 7])):
         an = [d["vars"]["tmax"]["q50"] - d["vars"]["tmax"]["normal"] for d in sel
               if d["vars"].get("tmax") and d["vars"]["tmax"].get("normal") is not None]
         if not an:
@@ -72,15 +73,42 @@ def daily_headlines(days: list[dict]) -> list[tuple[str, str]]:
             out.append(("cool", f"{name}는 평년보다 쌀쌀 (낮 최고 평균 {m:.0f}°C)"))
         else:
             out.append(("calm", f"{name} 기온은 평년과 비슷"))
-    rain = [d for d in days if (d["vars"].get("precip") or {}).get("pop", 0) >= 0.4]
-    snow = [d for d in days if (d["vars"].get("precip") or {}).get("p_snow", 0) >= 0.2]
+    rain = [d for d in near if (d["vars"].get("precip") or {}).get("pop", 0) >= 0.4]
+    snow = [d for d in near if (d["vars"].get("precip") or {}).get("p_snow", 0) >= 0.2]
     if snow:
         out.append(("snow", f"눈 가능성: {_dates(snow)}"))
     if rain:
         out.append(("rain", f"비 소식: {_dates(rain)}"))
     elif not snow:
         out.append(("calm", "2주 동안 큰 비 소식 없음"))
+    far = [d for d in days if "trend" in d and "temp" in d["trend"]]
+    if far:
+        hi = sum(d["trend"]["temp"]["p"][2] for d in far) / len(far)
+        lo = sum(d["trend"]["temp"]["p"][0] for d in far) / len(far)
+        span = f"{far[0]['label'].split('(')[0]}~{far[-1]['label'].split('(')[0]}"
+        if hi - lo >= 0.15:
+            out.append(("warm", f"3~4주 뒤({span})도 평년보다 따뜻할 가능성 ({hi*100:.0f}%)"))
+        elif lo - hi >= 0.15:
+            out.append(("cool", f"3~4주 뒤({span})는 평년보다 쌀쌀할 가능성 ({lo*100:.0f}%)"))
+        else:
+            out.append(("calm", f"3~4주 뒤({span}) 기온은 뚜렷한 경향 없음"))
     return out
+
+
+TREND_WORDS = {"temp": ("쌀쌀", "비슷", "따뜻"), "precip": ("건조", "비슷", "비 많음"),
+               "cloud": ("구름 적음", "비슷", "구름 많음"), "srad": ("햇빛 적음", "비슷", "햇빛 많음")}
+
+
+def trend_cell(tr: dict | None, var: str) -> tuple[str, str, float, str]:
+    """경향 달력 한 칸: (말, 색, 진하기, 확률 글자). 가장 큰 쪽 확률이 45% 미만이면 '불확실'."""
+    if not tr:
+        return "-", "#e5e8ec", 0.0, ""
+    p = tr["p"]
+    i = max(range(3), key=lambda k: p[k])
+    col = CAT_COLORS.get(var, CAT_COLORS["temp"])
+    if p[i] < 0.45:
+        return "불확실", "#c7cdd4", 0.15, f"{p[i]*100:.0f}%"
+    return TREND_WORDS[var][i], col[i], max(0.0, min(1.0, (p[i] - 0.4) / 0.35)), f"{p[i]*100:.0f}%"
 
 
 # ---------------------------------------------------------------- 1개월 전망 '한눈에'

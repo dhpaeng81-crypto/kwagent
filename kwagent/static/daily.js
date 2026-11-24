@@ -63,7 +63,20 @@
     const days = R.days;
     const L = days.map((d) => d.label);
     D.labels = days.map((d) => d.label);
+    const tIdx = days.findIndex((d) => d.trend);
+    const zone = {  // 15일째부터: 날짜별 값의 믿음도가 낮은 '경향' 구간을 옅게 칠함
+      id: "trendZone",
+      beforeDatasetsDraw(ch) {
+        if (tIdx < 0) return;
+        const x = ch.scales.x, a = ch.chartArea, ctx = ch.ctx;
+        const x0 = (x.getPixelForValue(tIdx - 1) + x.getPixelForValue(tIdx)) / 2;
+        ctx.save(); ctx.fillStyle = "rgba(120,130,145,0.08)"; ctx.fillRect(x0, a.top, a.right - x0, a.bottom - a.top);
+        ctx.fillStyle = "#8a939c"; ctx.font = "11px 'Noto Sans KR', sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("15일~ 경향 구간", x0 + 6, a.top + 12); ctx.restore();
+      },
+    };
     const mk = (kind, cfg) => {
+      cfg.plugins = [...(cfg.plugins || []), zone];
       const c = document.getElementById(`c-${rid}-${kind}`);
       if (!c) return;
       if (narrow) {  // 휴대폰: 축 이름 빼고 범례 작게 (단위는 버튼 아래 설명에)

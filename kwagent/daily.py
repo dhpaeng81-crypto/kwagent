@@ -27,7 +27,7 @@ DVARS = ("temp", "tmax", "tmin", "cloud", "srad", "precip")
 DLABEL = {"temp": ("평균기온", "°C"), "tmax": ("최고기온", "°C"), "tmin": ("최저기온", "°C"),
           "cloud": ("운량", "%"), "srad": ("일사량", "MJ/m²"), "precip": ("강수량", "mm")}
 MODEL_LABEL = {"ecmwf_ens": "ECMWF 앙상블", "ecmwf_aifs": "ECMWF AI 앙상블", "gefs": "NOAA GEFS",
-               "icon_eps": "DWD ICON 앙상블", "combined": "최종(결합)"}
+               "icon_eps": "DWD ICON 앙상블", "combined": "최종(결합)", "ec46": "ECMWF 확장(EC46)"}
 # 하늘상태: 기상청 기준(운량 0~5할 맑음, 6~8할 구름많음, 9~10할 흐림)을 % 로
 SKY = (("맑음", 0, 55), ("구름많음", 55, 85), ("흐림", 85, 101))
 WEEKDAY = "월화수목금토일"
@@ -76,6 +76,45 @@ def daily_normals(obs_region: pd.DataFrame, period, wet_mm: float) -> pd.DataFra
     return ext.rolling(31, center=True).mean().iloc[15:-15]
 
 
+TREND_VARS = ("temp", "precip", "cloud", "srad")
+
+
+def trend_normals(obs_region: pd.DataFrame, period, window: int = 5, half: int = 15) -> pd.DataFrame:
+    """15~28일 '경향'용 평년 삼분위: 연중일별로 window일 평균의 33%·67% 값 (앞뒤 half일 자료를 모아 계산).
+    열 이름은 '<변수>_lo', '<변수>_hi'."""
+    d = obs_region[obs_region["member"] == -1].set_index("date").sort_index()
+    cols = [c for c in TREND_VARS if c in d and d[c].notna().any()]
+    if d.empty or not cols:
+        return pd.DataFrame()
+    r = d[cols].rolling(window, center=True, min_periods=window).mean()
+    r = r[(r.index.year >= period[0]) & (r.index.year <= period[1])]
+    doy = r.index.dayofyear.to_numpy()
+    out = {}
+    for c in cols:
+        v = r[c].to_numpy(float)
+        lo, hi = np.full(367, np.nan), np.full(367, np.nan)
+        for k in range(1, 367):
+            dist = np.abs(doy - k)
+            sel = np.minimum(dist, 366 - dist) <= half
+            x = v[sel]
+            x = x[~np.isnan(x)]
+            if len(x) > 30:
+                lo[k], hi[k] = np.quantile(x, [1 / 3, 2 / 3])
+        out[f"{c}_lo"], out[f"{c}_hi"] = lo[1:], hi[1:]
+    return pd.DataFrame(out, index=range(1, 367))
+
+
+def _rolled(a: pd.DataFrame, window: int) -> pd.DataFrame:
+    """멤버별로 window일 이동평균(가운데 정렬). 예측 끝 무렵은 3일 이상 있으면 계산."""
+    a = a.sort_values(["member", "date"])
+    cols = [c for c in TREND_VARS if c in a]
+    r = (a.groupby("member")[cols].rolling(window, center=True, min_periods=3).mean()
+         .reset_index(level=0, drop=True))
+    out = a[["member", "date"]].copy()
+    out[cols] = r
+    return out
+
+
 def _bias(store, region, source, var, lead, window: int, min_n: int) -> float | None:
     d = store.df("""SELECT mean_raw, obs FROM daily_verification
         WHERE region=? AND source=? AND var=? AND lead BETWEEN ? AND ? AND mean_raw IS NOT NULL
@@ -113,11 +152,43 @@ def _summarise(vals: np.ndarray, w: np.ndarray, var: str, wet: np.ndarray | None
     return out
 
 
+def _trend(per_model, rolled, tnorm, ts, dc, store, region, lead, wsum) -> dict:
+    """멤버별 5일 평균이 평년 삼분위(낮음/비슷/높음) 어디에 드는지 → 모델 가중 확률."""
+    k = ts.dayofyear if ts.dayofyear <= 366 else 366
+    out = {}
+    for var in TREND_VARS:
+        lo, hi = tnorm.at[k, f"{var}_lo"] if f"{var}_lo" in tnorm else np.nan, \
+            tnorm.at[k, f"{var}_hi"] if f"{var}_hi" in tnorm else np.nan
+        if np.isnan(lo) or np.isnan(hi):
+            continue
+        p, wt, cal = np.zeros(3), 0.0, False
+        for name in per_model:
+            r = rolled.get(name)
+            if r is None or var not in r:
+                continue
+            x = r.loc[r["date"] == ts, var].dropna().to_numpy(float)
+            if len(x) < 3:
+                continue
+            b = _bias(store, region, name, var, lead, int(dc["bias_window"]), int(dc["bias_min_n"]))
+            x = _correct(x, var, b)
+            cal = cal or b is not None
+            wm = float(dc["models"][name]["weight"]) / wsum
+            p += wm * np.array([(x < lo).mean(), ((x >= lo) & (x <= hi)).mean(), (x > hi).mean()])
+            wt += wm
+        if wt > 0:
+            p = p / wt
+            out[var] = {"p": [round(float(v), 2) for v in p], "lo": round(float(lo), 1), "hi": round(float(hi), 1),
+                        "cal": cal}   # cal: 채점으로 모델 치우침을 바로잡았는지
+    return out
+
+
 def forecast(agent, issue: date | None = None, obs: pd.DataFrame | None = None) -> dict:
     cfg, store = agent.cfg, agent.store
     dc = cfg["daily"]
     issue = issue or today_kst()
     ndays = int(dc["days"])
+    trend_from = int(dc.get("trend_from", ndays + 1))
+    trend_win = int(dc.get("trend_window", 5))
     wet_mm, snow_thr = agent.wet_mm, agent.snow_thr
     ens = {}
     for name, spec in dc["models"].items():
@@ -133,14 +204,17 @@ def forecast(agent, issue: date | None = None, obs: pd.DataFrame | None = None) 
     result = {"issue": str(issue), "generated": str(today_kst()), "kind": "daily",
               "models": {k: int(v["member"].nunique()) for k, v in ens.items()}, "regions": {}}
     for region in cfg.regions:
-        normals = daily_normals(region_daily(obs, region, wet_mm, snow_thr), tuple(cfg["normal_period"]), wet_mm) \
-            if obs is not None and not obs.empty else pd.DataFrame()
+        obs_r = region_daily(obs, region, wet_mm, snow_thr) if obs is not None and not obs.empty else None
+        normals = daily_normals(obs_r, tuple(cfg["normal_period"]), wet_mm) if obs_r is not None else pd.DataFrame()
+        tnorm = trend_normals(obs_r, tuple(cfg["normal_period"]), trend_win) \
+            if obs_r is not None and ndays >= trend_from else pd.DataFrame()
         areas = {}
         for k, v in ens.items():
             a = region_daily(v, region, wet_mm, snow_thr)
             # 모델 예측이 끝나는 날은 하루 중 일부 시간만으로 계산돼 최고·최저가 치우친다 → 빼기
             last = a.loc[a["temp"].notna(), "date"].max()
             areas[k] = a[a["date"] < last] if pd.notna(last) else a
+        rolled = {k: _rolled(a, trend_win) for k, a in areas.items()} if not tnorm.empty else {}
         days = []
         for lead in range(1, ndays + 1):
             d = issue + timedelta(days=lead)
@@ -149,6 +223,9 @@ def forecast(agent, issue: date | None = None, obs: pd.DataFrame | None = None) 
             day = {"date": str(d), "lead": lead, "label": day_label(d), "vars": {}, "models": []}
             per_model = {}
             for name, a in areas.items():
+                spec = dc["models"][name]
+                if not int(spec.get("from_lead", 1)) <= lead <= int(spec.get("to_lead", 999)):
+                    continue
                 sub = a[a["date"] == ts]
                 if sub["temp"].notna().sum() >= 3:          # 예측 기간이 끝난 모델은 빼기
                     per_model[name] = sub
@@ -208,6 +285,8 @@ def forecast(agent, issue: date | None = None, obs: pd.DataFrame | None = None) 
                 if pop_normal is not None:
                     s["pop_normal"] = round(pop_normal, 2)
                 day["vars"][var] = s
+            if lead >= trend_from and not tnorm.empty:
+                day["trend"] = _trend(per_model, rolled, tnorm, ts, dc, store, region, lead, wsum)
             days.append(day)
         result["regions"][region] = {"days": days}
     store.commit()
@@ -268,7 +347,7 @@ def verify(agent, until: date | None = None, obs: pd.DataFrame | None = None) ->
     return n
 
 
-LEAD_BINS = ((1, 3, "1~3일"), (4, 7, "4~7일"), (8, 14, "8~14일"))
+LEAD_BINS = ((1, 3, "1~3일"), (4, 7, "4~7일"), (8, 14, "8~14일"), (15, 21, "15~21일"), (22, 28, "22~28일"))
 
 
 def summary(store) -> pd.DataFrame:
@@ -435,6 +514,10 @@ def to_frame(rd: dict) -> pd.DataFrame:
             row[head] = None if x is None else round(float(x) * mul, dig)
         for k, p in ((v.get("cloud") or {}).get("sky") or {}).items():
             row[f"{k} 확률(%)"] = round(p * 100)
+        for var, name in (("temp", "기온"), ("precip", "강수량"), ("cloud", "운량"), ("srad", "일사량")):
+            tr = (d.get("trend") or {}).get(var)
+            for k, cat in enumerate(("낮음·적음", "비슷", "높음·많음")):
+                row[f"경향 {name} {cat}(%)"] = None if not tr else round(tr["p"][k] * 100)
         row["사용 모델"] = ", ".join(MODEL_LABEL.get(m, m) for m in d.get("models", []))
         rows.append(row)
     return pd.DataFrame(rows)
@@ -465,13 +548,14 @@ def to_excel(result: dict, path) -> Path:
         models = ", ".join(f"{MODEL_LABEL.get(k, k)}({v}멤버)" for k, v in result["models"].items())
         info = pd.DataFrame({"항목": [
             "발표일", "대상", "사용 모델", "중앙·10%·90%", "평년", "강수확률·눈 확률", "하늘",
-            "8일 이후", "만든 곳"], "설명": [
-            result["issue"], "발표 다음 날부터 14일, 영역평균(주요 지점 단순평균)", models,
+            "8일 이후", "경향(15일 이후)", "만든 곳"], "설명": [
+            result["issue"], "발표 다음 날부터 28일, 영역평균(주요 지점 단순평균)", models,
             "앙상블 멤버들의 가운데 값과 10~90% 범위 (10번 중 8번은 이 안에 든다는 뜻)",
             "1991~2020년 같은 날짜 평균 (31일 평활)",
             "'평균적인 지점'에서 1 mm 이상 비(눈)가 올 확률",
             "운량 55% 미만 맑음, 55~85% 구름많음, 85% 이상 흐림",
             "불확실성이 커서 참고용",
+            "그날을 가운데 둔 5일 평균이 1991~2020 평년의 낮은 1/3·가운데·높은 1/3 중 어디에 들지 확률",
             "kwagent (https://dhpaeng81-crypto.github.io/kwagent/)"]})
         info.to_excel(xw, sheet_name="설명", index=False)
         ws = xw.sheets["설명"]

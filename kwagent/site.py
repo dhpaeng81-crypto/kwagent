@@ -132,6 +132,13 @@ details.fold.narr .foldbody{font-size:14px}.foldbody h2{display:none}
 .tile.good b{color:#1f7a4d}.tile.bad b{color:#b3372d}
 .card.empty{color:var(--quiet);font-size:14px}.card.empty b{color:var(--ink)}
 .seggroup .sel{margin:0 0 6px}
+.tcal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:4px}
+.tc{border-radius:10px;padding:6px 2px 7px;text-align:center;background:color-mix(in srgb,var(--c) calc(var(--s)*100%),white);
+line-height:1.25;min-width:0}
+.tc .td{display:block;font-size:12px;font-weight:600;color:var(--ink)}.tc .td i{font-style:normal;font-weight:400;color:var(--quiet);margin-left:2px}
+.tc b{display:block;font-size:13px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc .tp{font-size:11.5px;opacity:.8}
+.warn{font-size:12.5px;color:#8a5a00;background:#fff6e0;border-radius:8px;padding:7px 10px;margin:0 0 8px}.tc.dk,.tc.dk .td,.tc.dk .td i{color:#fff}
 @media (max-width:640px){
 .wrap{padding:0 14px}
 header .wrap{height:auto;flex-wrap:wrap;padding-top:10px;padding-bottom:4px;row-gap:2px}
@@ -146,7 +153,7 @@ table.daily td.l{white-space:nowrap;font-size:12.5px}
 .cbox{height:240px}.cbox.m{height:220px}
 .phead{margin-top:20px}.hl{font-size:14.5px}.heads{padding:2px 14px}.dc{flex-basis:62px}
 .dhead,.drow summary{grid-template-columns:74px 26px 1fr 42px 12px;padding:10px 12px}
-table.mgrid th.l{width:58px;font-size:12.5px}table.mgrid td{height:50px;border-width:2px}table.mgrid td b{font-size:12.5px}.chip{font-size:14px;padding:6px 12px}.tiles{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:10px 12px}.tile b{font-size:20px}.tile span{font-size:12px}.seg button{font-size:13px}.dmore{padding:6px 12px 14px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
+table.mgrid th.l{width:58px;font-size:12.5px}table.mgrid td{height:50px;border-width:2px}table.mgrid td b{font-size:12.5px}.chip{font-size:14px;padding:6px 12px}.tcal{gap:4px}.tc b{font-size:11px}.tc .td{font-size:11px}.tc .tp{font-size:10.5px}.tiles{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:10px 12px}.tile b{font-size:20px}.tile span{font-size:12px}.seg button{font-size:13px}.dmore{padding:6px 12px 14px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
 }
 """
 
@@ -403,6 +410,9 @@ MONTH_DESC = {
 }
 
 
+TREND_DESC = {"temp": "쌀쌀할·비슷할·따뜻할", "precip": "건조할·비슷할·비가 많을",
+              "cloud": "구름이 적을·비슷할·많을", "srad": "햇빛이 적을·비슷할·많을"}
+
 DAILY_CHARTS = (
     ("temp", "기온", "°C · 선은 예측, 띠는 10~90% 범위, 점선은 평년"),
     ("precip", "강수", "막대 강수량(mm, 연한 색은 많으면) · 선 강수확률(%)"),
@@ -413,11 +423,14 @@ DAILY_CHARTS = (
 
 def daily_body(result: dict, img_prefix: str) -> str:
     from .daily import MODEL_LABEL, num, sky_label
-    from .ui import WX_LABEL, daily_headlines, wx_icon, wx_kind
+    from .ui import WX_LABEL, daily_headlines, trend_cell, wx_icon, wx_kind
     issue = result["issue"]
     y, m, d = issue.split("-")
     models = ", ".join(f"{MODEL_LABEL.get(k, k)}({v}멤버)" for k, v in result["models"].items()) or "없음"
-    parts = [f"<div class='phead'><div><h1>2주 일별 예측</h1><p class='meta'>{int(m)}월 {int(d)}일 발표 · 내일부터 14일</p></div>"
+    ndays = max((len(rd["days"]) for rd in result["regions"].values()), default=14)
+    title = "4주 일별 예측" if ndays > 14 else "2주 일별 예측"
+    parts = [f"<div class='phead'><div><h1>{title}</h1><p class='meta'>{int(m)}월 {int(d)}일 발표 · 내일부터 {ndays}일"
+             f"{' · 15일째부터는 경향' if ndays > 14 else ''}</p></div>"
              f"<a class='btn ghost' href='daily_{issue}.xlsx' download>엑셀</a></div>"]
     regions = list(result["regions"])
     parts.append(_region_tabs(regions))
@@ -438,10 +451,12 @@ def daily_body(result: dict, img_prefix: str) -> str:
         return " warm" if an >= 2 else (" cool" if an <= -2 else "")
 
     for region in regions:
-        days = result["regions"][region]["days"]
+        alldays = result["regions"][region]["days"]
+        days = [x for x in alldays if "trend" not in x]           # 1~14일: 날짜별 값
+        tdays = [x for x in alldays if "trend" in x]              # 15~28일: 경향
         parts.append(f"<section class='rsec' data-region='{region}'>")
         # 1) 한눈에: 핵심 문장 + 14일 카드 줄
-        parts.append("<ul class='heads'>" + "".join(f"<li class='hl {k}'>{s}</li>" for k, s in daily_headlines(days))
+        parts.append("<ul class='heads'>" + "".join(f"<li class='hl {k}'>{s}</li>" for k, s in daily_headlines(alldays))
                      + "</ul>")
         cards = []
         prev_month = None
@@ -469,6 +484,28 @@ def daily_body(result: dict, img_prefix: str) -> str:
         notes = "".join(f"<p class='note' data-k='{kind}'{'' if i == 0 else ' hidden'}>{desc}</p>"
                         for i, (kind, _, desc) in enumerate(DAILY_CHARTS))
         parts.append(f"<div class='card chartcard seggroup'><div class='seg' role='tablist'>{seg}</div>{notes}{boxes}</div>")
+        if tdays:
+            tabs = []
+            for var, name in (("temp", "기온"), ("precip", "강수"), ("cloud", "구름"), ("srad", "일사량")):
+                cells = []
+                for i, x in enumerate(tdays):
+                    word, col, s, pct = trend_cell(x["trend"].get(var), var)
+                    dd = x["date"]
+                    top = f"{int(dd[5:7])}.{int(dd[8:10])}" if i == 0 or dd[8:10] == "01" else str(int(dd[8:10]))
+                    tr = x["trend"].get(var) or {}
+                    tip = (f"{x['label']} · 낮음 {tr['p'][0]*100:.0f}% / 비슷 {tr['p'][1]*100:.0f}% / 높음 {tr['p'][2]*100:.0f}%"
+                           if tr else x["label"])
+                    cells.append(f"<div class='tc{' dk' if s >= 0.75 else ''}' style='--c:{col};--s:{0.12 + 0.78 * s:.2f}' "
+                                 f"title='{tip}'><span class='td'>{top}<i>{x['label'][-2]}</i></span>"
+                                 f"<b>{word}</b><span class='tp'>{pct}</span></div>")
+                uncal = var != "temp" and not any((x["trend"].get(var) or {}).get("cal") for x in tdays)
+                warn = ("<p class='warn'>보정 전: 장기 모델은 비·구름을 평년보다 많게 예측하는 버릇이 있어 '많음' 쪽으로 "
+                        "기울어 보일 수 있습니다. 15일 이후 예측의 채점이 쌓이면(약 6주) 자동으로 바로잡습니다.</p>") if uncal else ""
+                tabs.append((var, name, f"그날을 가운데 둔 5일 평균이 평년(1991~2020)보다 {TREND_DESC[var]} 가능성 · "
+                                        "색이 진할수록 확률이 높음", warn + "<div class='tcal'>" + "".join(cells) + "</div>"))
+            span = f"{tdays[0]['label'].split('(')[0]}~{tdays[-1]['label'].split('(')[0]}"
+            parts.append(f"<h3 class='sec'>3~4주 뒤 경향 <span class='q'>· {span} · 날짜별 값 대신 평년보다 어느 쪽일지</span></h3>"
+                         + _seg_card(tabs))
         parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 2주 일별" '
                      f'src="{img_prefix}daily_{issue}_{region}.png"></noscript>')
         # 3) 날짜별 자세히: 누르면 펼침
@@ -504,6 +541,8 @@ def daily_body(result: dict, img_prefix: str) -> str:
                  f"<p>사용한 모델: {models}. 여러 모델의 앙상블(조금씩 다른 조건으로 여러 번 돌린 예측)을 섞고, "
                  "지난 성적으로 모델별 치우침을 바로잡습니다. 범위는 10~90%(10번 중 8번은 이 안), 평년은 1991~2020년 같은 날 평균. "
                  "강수확률은 '평균적인 지점'에 1 mm 이상 비가 올 확률입니다. 8일 이후는 불확실성이 커서 참고용입니다. "
+                 "15일째부터는 하루하루의 값을 맞히기 어려워, 그날을 가운데 둔 5일 평균이 평년의 낮은 1/3·가운데·높은 1/3 "
+                 "중 어디에 들지 확률로 보여 줍니다(ECMWF EC46·NOAA GEFS). 날짜별 값은 엑셀에 모두 있습니다. "
                  "빨강·파랑 숫자는 평년보다 2°C 이상 높음·낮음.</p></details>")
     data = {"regions": {r: {"label": REGION_LABELS.get(r, r), "days": result["regions"][r]["days"]}
                         for r in regions}}
