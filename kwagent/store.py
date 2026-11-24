@@ -24,6 +24,16 @@ CREATE TABLE IF NOT EXISTS ptype_verification(
   issue TEXT, region TEXT, source TEXT, lead INT, start TEXT,
   p_snow REAL, obs_snow INT, obs_snow_days REAL, obs_rain_days REAL,
   PRIMARY KEY(issue, region, source, lead));
+CREATE TABLE IF NOT EXISTS daily_forecasts(
+  issue TEXT, region TEXT, source TEXT, date TEXT, lead INT, var TEXT,
+  mean REAL, mean_raw REAL, q10 REAL, q50 REAL, q90 REAL, pop REAL, p_snow REAL,
+  normal REAL, pop_normal REAL, n INT,
+  PRIMARY KEY(issue, region, source, date, var));
+CREATE TABLE IF NOT EXISTS daily_verification(
+  issue TEXT, region TEXT, source TEXT, date TEXT, lead INT, var TEXT,
+  obs REAL, mean_raw REAL, err REAL, abs_err REAL, clim_abs_err REAL, in_band INT,
+  brier REAL, clim_brier REAL,
+  PRIMARY KEY(issue, region, source, date, var));
 """
 
 
@@ -52,6 +62,12 @@ class Store:
 
     def save_ptype_verification(self, row: dict):
         self._upsert("ptype_verification", row)
+
+    def save_daily(self, row: dict):
+        self._upsert("daily_forecasts", row)
+
+    def save_daily_verification(self, row: dict):
+        self._upsert("daily_verification", row)
 
     def commit(self):
         self.con.commit()

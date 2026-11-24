@@ -1,0 +1,71 @@
+# 매일 06:40 KST: 지난 일별 예측 채점 → 2주 일별 예측 → 웹사이트 갱신 → GitHub Pages 배포
+# 앙상블은 전날 12UTC 실행분(새벽 4~5시 KST 공개)을 쓴다. 기록(data/store.sqlite, reports/daily)은 저장소에 커밋.
+name: daily-forecast
+
+on:
+  schedule:
+    - cron: "40 21 * * *"        # 21:40 UTC = 다음날 06:40 KST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: kwagent                 # 주간 실행과 겹치지 않게 차례로
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Seoul
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 한글 글꼴
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-nanum && rm -rf ~/.cache/matplotlib
+
+      - name: 설치
+        run: pip install -e ".[llm]"
+
+      - name: 캐시 복원
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: kwagent-cache-${{ github.run_id }}
+          restore-keys: kwagent-cache-
+
+      - name: 채점 + 2주 일별 예측
+        env:
+          KWAGENT_BACKFILL_MINUTES: "10"   # ERA5 갱신은 10분까지 (넘으면 받아 둔 자료로 진행)
+        run: kwagent daily
+
+      - name: 웹사이트 생성
+        run: kwagent site
+
+      - name: 기록 커밋
+        if: always()
+        run: |
+          git config user.name  "kwagent-bot"
+          git config user.email "kwagent-bot@users.noreply.github.com"
+          for f in data/era5 data/store.sqlite reports; do if [ -e "$f" ]; then git add "$f"; fi; done
+          git commit -m "daily $(date +%F)" || echo "변경 없음"
+          git pull --rebase --autostash origin main || true
+          git push
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4

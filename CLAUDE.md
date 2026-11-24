@@ -3,6 +3,7 @@
 ## 사용자와 목표
 - 사용자: 한국어 사용자이고 Python 개발자가 아님. 설명은 **한국어, 쉬운 말**로. 명령은 복사해서 붙여 넣을 수 있게 줄 것.
 - 목표: 한국의 **1개월(주별 4주) 기상예측을 자체적으로 수행하는 에이전트**. 1개월 단위 정확도를 높이는 것이 핵심.
+  + **2주 일별 예측**(2026-11-23 사용자 요청): 내일부터 14일, 매일 발표. 아래 '2주 일별 예측' 절.
 - 예측 변수: **기온, 운량, 일사량, 강수(비/눈)**. (일사량은 2026-11-23 사용자 요청으로 추가)
 - 영역: 1단계는 전국 1개 영역 → 최종 목표는 **중부권/남부권** 분리(코드에는 이미 구현, 설정으로 켬).
 - 배포 방식(사용자 선택): **GitHub Actions 로 매주 자동 실행 + GitHub Pages 웹사이트**. 로컬 Python 설치는 원하지 않음.
@@ -47,9 +48,11 @@ kwagent/
   narrative.py    LLM 해설(ANTHROPIC_API_KEY 있을 때, 없으면 규칙 기반)
   report.py       md 표 + matplotlib 확률 막대
   site.py         정적 웹사이트(site/): index, f/<날짜>, archive, verification
-  doctor.py       실자료원 점검
+  doctor.py       실자료원 점검 (단기 앙상블 모델 포함)
+  daily.py        2주 일별 예측: 단기 앙상블 혼합·편향보정·범위/확률·채점·보고서
 .github/workflows/weekly.yml  목 07:10 KST: (모델 없으면 train) → run → site → 기록 커밋 → Pages 배포
 .github/workflows/train.yml   분기별 재학습
+.github/workflows/daily.yml   매일 06:40 KST: kwagent daily → site → 기록 커밋 → Pages 배포
 ```
 
 ## 정확도 개선 루프 (설계 핵심 — 바꿀 때 유지할 것)
@@ -93,10 +96,26 @@ kwagent/
 - `features.VARS` 가 변수 목록의 기준. 표시(report/site/narrative)는 `report.result_vars` 로 예측에 실제 있는 변수만
   보여 줘 일사량 없는 옛 예측(2026-11-19)도 깨지지 않음.
 - 통계모델 예측인자에 `a_srad`(14일 편차) 추가. 모델 파일에 `features` 목록을 저장 → 옛 모델도 로드 가능.
-- ERA5 파일은 `openmeteo.REQUIRED_COLS`(temp, srad)가 모두 채워진 날까지만 '받은 것'으로 본다 →
+- ERA5 파일은 `openmeteo.REQUIRED_COLS`(temp, tmax, tmin, srad)가 모두 채워진 날까지만 '받은 것'으로 본다 →
   새 변수를 추가하면 옛 파일은 처음부터 다시 받는다. 변수를 또 추가할 때도 같은 방식.
 - 역학모델 편향보정: 일사량은 기온·운량처럼 더하기 보정.
 - 같은 재수집에 일 최고·최저기온(tmax, tmin)도 포함(2주 일별 예측용, 1개월 예측 변수는 아님).
+
+## 2주 일별 예측 (`kwagent daily`, 2026-11-23 1단계)
+- 변수: 평균·최고·최저기온, 운량(+하늘상태 확률: 맑음 <55%, 구름많음 55~85%, 흐림 ≥85%), 일사량, 강수량,
+  강수확률, 눈 확률. 출력은 날짜별 10/50/90% 범위와 1991~2020 일평년(31일 평활).
+- 강수확률·눈 확률은 **'평균적인 지점' 기준** = 비(눈) 온 지점 비율의 기대값 (`region_daily` 의 wet/snowd).
+  영역평균 강수량 ≥1 mm 로 정하면 한 곳만 와도 '비'가 돼서 평년 확률이 90% 넘게 나왔음.
+- 모델(config `daily.models`, Open-Meteo ensemble API) — **2026-11-24 실자료 확인**:
+  ecmwf_ifs025(51멤버, ~14일), ecmwf_aifs025(51, ~14일), ncep_gefs_seamless(31, 30일+), icon_seamless(40, 7일).
+  모든 모델이 temp·tmax·tmin·cloud·srad·precip·rain 제공. `ncep_gefs025` 는 9일까지만 값이 있어 seamless 로 바꿈.
+  모델 예측이 끝나는 마지막 날은 부분 집계라 최고·최저가 치우쳐서 버림(`forecast` 의 areas). 가중치는 사전값.
+- 개선 루프: 매일 `daily_verification` 에 채점 → 같은 모델·변수·예보일(±1일) 최근 60건 중 10건 이상이면
+  편향 보정(기온·운량·일사량 차감, 강수 비율 0.5~2). 표 `daily_forecasts.mean_raw` 를 지우지 말 것.
+- 저장소 표 `daily_forecasts`, `daily_verification` 은 CREATE IF NOT EXISTS 로 추가(기존 DB 자동 이행).
+- 웹사이트: daily.html(최신), 정확도 탭 아래 일별 성적(1~3/4~7/8~14일: 평균오차, 평년 대비 개선, 범위 적중률, 강수확률 Brier).
+- 2단계(예정): Open-Meteo Historical Forecast/Previous Runs API 로 과거 예측 받아 첫날부터 보정, EMOS 퍼짐 보정,
+  성적 기반 가중치. 3단계: 도시별(21지점), 기상청 GDAPS(결정론) 추가 검토.
 
 ## 할 일 (우선순위)
 **P0 — 첫 실운영**

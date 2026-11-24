@@ -45,6 +45,8 @@ td.p{font-variant-numeric:tabular-nums}td.top{font-weight:700;color:#fff}
 .verdict{font-weight:600}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
 .tabs a{padding:5px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--ink);text-decoration:none;background:var(--card)}
 img.chart{width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
+tr.far td{color:var(--quiet)}td small{color:var(--quiet);font-size:11.5px}
+td.warm{background:#fbe3df}td.cool{background:#dfe8f8}
 .note{font-size:13px;color:var(--quiet)}.pos{color:#1f7a4d;font-weight:600}.neg{color:#b3372d}
 .narr h2{font-size:17px;margin-top:4px}.narr ul{padding-left:20px}
 footer{margin:40px 0 30px;color:var(--quiet);font-size:12px}
@@ -58,15 +60,16 @@ FONT = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
 
 def _page(title: str, body: str, active: str, root: str = "") -> str:
     nav = "".join(f'<a href="{root}{href}" class="{"on" if key == active else ""}">{name}</a>'
-                  for key, href, name in (("index", "index.html", "최신 전망"),
+                  for key, href, name in (("daily", "daily.html", "2주 일별"),
+                                          ("index", "index.html", "1개월 전망"),
                                           ("archive", "archive.html", "지난 전망"),
                                           ("verify", "verification.html", "정확도")))
     return f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)}</title>{FONT}
 <style>{CSS}</style></head><body><header><div class="wrap"><a class="brand" href="{root}index.html">
-한국 1개월 기상전망</a><nav>{nav}</nav></div></header><main class="wrap">{body}</main>
-<footer class="wrap">kwagent · 자료: ERA5, ECMWF EC46, NOAA GEFS (Open-Meteo), NOAA CPC, BoM ·
-확률은 1991~2020 평년 삼분위 기준 · 생성 {datetime.now():%Y-%m-%d %H:%M}</footer></body></html>"""
+한국 기상전망</a><nav>{nav}</nav></div></header><main class="wrap">{body}</main>
+<footer class="wrap">kwagent · 자료: ERA5, ECMWF EC46·IFS·AIFS, NOAA GEFS, DWD ICON (Open-Meteo), NOAA CPC, BoM ·
+평년은 1991~2020 · 생성 {datetime.now():%Y-%m-%d %H:%M}</footer></body></html>"""
 
 
 def md_to_html(md: str) -> str:
@@ -154,6 +157,101 @@ def forecast_body(result: dict, img_prefix: str) -> str:
         parts.append("<p class='note'>발표 시점 기후지수 — Niño3.4 {nino34:+.2f}, AO(7일) {ao:+.2f}, "
                      "MJO RMM1/RMM2 {rmm1:+.2f}/{rmm2:+.2f}</p>".format(**ix))
     return "".join(parts)
+
+
+def daily_body(result: dict, img_prefix: str) -> str:
+    from .daily import MODEL_LABEL, num, sky_label
+    issue = result["issue"]
+    models = ", ".join(f"{MODEL_LABEL.get(k, k)}({v}멤버)" for k, v in result["models"].items()) or "없음"
+    parts = [f"<h1>2주 일별 예측</h1><p class='sub'>발표 {issue} · 내일부터 14일 · "
+             "괄호는 10~90% 범위 · 빨강/파랑 칸은 평년보다 2°C 이상 높음/낮음</p>"]
+    regions = list(result["regions"])
+    if len(regions) > 1:
+        parts.append('<div class="tabs">' + "".join(
+            f'<a href="#d-{r}">{REGION_LABELS.get(r, r)}</a>' for r in regions) + "</div>")
+
+    def temp_cell(v):
+        if not v:
+            return "<td>-</td>"
+        cls = ""
+        if v.get("normal") is not None:
+            an = v["q50"] - v["normal"]
+            cls = " class='warm'" if an >= 2 else (" class='cool'" if an <= -2 else "")
+        return f"<td{cls}>{num(v['q50'])}<small> ({num(v['q10'])}~{num(v['q90'])})</small></td>"
+
+    for region in regions:
+        rd = result["regions"][region]
+        parts.append(f'<h2 id="d-{region}">{REGION_LABELS.get(region, region)}</h2>')
+        parts.append(f'<img class="chart" alt="{REGION_LABELS.get(region, region)} 2주 일별" '
+                     f'src="{img_prefix}daily_{issue}_{region}.png">')
+        rows = []
+        for day in rd["days"]:
+            v = day["vars"]
+            p = v.get("precip", {})
+            pop = "-" if "pop" not in p else f"{p['pop']*100:.0f}%"
+            if p.get("pop_normal") is not None:
+                pop += f"<small> (평년 {p['pop_normal']*100:.0f}%)</small>"
+            amt = "-" if not p else (f"{p['q50']:.0f}" if p["q90"] < 1 else
+                                     f"{p['q50']:.0f}<small> (~{p['q90']:.0f})</small>")
+            snow = "-" if p.get("p_snow") is None or p["p_snow"] < 0.05 else f"{p['p_snow']*100:.0f}%"
+            sr = v.get("srad")
+            srad = "-" if not sr else f"{sr['q50']:.1f}<small> ({sr['q10']:.0f}~{sr['q90']:.0f})</small>"
+            far = " class='far'" if day["lead"] >= 8 else ""
+            rows.append(f"<tr{far}><td class='l'>{day['label']}</td>{temp_cell(v.get('tmin'))}"
+                        f"{temp_cell(v.get('tmax'))}<td>{sky_label(v.get('cloud'))}</td><td>{pop}</td>"
+                        f"<td>{amt}</td><td>{snow}</td><td>{srad}</td></tr>")
+        parts.append("<div class='card'><table><tr><th class='l'>날짜</th><th>최저(°C)</th><th>최고(°C)</th>"
+                     "<th>하늘</th><th>강수확률</th><th>강수량(mm)</th><th>눈</th><th>일사량(MJ/m²)</th></tr>"
+                     + "".join(rows) + "</table></div>")
+    parts.append(f"<p class='note'>사용한 모델: {models}. 8일 이후(흐린 글씨)는 불확실성이 커서 "
+                 "평년과 크게 다르지 않으면 참고만 하세요.</p>")
+    return "".join(parts)
+
+
+def daily_verification_body(store) -> str:
+    from .daily import DLABEL, LEAD_BINS, MODEL_LABEL, summary
+    s = summary(store)
+    head = ("<h2>2주 일별 예측</h2><p class='sub'>정답 ERA5. 평년 대비 개선 = 1 − 오차/평년예보 오차 "
+            "(0보다 크면 평년보다 나음). 범위 적중률은 10~90% 범위에 실제 값이 든 비율(80%가 이상적).</p>")
+    if s.empty:
+        return head + "<div class='card'>아직 채점된 일별 예측이 없습니다. 첫 예측 후 약 1주가 지나면 나타납니다.</div>"
+    region = "korea" if "korea" in set(s["region"]) else s["region"].iloc[0]
+    c = s[(s["region"] == region) & (s["source"] == "combined")]
+    bins = [b for _, _, b in LEAD_BINS]
+    rows = []
+    for var in DLABEL:
+        sub = c[c["var"] == var].set_index("bin")
+        if sub.empty:
+            continue
+        cells = []
+        for b in bins:
+            if b not in sub.index:
+                cells.append("<td>-</td>")
+                continue
+            r = sub.loc[b]
+            sk = "" if pd.isna(r["skill"]) else (f"<span class='{'pos' if r['skill'] > 0 else 'neg'}'>"
+                                                 f"{r['skill']:+.2f}</span>")
+            cells.append(f"<td>{r['mae']:.2f} {sk}<small> · 적중 {r['cover']*100:.0f}% · {int(r['n'])}건</small></td>")
+        rows.append(f"<tr><td class='l'>{DLABEL[var][0]} ({DLABEL[var][1]})</td>{''.join(cells)}</tr>")
+    out = head + ("<div class='card'><h3>최종(결합) — 평균 오차 · 평년 대비 개선</h3><table><tr><th class='l'>변수</th>"
+                  + "".join(f"<th>{b}</th>" for b in bins) + "</tr>" + "".join(rows) + "</table></div>")
+    pc = c[c["var"] == "precip"].set_index("bin")
+    if not pc.empty and pc["brier"].notna().any():
+        cells = "".join("<td>-</td>" if b not in pc.index or pd.isna(pc.at[b, "brier"]) else
+                        f"<td>{pc.at[b, 'brier']:.3f}" + ("" if pd.isna(pc.at[b, "bss"]) else
+                                                          f" <span class='{'pos' if pc.at[b, 'bss'] > 0 else 'neg'}'>"
+                                                          f"{pc.at[b, 'bss']:+.2f}</span>") + "</td>" for b in bins)
+        out += ("<div class='card'><h3>강수확률 (Brier 점수 · 평년 대비 개선)</h3><table><tr><th class='l'></th>"
+                + "".join(f"<th>{b}</th>" for b in bins) + f"</tr><tr><td class='l'>최종(결합)</td>{cells}</tr></table></div>")
+    m = s[(s["region"] == region) & (s["var"] == "tmax")]
+    if not m.empty:
+        piv = m.pivot_table(index="source", columns="bin", values="mae")
+        rows = "".join(f"<tr><td class='l'>{MODEL_LABEL.get(src, src)}</td>" + "".join(
+            "<td>-</td>" if b not in piv.columns or pd.isna(piv.at[src, b]) else f"<td>{piv.at[src, b]:.2f}</td>"
+            for b in bins) + "</tr>" for src in piv.index)
+        out += ("<div class='card'><h3>모델별 최고기온 평균 오차(°C)</h3><table><tr><th class='l'>모델</th>"
+                + "".join(f"<th>{b}</th>" for b in bins) + "</tr>" + rows + "</table></div>")
+    return out
 
 
 def verification_body(store, img_dir: Path) -> str:
@@ -261,7 +359,19 @@ def build(cfg, store, out: str | Path | None = None) -> str:
                                               "<tr><th class='l'>발표일</th><th class='l'>1주 기온</th></tr>"
                                               + "".join(items) + "</table></div>", "archive"),
                                        encoding="utf-8")
-    (site / "verification.html").write_text(_page("정확도", verification_body(store, img), "verify"),
-                                            encoding="utf-8")
+    (site / "verification.html").write_text(
+        _page("정확도", verification_body(store, img) + daily_verification_body(store), "verify"),
+        encoding="utf-8")
+    # 2주 일별 예측 (최신 1개)
+    dd = rep / "daily"
+    dailies = sorted(dd.glob("daily_*.json")) if dd.exists() else []
+    if dailies:
+        for png in dd.glob(f"{dailies[-1].stem}_*.png"):
+            shutil.copy2(png, img / png.name)
+        latest = json.loads(dailies[-1].read_text(encoding="utf-8"))
+        body = daily_body(latest, "img/")
+    else:
+        body = "<h1>2주 일별 예측</h1><div class='card'>아직 일별 예측이 없습니다. 매일 아침 6시 40분에 만들어집니다.</div>"
+    (site / "daily.html").write_text(_page("2주 일별 예측", body, "daily"), encoding="utf-8")
     (site / ".nojekyll").write_text("")
     return str(site)

@@ -70,6 +70,17 @@ class SyntheticProvider:
 
     def ensemble(self, source: str, points: list[Point], issue: date) -> pd.DataFrame:
         days, members, bias_t, skill = {"ec46": (46, 51, 0.8, 1.0), "gefs": (35, 31, -0.6, 0.8)}[source]
+        return self._ens(source, points, issue, days, members, bias_t, skill)
+
+    # 2주 일별용: 모델마다 다른 멤버 수·편향·실력
+    SHORT = {"ecmwf_ens": (51, 0.6, 1.2), "ecmwf_aifs": (51, -0.4, 1.1), "gefs": (31, -0.9, 0.9),
+             "icon_eps": (40, 0.3, 0.8)}
+
+    def short_ensemble(self, name: str, spec: dict, points: list[Point], issue: date) -> pd.DataFrame:
+        members, bias_t, skill = self.SHORT.get(name, (21, 0.0, 1.0))
+        return self._ens(f"short_{name}", points, issue, int(spec["days"]) + 1, members, bias_t, skill)
+
+    def _ens(self, source, points, issue, days, members, bias_t, skill) -> pd.DataFrame:
         rng = np.random.default_rng(zlib.crc32(f"{source}{issue}".encode()))
         start = pd.Timestamp(issue)
         dates = pd.date_range(start, periods=days, freq="D")
