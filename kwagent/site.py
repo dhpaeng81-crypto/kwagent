@@ -64,6 +64,47 @@ font-size:14px;font-weight:600;margin-bottom:18px;white-space:nowrap}.btn:hover{
 .sel{font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-bottom:8px}.cbox.m{height:230px}table.mt{margin-top:12px}
 th,td{word-break:keep-all}th .u{display:block;font-size:11px;font-weight:400}
 .card.tbl{overflow-x:auto}
+/* ---- 2026-11 화면 정리: 한눈에 요약, 버튼으로 고르는 그래프, 펼치는 날짜 줄 ---- */
+.phead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:28px 0 4px}
+.phead h1{margin:0}.meta{margin:4px 0 0;color:var(--quiet);font-size:14px}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:5px 14px;margin:0 0 2px;font-size:13px}
+.heads{list-style:none;margin:14px 0 14px;padding:4px 16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.hl{padding:10px 0;font-size:15px;display:flex;gap:10px;align-items:center;line-height:1.45}
+.hl+.hl{border-top:1px solid #eef0f3}
+.hl::before{content:"";width:9px;height:9px;border-radius:50%;flex:none;background:#b8c0c8}
+.hl.warm::before{background:var(--above)}.hl.cool::before{background:var(--below)}
+.hl.rain::before{background:#3a7bd5}.hl.snow::before{background:#8fb3e8}
+.strip{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;padding:2px 2px 10px;-webkit-overflow-scrolling:touch}
+.dc{flex:1 0 62px;scroll-snap-align:start;background:var(--card);border:1px solid var(--line);border-radius:14px;
+padding:9px 2px 10px;text-align:center}
+.dc.far{opacity:.5}
+.dd{font-size:13px;font-weight:600;line-height:1.3}.dd span{display:block;font-size:11.5px;color:var(--quiet);font-weight:400}
+.dc .wx{display:block;margin:5px auto 3px}
+.tt{display:flex;justify-content:center;gap:5px;font-size:14px;line-height:1.3}.tt .lo{color:var(--quiet);font-weight:500}
+b.hi.warm,b.lo.warm{color:var(--above)}b.hi.cool,b.lo.cool{color:var(--below)}
+.pp{font-size:12px;color:var(--quiet);margin-top:3px;min-height:16px}.pp.wet{color:#2563c9;font-weight:600}
+.hint{font-size:12px;color:var(--quiet);margin:0 0 20px}
+.seg{display:flex;gap:4px;background:#eef1f5;border-radius:11px;padding:4px;margin-bottom:10px}
+.seg button{flex:1;font:inherit;font-size:14px;padding:7px 0;border:0;border-radius:8px;background:transparent;
+color:var(--quiet);cursor:pointer}
+.seg button.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seggroup .note{margin:0 0 6px;font-size:12.5px}
+.cbox[hidden],.note[hidden]{display:none}
+h3.sec{font-size:17px;margin:30px 0 10px}h3.sec .q{font-size:12.5px;font-weight:400}
+.q{color:var(--quiet);font-size:.88em;font-weight:400}
+.card.days{padding:0;overflow:hidden}
+.dhead,.drow summary{display:grid;grid-template-columns:92px 30px 1fr 52px 14px;align-items:center;gap:6px;padding:10px 16px}
+.dhead{font-size:12px;color:var(--quiet);border-bottom:1px solid var(--line);padding-top:8px;padding-bottom:8px}
+.dhead span:nth-child(3),.c-t{text-align:center}.dhead span:nth-child(4),.c-p{text-align:right}
+.drow{border-bottom:1px solid var(--line)}.drow:last-child{border-bottom:0}
+.drow summary{list-style:none;cursor:pointer;font-size:14.5px}.drow summary::-webkit-details-marker{display:none}
+.drow summary::after{content:"›";color:#a0a8b0;font-size:19px;line-height:1;justify-self:end;transition:transform .15s}
+.drow[open] summary::after{transform:rotate(90deg)}.drow[open] summary{background:#f8fafc}
+.drow.far summary{color:var(--quiet)}.c-p{color:#2563c9;font-weight:500}.drow .wx{display:block}
+.dmore{display:grid;grid-template-columns:auto 1fr;gap:7px 16px;margin:0;padding:6px 16px 16px;font-size:13.5px;background:#f8fafc}
+.dmore dt{color:var(--quiet)}.dmore dd{margin:0}
+details.about{margin:30px 0 0;color:var(--quiet);font-size:13px;line-height:1.7}
+details.about summary{cursor:pointer;font-weight:600;color:var(--ink)}
 @media (max-width:640px){
 .wrap{padding:0 14px}
 header .wrap{height:auto;flex-wrap:wrap;padding-top:10px;padding-bottom:4px;row-gap:2px}
@@ -75,7 +116,9 @@ h1{font-size:22px;margin-top:20px}.sub{font-size:13px}
 th,td{padding:7px 3px;font-size:13px}th{font-size:12px}
 td small{display:block;font-size:10.5px;line-height:1.3}
 table.daily td.l{white-space:nowrap;font-size:12.5px}
-.cbox{height:240px}.cbox.m{height:220px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
+.cbox{height:240px}.cbox.m{height:220px}
+.phead{margin-top:20px}.hl{font-size:14.5px}.heads{padding:2px 14px}.dc{flex-basis:62px}
+.dhead,.drow summary{grid-template-columns:74px 26px 1fr 42px 12px;padding:10px 12px}.dmore{padding:6px 12px 14px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
 }
 """
 
@@ -284,65 +327,107 @@ MONTH_DESC = {
 
 
 DAILY_CHARTS = (
-    ("temp", "기온", "빨강 최고기온 · 파랑 최저기온"),
-    ("precip", "강수", "막대는 강수량(진한 색 중앙값, 연한 색 많으면), 선은 강수확률"),
-    ("cloud", "구름(운량)", "운량 55% 미만 맑음 · 55~85% 구름많음 · 85% 이상 흐림"),
-    ("srad", "일사량", "하루 동안 땅에 닿는 햇빛 에너지"),
+    ("temp", "기온", "°C · 선은 예측, 띠는 10~90% 범위, 점선은 평년"),
+    ("precip", "강수", "막대 강수량(mm, 연한 색은 많으면) · 선 강수확률(%)"),
+    ("cloud", "구름", "운량 % · 55% 미만 맑음, 85% 이상 흐림"),
+    ("srad", "일사량", "MJ/m² · 하루 동안 땅에 닿는 햇빛 에너지"),
 )
 
 
 def daily_body(result: dict, img_prefix: str) -> str:
     from .daily import MODEL_LABEL, num, sky_label
+    from .ui import WX_LABEL, daily_headlines, wx_icon, wx_kind
     issue = result["issue"]
+    y, m, d = issue.split("-")
     models = ", ".join(f"{MODEL_LABEL.get(k, k)}({v}멤버)" for k, v in result["models"].items()) or "없음"
-    parts = [f"<div class='headrow'><div><h1>2주 일별 예측</h1><p class='sub'>발표 {issue} · 내일부터 14일 · "
-             "띠는 10~90% 범위, 점선은 평년 · 그래프에 마우스를 올리거나 눌러 보면 수치가 나옵니다</p></div>"
-             f"<a class='btn' href='daily_{issue}.xlsx' download>엑셀로 받기</a></div>"]
+    parts = [f"<div class='phead'><div><h1>2주 일별 예측</h1><p class='meta'>{int(m)}월 {int(d)}일 발표 · 내일부터 14일</p></div>"
+             f"<a class='btn ghost' href='daily_{issue}.xlsx' download>엑셀</a></div>"]
     regions = list(result["regions"])
     parts.append(_region_tabs(regions))
 
-    def temp_cell(v):
+    def rng(v, unit="", dig=0):
         if not v:
-            return "<td>-</td>"
-        cls = ""
+            return "-"
+        f = (lambda x: num(x)) if dig == 0 else (lambda x: f"{x:.{dig}f}")
+        s = f"{f(v['q50'])}{unit} <span class='q'>({f(v['q10'])}~{f(v['q90'])})</span>"
         if v.get("normal") is not None:
-            an = v["q50"] - v["normal"]
-            cls = " class='warm'" if an >= 2 else (" class='cool'" if an <= -2 else "")
-        return f"<td{cls}>{num(v['q50'])}<small> ({num(v['q10'])}~{num(v['q90'])})</small></td>"
+            s += f" <span class='q'>· 평년 {f(v['normal'])}{unit}</span>"
+        return s
+
+    def tcls(v):
+        if not v or v.get("normal") is None:
+            return ""
+        an = v["q50"] - v["normal"]
+        return " warm" if an >= 2 else (" cool" if an <= -2 else "")
 
     for region in regions:
-        rd = result["regions"][region]
-        parts.append(f"<section class='rsec' data-region='{region}'>"
-                     f'<h2 id="d-{region}">{REGION_LABELS.get(region, region)}</h2>')
-        for kind, title, desc in DAILY_CHARTS:
-            parts.append(f"<div class='card chartcard'><h3>{title}</h3><p class='note'>{desc}</p>"
-                         f"<div class='cbox'><canvas id='c-{region}-{kind}' aria-label='{title}'></canvas></div></div>")
+        days = result["regions"][region]["days"]
+        parts.append(f"<section class='rsec' data-region='{region}'>")
+        # 1) 한눈에: 핵심 문장 + 14일 카드 줄
+        parts.append("<ul class='heads'>" + "".join(f"<li class='hl {k}'>{s}</li>" for k, s in daily_headlines(days))
+                     + "</ul>")
+        cards = []
+        prev_month = None
+        for day in days:
+            v = day["vars"]
+            mo, dd = day["date"][5:7], day["date"][8:10]
+            top = f"{int(mo)}.{int(dd)}" if prev_month != mo else str(int(dd))
+            prev_month = mo
+            pop = (v.get("precip") or {}).get("pop")
+            k = wx_kind(day)
+            cards.append(
+                f"<div class='dc{' far' if day['lead'] >= 8 else ''}' title='{day['label']} {WX_LABEL[k]}'>"
+                f"<div class='dd'>{top}<span>{day['label'][-2]}</span></div>{wx_icon(k)}"
+                f"<div class='tt'><b class='hi{tcls(v.get('tmax'))}'>{num(v['tmax']['q50'])}°</b>"
+                f"<b class='lo{tcls(v.get('tmin'))}'>{num(v['tmin']['q50'])}°</b></div>"
+                f"<div class='pp{' wet' if pop and pop >= 0.4 else ''}'>{'' if pop is None else f'{pop*100:.0f}%'}</div></div>")
+        parts.append("<div class='strip' role='list' aria-label='14일 요약'>" + "".join(cards) + "</div>"
+                     "<p class='hint'>옆으로 넘겨 보세요 · 흐린 칸(8일 이후)은 참고용</p>")
+        # 2) 그래프: 버튼으로 골라 보기
+        seg = "".join(f"<button type='button' data-k='{kind}'{' class=on' if i == 0 else ''}>{title}</button>"
+                      for i, (kind, title, _) in enumerate(DAILY_CHARTS))
+        boxes = "".join(f"<div class='cbox' data-k='{kind}'{'' if i == 0 else ' hidden'}>"
+                        f"<canvas id='c-{region}-{kind}' aria-label='{title}'></canvas></div>"
+                        for i, (kind, title, _) in enumerate(DAILY_CHARTS))
+        notes = "".join(f"<p class='note' data-k='{kind}'{'' if i == 0 else ' hidden'}>{desc}</p>"
+                        for i, (kind, _, desc) in enumerate(DAILY_CHARTS))
+        parts.append(f"<div class='card chartcard seggroup'><div class='seg' role='tablist'>{seg}</div>{notes}{boxes}</div>")
         parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 2주 일별" '
                      f'src="{img_prefix}daily_{issue}_{region}.png"></noscript>')
-        parts.append("<h3>날짜별 표</h3>")
+        # 3) 날짜별 자세히: 누르면 펼침
         rows = []
-        for day in rd["days"]:
+        for day in days:
             v = day["vars"]
-            p = v.get("precip", {})
-            pop = "-" if "pop" not in p else f"{p['pop']*100:.0f}%"
-            if p.get("pop_normal") is not None:
-                pop += f"<small> (평년 {p['pop_normal']*100:.0f}%)</small>"
-            amt = "-" if not p else (f"{p['q50']:.0f}" if p["q90"] < 1 else
-                                     f"{p['q50']:.0f}<small> (~{p['q90']:.0f})</small>")
-            snow = "-" if p.get("p_snow") is None or p["p_snow"] < 0.05 else f"{p['p_snow']*100:.0f}%"
-            sr = v.get("srad")
-            srad = "-" if not sr else f"{sr['q50']:.1f}<small> ({sr['q10']:.0f}~{sr['q90']:.0f})</small>"
-            far = " class='far'" if day["lead"] >= 8 else ""
-            rows.append(f"<tr{far}><td class='l'>{day['label']}</td>{temp_cell(v.get('tmin'))}"
-                        f"{temp_cell(v.get('tmax'))}<td>{sky_label(v.get('cloud'))}</td><td>{pop}</td>"
-                        f"<td>{amt}</td><td>{snow}</td><td>{srad}</td></tr>")
-        parts.append("<div class='card tbl'><table class='daily'><tr><th class='l'>날짜</th>"
-                     "<th>최저<span class='u'>°C</span></th><th>최고<span class='u'>°C</span></th>"
-                     "<th>하늘</th><th>강수<br>확률</th><th>강수량<span class='u'>mm</span></th><th>눈</th>"
-                     "<th>일사량<span class='u'>MJ/m²</span></th></tr>"
-                     + "".join(rows) + "</table></div></section>")
-    parts.append(f"<p class='note'>사용한 모델: {models}. 8일 이후(그래프 점선·표의 흐린 글씨)는 불확실성이 커서 "
-                 "평년과 크게 다르지 않으면 참고만 하세요.</p>")
+            p = v.get("precip") or {}
+            k = wx_kind(day)
+            sky = (v.get("cloud") or {}).get("sky") or {}
+            snow = "-" if p.get("p_snow") is None else f"{p['p_snow']*100:.0f}%"
+            pn = "" if p.get("pop_normal") is None else f" <span class='q'>· 평년 {p['pop_normal']*100:.0f}%</span>"
+            amt = "-" if not p else f"{p['q50']:.1f}mm <span class='q'>(많으면 {p['q90']:.0f}mm)</span>"
+            popt = "" if p.get("pop") is None else f"{p['pop'] * 100:.0f}%"
+            rows.append(
+                f"<details class='drow{' far' if day['lead'] >= 8 else ''}'><summary>"
+                f"<span class='c-d'>{day['label']}</span>{wx_icon(k, 26)}"
+                f"<span class='c-t'><b class='lo{tcls(v.get('tmin'))}'>{num(v['tmin']['q50'])}°</b> / "
+                f"<b class='hi{tcls(v.get('tmax'))}'>{num(v['tmax']['q50'])}°</b></span>"
+                f"<span class='c-p'>{popt}</span></summary>"
+                "<dl class='dmore'>"
+                f"<dt>하늘</dt><dd>{sky_label(v.get('cloud'))} <span class='q'>("
+                + " · ".join(f"{kk} {vv*100:.0f}%" for kk, vv in sky.items()) + ")</span></dd>"
+                f"<dt>최고기온</dt><dd>{rng(v.get('tmax'), '°C')}</dd>"
+                f"<dt>최저기온</dt><dd>{rng(v.get('tmin'), '°C')}</dd>"
+                f"<dt>강수확률</dt><dd>{popt or '-'}{pn}</dd>"
+                f"<dt>강수량</dt><dd>{amt}</dd><dt>눈 확률</dt><dd>{snow}</dd>"
+                f"<dt>운량</dt><dd>{rng(v.get('cloud'), '%')}</dd>"
+                f"<dt>일사량</dt><dd>{rng(v.get('srad'), ' MJ/m²', 1)}</dd></dl></details>")
+        parts.append("<h3 class='sec'>날짜별 자세히 <span class='q'>· 날짜를 누르면 범위와 평년이 펼쳐집니다</span></h3>"
+                     "<div class='card days'><div class='dhead'><span>날짜</span><span></span><span>최저 / 최고</span>"
+                     "<span>강수</span><span></span></div>" + "".join(rows) + "</div></section>")
+    parts.append("<details class='about'><summary>자료와 방법</summary>"
+                 f"<p>사용한 모델: {models}. 여러 모델의 앙상블(조금씩 다른 조건으로 여러 번 돌린 예측)을 섞고, "
+                 "지난 성적으로 모델별 치우침을 바로잡습니다. 범위는 10~90%(10번 중 8번은 이 안), 평년은 1991~2020년 같은 날 평균. "
+                 "강수확률은 '평균적인 지점'에 1 mm 이상 비가 올 확률입니다. 8일 이후는 불확실성이 커서 참고용입니다. "
+                 "빨강·파랑 숫자는 평년보다 2°C 이상 높음·낮음.</p></details>")
     data = {"regions": {r: {"label": REGION_LABELS.get(r, r), "days": result["regions"][r]["days"]}
                         for r in regions}}
     blob = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")

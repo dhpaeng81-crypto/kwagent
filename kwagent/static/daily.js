@@ -12,6 +12,7 @@
   const dashFar = { borderDash: (c) => (c.p0DataIndex >= far ? [5, 4] : undefined) };
   const fmt = (v, d = 1) => (v == null || isNaN(v) ? "-" : (+v).toFixed(d).replace(/^-0(\.0+)?$/, "0$1"));
 
+  const narrow = window.matchMedia("(max-width: 640px)").matches;
   Chart.defaults.font.family = "'Noto Sans KR', system-ui, sans-serif";
   Chart.defaults.font.size = 12;
   Chart.defaults.color = C.ink;
@@ -64,7 +65,12 @@
     D.labels = days.map((d) => d.label);
     const mk = (kind, cfg) => {
       const c = document.getElementById(`c-${rid}-${kind}`);
-      if (c) new Chart(c, cfg);
+      if (!c) return;
+      if (narrow) {  // 휴대폰: 축 이름 빼고 범례 작게 (단위는 버튼 아래 설명에)
+        for (const s of Object.values(cfg.options.scales || {})) if (s.title) s.title.display = false;
+        const lg = cfg.options.plugins.legend.labels; lg.font = { size: 11 }; lg.boxWidth = 10; lg.padding = 8;
+      }
+      new Chart(c, cfg);
     };
 
     // 1) 기온
@@ -168,4 +174,12 @@
       sc.update();
     }
   }
+  // 그래프 고르기 버튼 (기온·강수·구름·일사량)
+  document.querySelectorAll(".seggroup").forEach((g) => {
+    const bs = g.querySelectorAll(".seg button");
+    bs.forEach((b) => b.addEventListener("click", () => {
+      bs.forEach((x) => x.classList.toggle("on", x === b));
+      g.querySelectorAll(".cbox[data-k], .note[data-k]").forEach((el) => { el.hidden = el.dataset.k !== b.dataset.k; });
+    }));
+  });
 })();

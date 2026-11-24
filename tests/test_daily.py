@@ -65,7 +65,7 @@ def test_daily_end_to_end(cfg):
     from kwagent import site
     s = Path(site.build(cfg, agent.store))
     html = (s / "daily.html").read_text(encoding="utf-8")
-    assert "2주 일별 예측" in html and "최고<span" in html and "data-r='honam'" in html
+    assert "2주 일별 예측" in html and "class='strip'" in html and "<details class='drow" in html and "data-r='honam'" in html
     assert (s / "img" / f"daily_{result['issue']}_korea.png").exists()
     assert "c-korea-temp" in html and "daily.js" in html and (s / "chart.umd.min.js").exists()
     import pandas as pd
