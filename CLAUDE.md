@@ -49,6 +49,7 @@ kwagent/
   verify.py       RPS/RPSS/신뢰도/Brier
   narrative.py    LLM 해설(ANTHROPIC_API_KEY 있을 때, 없으면 규칙 기반)
   report.py       md 표 + matplotlib 확률 막대(noscript·보고서용) + to_excel(1개월 → site/forecast_<발표일>.xlsx)
+  methods.py      화면 맨 아래 '예측 방법'(눌러서 펼치는 항목, 화면별 daily·month·verify). **방법을 바꾸면 이 글도 같이 고칠 것**
   ui.py           화면 부품: 날씨 그림(SVG), 2주 '한눈에' 문장(daily_headlines), 1개월 경향 낱말·색깔표(month_chips/month_cell)
   site.py         정적 웹사이트(site/): index(=2주 일별, 기본), daily(같은 내용·옛 주소), month(1개월), f/<날짜>, archive, verification
                   엑셀: daily_<발표일>.xlsx, forecast_<발표일>.xlsx, verification.xlsx(요약 + 채점 기록, 일별은 최근 120일)

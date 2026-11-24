@@ -21,6 +21,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from .methods import METHODS_CSS, methods_block
 from .regions import REGION_LABELS, REGION_ORDER
 from .features import VARS
 from .report import VAR_LABEL, _verdict, result_vars
@@ -140,7 +141,7 @@ line-height:1.25;min-width:0}
 .tc .tp{font-size:11.5px;opacity:.8}
 .warn{font-size:12.5px;color:#8a5a00;background:#fff6e0;border-radius:8px;padding:7px 10px;margin:0 0 8px}
 .warn.soft{color:#3d5a80;background:#eef4fb}.tc.dk,.tc.dk .td,.tc.dk .td i{color:#fff}
-@media (max-width:640px){
+/*METHODS*/@media (max-width:640px){
 .wrap{padding:0 14px}
 header .wrap{height:auto;flex-wrap:wrap;padding-top:10px;padding-bottom:4px;row-gap:2px}
 header a.brand{font-size:17px;white-space:nowrap}
@@ -157,6 +158,7 @@ table.daily td.l{white-space:nowrap;font-size:12.5px}
 table.mgrid th.l{width:58px;font-size:12.5px}table.mgrid td{height:50px;border-width:2px}table.mgrid td b{font-size:12.5px}.chip{font-size:14px;padding:6px 12px}.tcal{gap:4px}.tc b{font-size:11px}.tc .td{font-size:11px}.tc .tp{font-size:10.5px}.tiles{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:10px 12px}.tile b{font-size:20px}.tile span{font-size:12px}.seg button{font-size:13px}.dmore{padding:6px 12px 14px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
 }
 """
+CSS = CSS.replace("/*METHODS*/", METHODS_CSS)
 
 FONT = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
         '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" '
@@ -385,10 +387,7 @@ def forecast_body(result: dict, img_prefix: str) -> str:
     srcs = sorted({s for rd in result["regions"].values() for s in rd.get("dynamical_sources", [])})
     src = ", ".join(SOURCE_LABEL.get(s, s) for s in srcs) or "없음(통계모델만)"
     ixs = ("Niño3.4 {nino34:+.2f}, AO(7일) {ao:+.2f}, MJO RMM1/RMM2 {rmm1:+.2f}/{rmm2:+.2f}".format(**ix)) if ix else "-"
-    parts.append("<details class='about'><summary>자료와 방법</summary>"
-                 "<p>대상은 발표일이 속한 주의 다음다음 주 월요일부터 4주입니다. 1991~2020년 평년을 셋으로 나눠 "
-                 "낮음·비슷·높음(강수·운량·일사량은 적음·비슷·많음)에 들 확률을 10% 단위로 냅니다. "
-                 f"통계모델과 역학모델({src})을 지난 성적에 따라 섞습니다. 발표 시점 기후지수: {ixs}.</p></details>")
+    parts.append(f"<p class='note'>이번 발표에 쓴 역학모델: {src} · 발표 시점 기후지수: {ixs}</p>" + methods_block("month"))
     data = {"regions": {}}
     for region in regions:
         rd = result["regions"][region]
@@ -549,13 +548,7 @@ def daily_body(result: dict, img_prefix: str) -> str:
         parts.append("<h3 class='sec'>날짜별 자세히 <span class='q'>· 날짜를 누르면 범위와 평년이 펼쳐집니다</span></h3>"
                      "<div class='card days'><div class='dhead'><span>날짜</span><span></span><span>최저 / 최고</span>"
                      "<span>강수</span><span></span></div>" + "".join(rows) + "</div></section>")
-    parts.append("<details class='about'><summary>자료와 방법</summary>"
-                 f"<p>사용한 모델: {models}. 여러 모델의 앙상블(조금씩 다른 조건으로 여러 번 돌린 예측)을 섞고, "
-                 "지난 성적으로 모델별 치우침을 바로잡습니다. 범위는 10~90%(10번 중 8번은 이 안), 평년은 1991~2020년 같은 날 평균. "
-                 "강수확률은 '평균적인 지점'에 1 mm 이상 비가 올 확률입니다. 8일 이후는 불확실성이 커서 참고용입니다. "
-                 "15일째부터는 하루하루의 값을 맞히기 어려워, 그날을 가운데 둔 5일 평균이 평년의 낮은 1/3·가운데·높은 1/3 "
-                 "중 어디에 들지 확률로 보여 줍니다(ECMWF EC46·NOAA GEFS). 날짜별 값은 엑셀에 모두 있습니다. "
-                 "빨강·파랑 숫자는 평년보다 2°C 이상 높음·낮음.</p></details>")
+    parts.append(f"<p class='note'>이번 발표에 쓴 모델: {models}</p>" + methods_block("daily"))
     data = {"regions": {r: {"label": REGION_LABELS.get(r, r), "days": result["regions"][r]["days"]}
                         for r in regions}}
     blob = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
@@ -732,11 +725,7 @@ def verification_page(store, img_dir: Path) -> str:
         out += "<h3 class='sec'>1개월 전망</h3>" + (mcard or "<div class='card empty'>아직 채점된 1개월 전망이 없습니다. "
                                                       "첫 전망의 대상 4주가 지나고 약 1주 뒤부터 나타납니다.</div>")
         out += "</section>"
-    out += ("<details class='about'><summary>점수 읽는 법</summary><p><b>평년 대비 개선</b>: 1 − 예측 오차 ÷ '평년값으로 찍기' 오차. "
-            "0보다 크면 평년값보다 정확하고, +40%면 오차가 40% 작다는 뜻입니다. "
-            "<b>RPSS</b>(1개월): 평년(33/33/33%) 확률 예보보다 얼마나 나은지. 0보다 크면 나음, 1개월 예측에선 +0.1만 돼도 쓸모 있는 수준. "
-            "<b>Brier</b>: 확률 예보의 오차(0이 완벽). <b>범위 적중률</b>: 실제 값이 10~90% 범위에 든 비율(80%가 이상적). "
-            "정답은 ERA5 재분석 자료(주요 지점 평균)입니다.</p></details>")
+    out += methods_block("verify")
     if mdata or ddata:
         blob = json.dumps({"month": mdata, "daily": ddata}, ensure_ascii=False,
                           separators=(",", ":")).replace("</", "<\\/")
