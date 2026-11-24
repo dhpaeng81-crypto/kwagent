@@ -110,13 +110,24 @@ class Agent:
         daily_known = r["daily"][r["daily"]["date"] <= pd.Timestamp(issue)]
         ens_area = {s: area_mean(df, region) for s, df in ens.items() if df is not None}
         weeks = []
+        bias_src: dict[str, str] = {}      # 변수별 역학모델 보정 상태: own | proxy (없으면 보정 전)
         for tw in target_weeks(issue, self.cfg["n_weeks"]):
             feats = make_features(issue, tw.center_doy, daily_known, clim, self.indices())
             wk = {"lead": tw.lead, "start": str(tw.start), "end": str(tw.end), "label": tw.label,
                   "vars": {}, "ptype": {}}
             dyn = {}
             for s, df in ens_area.items():
-                biases = {v: self.store.bias(region, s, v, tw.lead, tw.start.month) for v in VARS}
+                biases = {}
+                for v in VARS:
+                    b = self.store.bias(region, s, v, tw.lead, tw.start.month)
+                    if b is None:   # 1개월 채점이 쌓이기 전: 같은 모델의 2주 무렵(12~16일째) 치우침으로 임시 보정
+                        from .daily import proxy_bias
+                        b = proxy_bias(self.store, region, s, v)
+                        if b is not None:
+                            bias_src[v] = bias_src.get(v) or "proxy"
+                    else:
+                        bias_src[v] = "own"
+                    biases[v] = b
                 out = ensemble_week(df, tw, clim, biases, self.wet_mm, self.snow_thr)
                 if out:
                     dyn[s] = out
@@ -160,7 +171,7 @@ class Agent:
             wk["ptype"] = {**{k: round(float(x), 2) for k, x in pt.items()},
                            "climatology": {k: round(x, 2) for k, x in sc.items()}}
             weeks.append(wk)
-        return {"weeks": weeks, "dynamical_sources": list(ens_area)}
+        return {"weeks": weeks, "dynamical_sources": list(ens_area), "bias": bias_src}
 
     # ------------------------------------------------------------ 검증
     def verify(self, until: date | None = None) -> pd.DataFrame:

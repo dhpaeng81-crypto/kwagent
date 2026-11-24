@@ -127,6 +127,32 @@ def _bias(store, region, source, var, lead, window: int, min_n: int) -> float | 
     return float((d["mean_raw"] - d["obs"]).mean())
 
 
+PROXY_LEADS = (12, 16)
+
+
+def proxy_bias(store, region, source, var, window: int = 60, min_n: int = 10) -> float | None:
+    """임시 보정값: 같은 모델의 12~16일째 채점에서 구한 치우침. 모델 치우침은 2주 무렵이면 거의 일정해지므로,
+    더 먼 날(15~28일, 1개월 전망)의 채점이 쌓이기 전까지 대신 쓴다."""
+    d = store.df("""SELECT mean_raw, obs FROM daily_verification
+        WHERE region=? AND source=? AND var=? AND lead BETWEEN ? AND ? AND mean_raw IS NOT NULL
+        ORDER BY date DESC LIMIT ?""", (region, source, var, *PROXY_LEADS, window))
+    if len(d) < min_n:
+        return None
+    if var == "precip":
+        s = d["mean_raw"].sum()
+        return float(np.clip(d["obs"].sum() / s, 0.5, 2.0)) if s > 1.0 else None
+    return float((d["mean_raw"] - d["obs"]).mean())
+
+
+def _bias_far(store, region, source, var, lead, window, min_n) -> tuple[float | None, str | None]:
+    """먼 날 보정: 그 예보일의 채점이 있으면 그것, 없으면 12~16일째 치우침(임시). (값, 'own'|'proxy'|None)"""
+    b = _bias(store, region, source, var, lead, window, min_n)
+    if b is not None:
+        return b, "own"
+    b = proxy_bias(store, region, source, var, window, min_n)
+    return b, ("proxy" if b is not None else None)
+
+
 def _correct(x: np.ndarray, var: str, b: float | None) -> np.ndarray:
     if b is None:
         return x
@@ -161,7 +187,7 @@ def _trend(per_model, rolled, tnorm, ts, dc, store, region, lead, wsum) -> dict:
             tnorm.at[k, f"{var}_hi"] if f"{var}_hi" in tnorm else np.nan
         if np.isnan(lo) or np.isnan(hi):
             continue
-        p, wt, cal = np.zeros(3), 0.0, False
+        p, wt, cal = np.zeros(3), 0.0, None
         for name in per_model:
             r = rolled.get(name)
             if r is None or var not in r:
@@ -169,16 +195,16 @@ def _trend(per_model, rolled, tnorm, ts, dc, store, region, lead, wsum) -> dict:
             x = r.loc[r["date"] == ts, var].dropna().to_numpy(float)
             if len(x) < 3:
                 continue
-            b = _bias(store, region, name, var, lead, int(dc["bias_window"]), int(dc["bias_min_n"]))
+            b, how = _bias_far(store, region, name, var, lead, int(dc["bias_window"]), int(dc["bias_min_n"]))
             x = _correct(x, var, b)
-            cal = cal or b is not None
+            cal = cal or how
             wm = float(dc["models"][name]["weight"]) / wsum
             p += wm * np.array([(x < lo).mean(), ((x >= lo) & (x <= hi)).mean(), (x > hi).mean()])
             wt += wm
         if wt > 0:
             p = p / wt
             out[var] = {"p": [round(float(v), 2) for v in p], "lo": round(float(lo), 1), "hi": round(float(hi), 1),
-                        "cal": cal}   # cal: 채점으로 모델 치우침을 바로잡았는지
+                        "cal": cal or False}   # cal: 'own'(그 날 채점으로 보정)·'proxy'(12~16일째로 임시 보정)·False
     return out
 
 
@@ -243,7 +269,10 @@ def forecast(agent, issue: date | None = None, obs: pd.DataFrame | None = None) 
                         continue
                     raw = sub[var].to_numpy(float)[ok]
                     wet = sub["wet"].to_numpy(float)[ok] if var == "precip" and "wet" in sub else None
-                    b = _bias(store, region, name, var, lead, int(dc["bias_window"]), int(dc["bias_min_n"]))
+                    if lead >= trend_from:
+                        b, _ = _bias_far(store, region, name, var, lead, int(dc["bias_window"]), int(dc["bias_min_n"]))
+                    else:
+                        b = _bias(store, region, name, var, lead, int(dc["bias_window"]), int(dc["bias_min_n"]))
                     vals = _correct(raw, var, b)
                     s = _summarise(vals, np.ones(len(vals)), var, wet)
                     store.save_daily(dict(issue=str(issue), region=region, source=name, date=str(d), lead=lead,

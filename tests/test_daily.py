@@ -57,6 +57,8 @@ def test_daily_end_to_end(cfg):
     assert daily.verify(agent, obs=obs) > 0
     b = daily._bias(agent.store, "korea", "gefs", "temp", 2, 60, 4)
     assert b == pytest.approx(-0.9, abs=0.6)
+    pb = daily.proxy_bias(agent.store, "korea", "gefs", "temp", 60, 4)      # 12~16일째로 구한 임시 보정값
+    assert pb == pytest.approx(-0.9, abs=0.8)
     s = daily.summary(agent.store)
     comb = s[(s["source"] == "combined") & (s["var"] == "temp") & (s["region"] == "korea")]
     assert {"1~3일", "4~7일", "8~14일"} <= set(comb["bin"])
@@ -68,13 +70,13 @@ def test_daily_end_to_end(cfg):
     from kwagent import site
     s = Path(site.build(cfg, agent.store))
     html = (s / "daily.html").read_text(encoding="utf-8")
-    assert "2주 일별 예측" in html and "class='strip'" in html and "<details class='drow" in html and "data-r='honam'" in html
+    assert "4주 일별 예측" in html and "class='strip'" in html and "class='tcal'" in html and "<details class='drow" in html and "data-r='honam'" in html
     assert (s / "img" / f"daily_{result['issue']}_korea.png").exists()
     assert "c-korea-temp" in html and "daily.js" in html and (s / "chart.umd.min.js").exists()
     import pandas as pd
     xl = pd.read_excel(s / f"daily_{result['issue']}.xlsx", sheet_name=None)
     assert {"전국", "중부", "호남", "설명"} <= set(xl) and len(xl["전국"]) == 28 and "최고기온(°C)" in xl["전국"]
     vh = (s / "verification.html").read_text(encoding="utf-8")
-    assert "2주 일별 예측" in vh and "v-daily-skill-honam" in vh and "verify.js" in vh
+    assert "일별 예측" in vh and "v-daily-skill-honam" in vh and "verify.js" in vh
     vx = pd.read_excel(s / "verification.xlsx", sheet_name=None)
     assert "2주 일별 정확도" in vx and len(vx["2주 일별 정확도"]) > 10

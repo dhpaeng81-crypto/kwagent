@@ -138,7 +138,8 @@ line-height:1.25;min-width:0}
 .tc .td{display:block;font-size:12px;font-weight:600;color:var(--ink)}.tc .td i{font-style:normal;font-weight:400;color:var(--quiet);margin-left:2px}
 .tc b{display:block;font-size:13px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tc .tp{font-size:11.5px;opacity:.8}
-.warn{font-size:12.5px;color:#8a5a00;background:#fff6e0;border-radius:8px;padding:7px 10px;margin:0 0 8px}.tc.dk,.tc.dk .td,.tc.dk .td i{color:#fff}
+.warn{font-size:12.5px;color:#8a5a00;background:#fff6e0;border-radius:8px;padding:7px 10px;margin:0 0 8px}
+.warn.soft{color:#3d5a80;background:#eef4fb}.tc.dk,.tc.dk .td,.tc.dk .td i{color:#fff}
 @media (max-width:640px){
 .wrap{padding:0 14px}
 header .wrap{height:auto;flex-wrap:wrap;padding-top:10px;padding-bottom:4px;row-gap:2px}
@@ -190,7 +191,7 @@ MANIFEST = {
 
 def _page(title: str, body: str, active: str, root: str = "") -> str:
     nav = "".join(f'<a href="{root}{href}" class="{"on" if key == active else ""}">{name}</a>'
-                  for key, href, name in (("daily", "index.html", "2주 일별"),
+                  for key, href, name in (("daily", "index.html", "4주 일별"),
                                           ("month", "month.html", "1개월 전망"),
                                           ("archive", "archive.html", "지난 전망"),
                                           ("verify", "verification.html", "정확도")))
@@ -321,6 +322,13 @@ def forecast_body(result: dict, img_prefix: str) -> str:
         chips = month_chips(rd, vs)
         parts.append("<div class='chips'>" + "".join(
             f"<span class='chip' style='--c:{c}'>{w}</span>" for _, c, w in chips) + "</div>")
+        bsrc = rd.get("bias") or {}          # 기록이 없는 옛 전망은 보정 전
+        if rd.get("dynamical_sources"):
+            raw_vars = [VAR_LABEL[v][0] for v in vs if v != "temp" and v not in bsrc]
+            if raw_vars:
+                parts.append(f"<p class='warn'>보정 전: {'·'.join(raw_vars)}은(는) 아직 예측모델의 치우침을 바로잡기 전입니다. "
+                             "장기 모델은 비·구름을 많게 예측하는 버릇이 있어 '많음' 쪽으로 기울 수 있습니다 "
+                             "(채점이 쌓이면 약 3주 뒤부터 자동 보정).</p>")
         head = "".join(f"<th>{wk['label'].split(' ')[0]}<span>{wk['start'][5:].replace('-', '.')}~</span></th>"
                        for wk in rd["weeks"])
         rows = []
@@ -498,9 +506,13 @@ def daily_body(result: dict, img_prefix: str) -> str:
                     cells.append(f"<div class='tc{' dk' if s >= 0.75 else ''}' style='--c:{col};--s:{0.12 + 0.78 * s:.2f}' "
                                  f"title='{tip}'><span class='td'>{top}<i>{x['label'][-2]}</i></span>"
                                  f"<b>{word}</b><span class='tp'>{pct}</span></div>")
-                uncal = var != "temp" and not any((x["trend"].get(var) or {}).get("cal") for x in tdays)
-                warn = ("<p class='warn'>보정 전: 장기 모델은 비·구름을 평년보다 많게 예측하는 버릇이 있어 '많음' 쪽으로 "
-                        "기울어 보일 수 있습니다. 15일 이후 예측의 채점이 쌓이면(약 6주) 자동으로 바로잡습니다.</p>") if uncal else ""
+                cals = {(x["trend"].get(var) or {}).get("cal") for x in tdays}
+                warn = ""
+                if var != "temp" and not (cals & {"own", "proxy"}):
+                    warn = ("<p class='warn'>보정 전: 장기 모델은 비·구름을 평년보다 많게 예측하는 버릇이 있어 '많음' 쪽으로 "
+                            "기울어 보일 수 있습니다. 채점이 쌓이면(약 3주 뒤부터) 자동으로 바로잡습니다.</p>")
+                elif "own" not in cals and "proxy" in cals:
+                    warn = "<p class='warn soft'>임시 보정: 2주 무렵 채점에서 구한 모델 치우침을 적용했습니다.</p>"
                 tabs.append((var, name, f"그날을 가운데 둔 5일 평균이 평년(1991~2020)보다 {TREND_DESC[var]} 가능성 · "
                                         "색이 진할수록 확률이 높음", warn + "<div class='tcal'>" + "".join(cells) + "</div>"))
             span = f"{tdays[0]['label'].split('(')[0]}~{tdays[-1]['label'].split('(')[0]}"
@@ -715,7 +727,7 @@ def verification_page(store, img_dir: Path) -> str:
         out += f"<section class='rsec' data-region='{region}'>"
         if dt or mt:
             out += "<div class='tiles'>" + "".join(dt + mt) + "</div>"
-        out += "<h3 class='sec'>2주 일별 예측</h3>" + (dcard or "<div class='card empty'>아직 채점된 일별 예측이 없습니다. "
+        out += "<h3 class='sec'>일별 예측</h3>" + (dcard or "<div class='card empty'>아직 채점된 일별 예측이 없습니다. "
                                                          "첫 예측 후 약 1주가 지나면 나타납니다.</div>")
         out += "<h3 class='sec'>1개월 전망</h3>" + (mcard or "<div class='card empty'>아직 채점된 1개월 전망이 없습니다. "
                                                       "첫 전망의 대상 4주가 지나고 약 1주 뒤부터 나타납니다.</div>")
