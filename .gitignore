@@ -5,3 +5,4 @@ __pycache__/
 data/cache/
 site/
 *.egg-info/
+site_root/

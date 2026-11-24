@@ -1,0 +1,21 @@
+Copyright (c) 2026 dhpaeng81-crypto. All rights reserved.
+
+This software, its source code, configuration, generated forecasts, reports, website
+content, design and data files (the "Work") are proprietary. No license is granted.
+Without prior written permission of the copyright holder you may not copy, modify,
+merge, publish, distribute, sublicense, sell, or create derivative works of the Work,
+and you may not use the Work (in whole or in part) to train, fine-tune, evaluate or
+ground artificial-intelligence / machine-learning systems, nor perform text and data
+mining on it. The copyright holder expressly reserves the text and data mining rights
+under Article 4(3) of Directive (EU) 2019/790 and applicable Korean law.
+
+저작권 (c) 2026 dhpaeng81-crypto. 모든 권리 보유.
+이 프로그램, 소스 코드, 설정, 예측 결과, 보고서, 웹사이트 내용·디자인, 자료 파일에 대한
+복제·수정·배포·판매·2차적 저작물 작성과 인공지능 학습·평가·검색 증강 및 텍스트·데이터 마이닝
+이용은 저작권자의 사전 서면 허락 없이 금지됩니다.
+
+Third-party data and software (their rights remain with their owners; see their terms):
+- ERA5 reanalysis: Copernicus Climate Change Service (C3S) / ECMWF
+- Forecast data via Open-Meteo (CC BY 4.0): ECMWF, NOAA, DWD
+- Climate indices: NOAA Climate Prediction Center; Bureau of Meteorology (Australia)
+- Chart.js (MIT License) in kwagent/static/chart.umd.min.js

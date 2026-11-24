@@ -1,13 +1,12 @@
 # 매주 목요일 07:10 KST: 지난 예측 채점 → 이번 주 예측 → 웹사이트 갱신 → GitHub Pages 배포
 # 예측·검증 기록(data/store.sqlite, data/models, reports/)과 ERA5 과거 자료(data/era5)는 저장소에 커밋해 이어진다.
-# 처음에는 ERA5 과거 자료(1991~)를 Open-Meteo 무료 한도 안에서 나눠 받아야 해서, 2시간마다 이어 받다가
-# 다 받으면 그 실행에서 학습 → 예측 → 웹사이트 배포까지 한다. 모델이 생긴 뒤 2시간 실행은 바로 끝난다.
+# (처음 ERA5 과거 자료를 나눠 받던 2시간 간격 실행은 다 받은 뒤 2026-11-24 에 뺐다. 자료를 다시 받아야 하면
+#  수동 실행을 여러 번 하거나 cron "17 */2 * * *" 을 잠시 되살리면 된다 — 받는 동안은 예측·배포를 건너뜀.)
 name: weekly-forecast
 
 on:
   schedule:
     - cron: "10 22 * * 3"        # 수 22:10 UTC = 목 07:10 KST
-    - cron: "17 */2 * * *"       # 처음 자료 받기용 (모델이 생기면 바로 종료)
   workflow_dispatch:
     inputs:
       issue:
@@ -26,12 +25,13 @@ concurrency:
 env:
   TZ: Asia/Seoul
   PYTHONUNBUFFERED: "1"
+  SITE_TOKEN: ${{ secrets.SITE_TOKEN }}   # 있으면 공개 저장소로 사이트만 게시, 없으면 이 저장소 Pages
 
 jobs:
   forecast:
     runs-on: ubuntu-latest
     outputs:
-      publish: ${{ steps.backfill.outputs.complete }}
+      publish: ${{ steps.pub.outputs.pages }}
     timeout-minutes: 170
     steps:
       - uses: actions/checkout@v4
@@ -107,10 +107,19 @@ jobs:
           git pull --rebase --autostash origin main || { git rebase --abort; echo '::error::기록 충돌 — 다른 실행이 먼저 커밋함'; exit 1; }
           git push
 
+      - name: 게시 방식
+        id: pub
+        if: steps.backfill.outputs.complete == 'true'
+        run: if [ -z "$SITE_TOKEN" ]; then echo "pages=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: 공개 저장소로 사이트만 게시
+        if: steps.backfill.outputs.complete == 'true' && env.SITE_TOKEN != ''
+        run: bash deploy/publish_site.sh
+
       - uses: actions/configure-pages@v5
-        if: steps.backfill.outputs.complete == 'true'
+        if: steps.backfill.outputs.complete == 'true' && env.SITE_TOKEN == ''
       - uses: actions/upload-pages-artifact@v3
-        if: steps.backfill.outputs.complete == 'true'
+        if: steps.backfill.outputs.complete == 'true' && env.SITE_TOKEN == ''
         with:
           path: site
 

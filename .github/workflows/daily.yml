@@ -1,4 +1,4 @@
-# 매일 06:40 KST: 지난 일별 예측 채점 → 2주 일별 예측 → 웹사이트 갱신 → GitHub Pages 배포
+# 매일 06:40 KST: 지난 일별 예측 채점 → 4주 일별 예측 → 웹사이트 갱신 → GitHub Pages 배포
 # 앙상블은 전날 12UTC 실행분(새벽 4~5시 KST 공개)을 쓴다. 기록(data/store.sqlite, reports/daily)은 저장소에 커밋.
 name: daily-forecast
 
@@ -19,12 +19,15 @@ concurrency:
 env:
   TZ: Asia/Seoul
   PYTHONUNBUFFERED: "1"
+  # 코드 저장소를 비공개로 바꾼 뒤에는 SITE_TOKEN 으로 공개 저장소에 사이트만 게시(deploy/publish_site.sh).
+  # 비밀값이 없으면 예전처럼 이 저장소의 GitHub Pages 로 배포.
+  SITE_TOKEN: ${{ secrets.SITE_TOKEN }}
 
 jobs:
   daily:
     runs-on: ubuntu-latest
     outputs:
-      publish: 'true'
+      publish: ${{ steps.pub.outputs.pages }}
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +52,7 @@ jobs:
           key: kwagent-cache-${{ github.run_id }}
           restore-keys: kwagent-cache-
 
-      - name: 채점 + 2주 일별 예측
+      - name: 채점 + 4주 일별 예측
         env:
           KWAGENT_BACKFILL_MINUTES: "10"   # ERA5 갱신은 10분까지 (넘으면 받아 둔 자료로 진행)
         run: kwagent daily
@@ -67,8 +70,18 @@ jobs:
           git pull --rebase --autostash origin main || { git rebase --abort; echo '::error::기록 충돌 — 다른 실행이 먼저 커밋함'; exit 1; }
           git push
 
+      - name: 게시 방식
+        id: pub
+        run: if [ -z "$SITE_TOKEN" ]; then echo "pages=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: 공개 저장소로 사이트만 게시
+        if: env.SITE_TOKEN != ''
+        run: bash deploy/publish_site.sh
+
       - uses: actions/configure-pages@v5
+        if: env.SITE_TOKEN == ''
       - uses: actions/upload-pages-artifact@v3
+        if: env.SITE_TOKEN == ''
         with:
           path: site
 

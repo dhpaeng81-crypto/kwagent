@@ -21,6 +21,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from . import rights
 from .methods import METHODS_CSS, methods_block
 from .regions import REGION_LABELS, REGION_ORDER
 from .features import VARS
@@ -56,7 +57,8 @@ tr.far td{color:var(--quiet)}td small{color:var(--quiet);font-size:11.5px}
 td.warm{background:#fbe3df}td.cool{background:#dfe8f8}
 .note{font-size:13px;color:var(--quiet)}.pos{color:#1f7a4d;font-weight:600}.neg{color:#b3372d}
 .narr h2{font-size:17px;margin-top:4px}.narr ul{padding-left:20px}
-footer{margin:40px 0 30px;color:var(--quiet);font-size:12px}
+footer{margin:40px 0 30px;color:var(--quiet);font-size:12px;line-height:1.6}footer p{margin:4px 0}footer .cr{color:var(--ink);font-weight:500}footer a{color:var(--accent)}
+.terms h3{margin:18px 0 6px;font-size:16px}.terms p,.terms li{font-size:14px;line-height:1.75}
 .headrow{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
 .btn{display:inline-block;padding:8px 16px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;
 font-size:14px;font-weight:600;margin-bottom:18px;white-space:nowrap}.btn:hover{filter:brightness(1.08)}
@@ -199,11 +201,12 @@ def _page(title: str, body: str, active: str, root: str = "") -> str:
                                           ("verify", "verification.html", "정확도")))
     return f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)}</title>{FONT}
-{ICON_HEAD.format(root=root)}
+{ICON_HEAD.format(root=root)}{rights.HEAD_META}
 <style>{CSS}</style></head><body><header><div class="wrap"><a class="brand" href="{root}index.html">
 <img src="{root}favicon.svg" alt="" width="26" height="26">한국 기상전망</a><nav>{nav}</nav></div></header><main class="wrap">{body}</main>{REGION_JS}
-<footer class="wrap">kwagent · 자료: ERA5, ECMWF EC46·IFS·AIFS, NOAA GEFS, DWD ICON (Open-Meteo), NOAA CPC, BoM ·
-평년은 1991~2020 · 생성 {datetime.now():%Y-%m-%d %H:%M}</footer></body></html>"""
+<footer class="wrap"><p class="cr">{rights.COPYRIGHT}. All rights reserved. 무단 전재·재배포·상업적 이용과
+AI 학습·자동 수집을 금지합니다. <a href="{root}terms.html">이용약관</a></p>
+<p>{rights.SOURCES} 평년은 1991~2020 · 생성 {datetime.now():%Y-%m-%d %H:%M}</p></footer></body></html>"""
 
 
 def _region_tabs(regions) -> str:
@@ -841,6 +844,7 @@ def build(cfg, store, out: str | Path | None = None) -> str:
     from .report import to_excel as month_excel
     for r in results:
         month_excel(r, site / f"forecast_{r['issue']}.xlsx")
+        rights.stamp_xlsx(site / f"forecast_{r['issue']}.xlsx")
         (site / "f" / f"{r['issue']}.html").write_text(
             _page(f"1개월 기상전망 {r['issue']}", forecast_body(r, "../img/"), "archive", root="../"),
             encoding="utf-8")
@@ -857,6 +861,7 @@ def build(cfg, store, out: str | Path | None = None) -> str:
     (site / "verification.html").write_text(_page("정확도", verification_page(store, img), "verify"),
                                             encoding="utf-8")
     verification_excel(store, site / "verification.xlsx")
+    rights.stamp_xlsx(site / "verification.xlsx")
     # 2주 일별 예측 (최신 1개)
     dd = rep / "daily"
     dailies = sorted(dd.glob("daily_*.json")) if dd.exists() else []
@@ -867,6 +872,7 @@ def build(cfg, store, out: str | Path | None = None) -> str:
         body = daily_body(latest, "img/")
         from .daily import to_excel
         to_excel(latest, site / f"daily_{latest['issue']}.xlsx")
+        rights.stamp_xlsx(site / f"daily_{latest['issue']}.xlsx")
     else:
         body = "<h1>일별 예측</h1><div class='card'>아직 일별 예측이 없습니다. 매일 아침 6시 40분에 만들어집니다.</div>"
     ndays = max((len(rd["days"]) for rd in latest["regions"].values()), default=14) if dailies else 14
@@ -879,4 +885,9 @@ def build(cfg, store, out: str | Path | None = None) -> str:
     (site / "manifest.webmanifest").write_text(json.dumps(MANIFEST, ensure_ascii=False, indent=1),
                                                encoding="utf-8")
     (site / ".nojekyll").write_text("")
+    # 저작권·AI 수집 거부: 이용약관, (참고용) robots/ai.txt, 도메인 맨 앞에 올릴 파일(site_root/)
+    (site / "terms.html").write_text(_page("이용약관과 저작권", rights.TERMS_HTML, "terms"), encoding="utf-8")
+    (site / "robots.txt").write_text(rights.robots_txt(), encoding="utf-8")
+    (site / "ai.txt").write_text(rights.ai_txt(), encoding="utf-8")
+    rights.root_files(site.parent / "site_root")
     return str(site)

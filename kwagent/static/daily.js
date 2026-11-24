@@ -13,6 +13,14 @@
   const fmt = (v, d = 1) => (v == null || isNaN(v) ? "-" : (+v).toFixed(d).replace(/^-0(\.0+)?$/, "0$1"));
 
   const narrow = window.matchMedia("(max-width: 640px)").matches;
+  // 저작권 워터마크 (그래프 오른쪽 아래)
+  const kwMark = document.querySelector('meta[name="copyright"]');
+  if (kwMark) Chart.register({ id: "kwMark", afterDraw(ch) {
+    const { ctx, chartArea: a } = ch; if (!a) return;
+    ctx.save(); ctx.font = "10px 'Noto Sans KR', sans-serif"; ctx.fillStyle = "rgba(110,120,130,0.55)";
+    ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText(kwMark.content + " · kwagent", a.right - 4, a.bottom - 3);
+    ctx.restore();
+  } });
   Chart.defaults.font.family = "'Noto Sans KR', system-ui, sans-serif";
   Chart.defaults.font.size = 12;
   Chart.defaults.color = C.ink;

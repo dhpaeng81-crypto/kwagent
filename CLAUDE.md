@@ -49,6 +49,8 @@ kwagent/
   verify.py       RPS/RPSS/신뢰도/Brier
   narrative.py    LLM 해설(ANTHROPIC_API_KEY 있을 때, 없으면 규칙 기반)
   report.py       md 표 + matplotlib 확률 막대(noscript·보고서용) + to_excel(1개월 → site/forecast_<발표일>.xlsx)
+  rights.py       저작권·AI 수집 거부(2026-11-24 사용자 요청): 꼬리말·이용약관(terms.html)·noai/TDM 메타·엑셀 '저작권' 시트·
+                  그래프 워터마크, 도메인 맨 앞용 robots.txt/ai.txt/.well-known/tdmrep.json(site_root/). 권리자 표기 dhpaeng81-crypto
   methods.py      화면 맨 아래 '예측 방법'(눌러서 펼치는 항목, 화면별 daily·month·verify). **방법을 바꾸면 이 글도 같이 고칠 것**
   ui.py           화면 부품: 날씨 그림(SVG), 2주 '한눈에' 문장(daily_headlines), 1개월 경향 낱말·색깔표(month_chips/month_cell)
   site.py         정적 웹사이트(site/): index(=2주 일별, 기본), daily(같은 내용·옛 주소), month(1개월), f/<날짜>, archive, verification
@@ -62,6 +64,14 @@ kwagent/
 .github/workflows/train.yml   분기별 재학습
 .github/workflows/daily.yml   매일 06:40 KST: kwagent daily → site → 기록 커밋 → Pages 배포
 ```
+
+## 저장소·게시 구조 (2026-11-24 사용자 결정: 코드 비공개 + 사이트만 공개, 무료)
+- 목표 구조: 코드 저장소 `kwagent-src`(비공개) → Actions 가 `deploy/publish_site.sh` 로 site/ 를 공개 저장소 `kwagent`
+  (https://dhpaeng81-crypto.github.io/kwagent/ 유지)에, site_root/ 를 `dhpaeng81-crypto.github.io`(robots.txt 등)에 푸시.
+- 비밀값 `SITE_TOKEN`(두 공개 저장소 Contents 쓰기, fine-grained)이 있으면 이 방식, 없으면 예전처럼 이 저장소 Pages 배포.
+  사용자 작업(저장소 이름 변경·비공개 전환·공개 저장소 2개 생성·토큰 등록·Pages 설정)은 SETUP_PRIVATE.md.
+- 비공개 저장소의 Actions 무료 한도는 월 2,000분. 매일 ~10분 + 매주 ~15분 ≈ 월 400분이라 여유. 2시간 cron 은 뺐다.
+- LICENSE: All rights reserved(코드·결과물), 원자료 권리는 각 기관.
 
 ## 정확도 개선 루프 (설계 핵심 — 바꿀 때 유지할 것)
 1. 매 실행마다 `verify` 가 지난 예측(모든 source)을 ERA5 로 채점해 `verification` 에 저장.
