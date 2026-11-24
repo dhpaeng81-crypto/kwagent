@@ -12,9 +12,9 @@
           "vars": {
             "temp": {
               "prob": [
-                0.147,
-                0.198,
-                0.654
+                0.142,
+                0.203,
+                0.655
               ],
               "display": [
                 10,
@@ -28,14 +28,14 @@
               "ens_mean_corrected": 9.1,
               "weights": {
                 "statistical": 0.46,
-                "ec46": 0.38,
+                "ec46": 0.37,
                 "gefs": 0.17
               },
               "sources": {
                 "statistical": [
-                  0.18,
-                  0.25,
-                  0.57
+                  0.16,
+                  0.26,
+                  0.58
                 ],
                 "ec46": [
                   0.01,
@@ -52,9 +52,9 @@
             },
             "cloud": {
               "prob": [
-                0.17,
-                0.308,
-                0.523
+                0.169,
+                0.319,
+                0.512
               ],
               "display": [
                 20,
@@ -62,10 +62,10 @@
                 50
               ],
               "normal_range": [
-                41.5,
-                53.5
+                42.0,
+                54.4
               ],
-              "ens_mean_corrected": 56.8,
+              "ens_mean_corrected": 56.6,
               "weights": {
                 "statistical": 0.1,
                 "ec46": 0.62,
@@ -73,14 +73,14 @@
               },
               "sources": {
                 "statistical": [
-                  0.23,
-                  0.37,
-                  0.4
+                  0.22,
+                  0.4,
+                  0.38
                 ],
                 "ec46": [
                   0.1,
-                  0.33,
-                  0.56
+                  0.35,
+                  0.54
                 ],
                 "gefs": [
                   0.1,
@@ -92,8 +92,8 @@
             },
             "srad": {
               "prob": [
-                0.51,
-                0.255,
+                0.485,
+                0.279,
                 0.236
               ],
               "display": [
@@ -105,7 +105,7 @@
                 8.3,
                 9.2
               ],
-              "ens_mean_corrected": 7.8,
+              "ens_mean_corrected": 7.9,
               "weights": {
                 "statistical": 0.1,
                 "ec46": 0.62,
@@ -118,13 +118,13 @@
                   0.2
                 ],
                 "ec46": [
-                  0.47,
-                  0.26,
+                  0.43,
+                  0.29,
                   0.28
                 ],
                 "gefs": [
-                  0.82,
-                  0.14,
+                  0.79,
+                  0.17,
                   0.04
                 ]
               },
@@ -132,8 +132,8 @@
             },
             "precip": {
               "prob": [
-                0.236,
-                0.293,
+                0.227,
+                0.302,
                 0.471
               ],
               "display": [
@@ -142,10 +142,10 @@
                 50
               ],
               "normal_range": [
-                3.5,
-                10.7
+                3.3,
+                10.6
               ],
-              "ens_mean_corrected": 15.5,
+              "ens_mean_corrected": 15.6,
               "weights": {
                 "statistical": 0.1,
                 "ec46": 0.62,
@@ -153,13 +153,13 @@
               },
               "sources": {
                 "statistical": [
-                  0.23,
-                  0.29,
+                  0.24,
+                  0.28,
                   0.48
                 ],
                 "ec46": [
-                  0.26,
-                  0.31,
+                  0.24,
+                  0.33,
                   0.43
                 ],
                 "gefs": [
@@ -172,13 +172,13 @@
             }
           },
           "ptype": {
-            "p_snow": 0.2,
-            "rain_days": 1.74,
-            "snow_days": 0.26,
+            "p_snow": 0.18,
+            "rain_days": 1.72,
+            "snow_days": 0.24,
             "climatology": {
-              "p_snow": 0.14,
-              "rain_days": 1.54,
-              "snow_days": 0.17
+              "p_snow": 0.11,
+              "rain_days": 1.49,
+              "snow_days": 0.13
             }
           }
         },
@@ -190,9 +190,9 @@
           "vars": {
             "temp": {
               "prob": [
-                0.23,
-                0.26,
-                0.511
+                0.229,
+                0.281,
+                0.49
               ],
               "display": [
                 20,
@@ -200,20 +200,20 @@
                 50
               ],
               "normal_range": [
-                1.8,
+                1.9,
                 3.9
               ],
-              "ens_mean_corrected": 4.9,
+              "ens_mean_corrected": 4.6,
               "weights": {
-                "statistical": 0.41,
+                "statistical": 0.4,
                 "ec46": 0.41,
                 "gefs": 0.18
               },
               "sources": {
                 "statistical": [
-                  0.17,
-                  0.23,
-                  0.6
+                  0.15,
+                  0.24,
+                  0.61
                 ],
                 "ec46": [
                   0.24,
@@ -221,18 +221,18 @@
                   0.49
                 ],
                 "gefs": [
-                  0.04,
                   0.07,
-                  0.89
+                  0.23,
+                  0.7
                 ]
               },
               "shrink": 0.35
             },
             "cloud": {
               "prob": [
-                0.142,
-                0.179,
-                0.679
+                0.135,
+                0.204,
+                0.661
               ],
               "display": [
                 10,
@@ -240,10 +240,10 @@
                 70
               ],
               "normal_range": [
-                41.4,
-                53.4
+                42.4,
+                54.6
               ],
-              "ens_mean_corrected": 67.5,
+              "ens_mean_corrected": 70.0,
               "weights": {
                 "statistical": 0.1,
                 "ec46": 0.62,
@@ -251,9 +251,9 @@
               },
               "sources": {
                 "statistical": [
-                  0.23,
-                  0.37,
-                  0.4
+                  0.22,
+                  0.4,
+                  0.38
                 ],
                 "ec46": [
                   0.01,
@@ -261,18 +261,18 @@
                   0.93
                 ],
                 "gefs": [
-                  0.04,
-                  0.07,
-                  0.89
+                  0.01,
+                  0.2,
+                  0.79
                 ]
               },
               "shrink": 0.35
             },
             "srad": {
               "prob": [
-                0.572,
+                0.566,
                 0.253,
-                0.175
+                0.181
               ],
               "display": [
                 60,
@@ -291,8 +291,8 @@
               },
               "sources": {
                 "statistical": [
-                  0.49,
-                  0.33,
+                  0.48,
+                  0.34,
                   0.18
                 ],
                 "ec46": [
@@ -301,18 +301,18 @@
                   0.08
                 ],
                 "gefs": [
-                  0.82,
+                  0.79,
                   0.1,
-                  0.07
+                  0.1
                 ]
               },
               "shrink": 0.35
             },
             "precip": {
               "prob": [
-                0.169,
-                0.25,
-                0.581
+                0.175,
+                0.238,
+                0.587
               ],
               "display": [
                 20,
@@ -320,10 +320,10 @@
                 60
               ],
               "normal_range": [
-                2.7,
-                8.1
+                2.6,
+                8.0
               ],
-              "ens_mean_corrected": 22.5,
+              "ens_mean_corrected": 23.7,
               "weights": {
                 "statistical": 0.1,
                 "ec46": 0.62,
@@ -331,7 +331,7 @@
               },
               "sources": {
                 "statistical": [
-                  0.2,
+                  0.21,
                   0.3,
                   0.49
                 ],
@@ -341,22 +341,22 @@
                   0.76
                 ],
                 "gefs": [
-                  0.07,
-                  0.23,
-                  0.7
+                  0.1,
+                  0.17,
+                  0.73
                 ]
               },
               "shrink": 0.35
             }
           },
           "ptype": {
-            "p_snow": 0.16,
-            "rain_days": 1.96,
-            "snow_days": 0.2,
+            "p_snow": 0.18,
+            "rain_days": 1.99,
+            "snow_days": 0.23,
             "climatology": {
-              "p_snow": 0.17,
-              "rain_days": 1.22,
-              "snow_days": 0.19
+              "p_snow": 0.14,
+              "rain_days": 1.21,
+              "snow_days": 0.15
             }
           }
         },
@@ -368,9 +368,9 @@
           "vars": {
             "temp": {
               "prob": [
-                0.299,
-                0.299,
-                0.403
+                0.287,
+                0.318,
+                0.394
               ],
               "display": [
                 30,
@@ -378,10 +378,10 @@
                 40
               ],
               "normal_range": [
-                0.7,
-                2.9
+                0.8,
+                3.0
               ],
-              "ens_mean_corrected": 2.3,
+              "ens_mean_corrected": 2.4,
               "weights": {
                 "statistical": 0.41,
                 "ec46": 0.41,
@@ -389,28 +389,28 @@
               },
               "sources": {
                 "statistical": [
-                  0.19,
-                  0.25,
-                  0.56
+                  0.2,
+                  0.28,
+                  0.52
                 ],
                 "ec46": [
                   0.35,
-                  0.31,
-                  0.33
+                  0.29,
+                  0.35
                 ],
                 "gefs": [
-                  0.26,
-                  0.23,
-                  0.51
+                  0.14,
+                  0.39,
+                  0.48
                 ]
               },
               "shrink": 0.45
             },
             "cloud": {
               "prob": [
-                0.192,
-                0.312,
-                0.496
+                0.196,
+                0.305,
+                0.499
               ],
               "display": [
                 20,
@@ -418,10 +418,10 @@
                 50
               ],
               "normal_range": [
-                40.2,
-                52.7
+                41.2,
+                53.7
               ],
-              "ens_mean_corrected": 57.5,
+              "ens_mean_corrected": 57.9,
               "weights": {
                 "statistical": 0.1,
                 "ec46": 0.62,
@@ -429,9 +429,9 @@
               },
               "sources": {
                 "statistical": [
-                  0.23,
-                  0.38,
-                  0.4
+                  0.22,
+                  0.41,
+                  0.37
                 ],
                 "ec46": [
                   0.03,
@@ -439,23 +439,23 @@
                   0.72
                 ],
                 "gefs": [
-                  0.14,
-                  0.35,
-                  0.51
+                  0.17,
+                  0.29,
+                  0.54
                 ]
               },
               "shrink": 0.45
             },
             "srad": {
               "prob": [
-                0.404,
-                0.345,
-                0.251
+                0.408,
+                0.352,
+                0.24
               ],
               "display": [
                 40,
-                30,
-                30
+                40,
+                20
               ],
               "normal_range": [
                 8.3,
@@ -469,28 +469,28 @@
               },
               "sources": {
                 "statistical": [
-                  0.49,
-                  0.34,
+                  0.48,
+                  0.35,
                   0.17
                 ],
                 "ec46": [
                   0.45,
-                  0.37,
-                  0.18
+                  0.39,
+                  0.16
                 ],
                 "gefs": [
-                  0.48,
+                  0.51,
                   0.32,
-                  0.2
+                  0.17
                 ]
               },
               "shrink": 0.45
             },
             "precip": {
               "prob": [
-                0.271,
-                0.266,
-                0.463
+                0.264,
+                0.277,
+                0.458
               ],
               "display": [
                 30,
@@ -498,10 +498,10 @@
                 40
               ],
               "normal_range": [
-                2.4,
-                5.7
+                2.2,
+                5.4
               ],
-              "ens_mean_corrected": 11.6,
+              "ens_mean_corrected": 12.6,
               "weights": {
                 "statistical": 0.1,
                 "ec46": 0.62,
@@ -510,31 +510,31 @@
               "sources": {
                 "statistical": [
                   0.19,
-                  0.31,
+                  0.3,
                   0.5
                 ],
                 "ec46": [
-                  0.28,
-                  0.16,
+                  0.26,
+                  0.18,
                   0.56
                 ],
                 "gefs": [
                   0.1,
-                  0.29,
-                  0.6
+                  0.32,
+                  0.57
                 ]
               },
               "shrink": 0.45
             }
           },
           "ptype": {
-            "p_snow": 0.23,
-            "rain_days": 1.22,
-            "snow_days": 0.29,
+            "p_snow": 0.2,
+            "rain_days": 1.19,
+            "snow_days": 0.24,
             "climatology": {
-              "p_snow": 0.19,
-              "rain_days": 1.0,
-              "snow_days": 0.21
+              "p_snow": 0.16,
+              "rain_days": 0.99,
+              "snow_days": 0.18
             }
           }
         },
@@ -546,9 +546,9 @@
           "vars": {
             "temp": {
               "prob": [
-                0.306,
-                0.32,
-                0.374
+                0.291,
+                0.322,
+                0.386
               ],
               "display": [
                 30,
@@ -556,10 +556,10 @@
                 40
               ],
               "normal_range": [
-                -0.0,
+                0.1,
                 2.2
               ],
-              "ens_mean_corrected": 1.2,
+              "ens_mean_corrected": 1.6,
               "weights": {
                 "statistical": 0.45,
                 "ec46": 0.38,
@@ -567,9 +567,9 @@
               },
               "sources": {
                 "statistical": [
-                  0.21,
-                  0.27,
-                  0.52
+                  0.19,
+                  0.28,
+                  0.53
                 ],
                 "ec46": [
                   0.35,
@@ -577,29 +577,29 @@
                   0.33
                 ],
                 "gefs": [
-                  0.29,
+                  0.17,
                   0.39,
-                  0.32
+                  0.45
                 ]
               },
               "shrink": 0.5
             },
             "cloud": {
               "prob": [
-                0.234,
-                0.293,
-                0.473
+                0.261,
+                0.287,
+                0.452
               ],
               "display": [
-                20,
                 30,
-                50
+                30,
+                40
               ],
               "normal_range": [
-                40.0,
-                50.8
+                41.1,
+                51.8
               ],
-              "ens_mean_corrected": 54.8,
+              "ens_mean_corrected": 54.1,
               "weights": {
                 "statistical": 0.1,
                 "ec46": 0.62,
@@ -608,18 +608,18 @@
               "sources": {
                 "statistical": [
                   0.21,
-                  0.41,
-                  0.38
+                  0.44,
+                  0.36
                 ],
                 "ec46": [
-                  0.12,
-                  0.2,
-                  0.68
+                  0.14,
+                  0.16,
+                  0.7
                 ],
                 "gefs": [
-                  0.14,
-                  0.32,
-                  0.54
+                  0.29,
+                  0.35,
+                  0.35
                 ]
               },
               "shrink": 0.5
@@ -627,8 +627,8 @@
             "srad": {
               "prob": [
                 0.429,
-                0.293,
-                0.278
+                0.297,
+                0.274
               ],
               "display": [
                 40,
@@ -647,8 +647,8 @@
               },
               "sources": {
                 "statistical": [
-                  0.5,
-                  0.32,
+                  0.49,
+                  0.33,
                   0.18
                 ],
                 "ec46": [
@@ -658,28 +658,28 @@
                 ],
                 "gefs": [
                   0.45,
-                  0.26,
-                  0.29
+                  0.29,
+                  0.26
                 ]
               },
               "shrink": 0.5
             },
             "precip": {
               "prob": [
-                0.233,
-                0.358,
-                0.409
+                0.246,
+                0.318,
+                0.437
               ],
               "display": [
-                20,
-                40,
+                30,
+                30,
                 40
               ],
               "normal_range": [
                 1.6,
-                4.8
+                4.6
               ],
-              "ens_mean_corrected": 9.8,
+              "ens_mean_corrected": 12.9,
               "weights": {
                 "statistical": 0.1,
                 "ec46": 0.62,
@@ -687,32 +687,2192 @@
               },
               "sources": {
                 "statistical": [
-                  0.2,
+                  0.21,
                   0.29,
-                  0.5
+                  0.51
                 ],
                 "ec46": [
-                  0.12,
-                  0.35,
-                  0.53
+                  0.16,
+                  0.29,
+                  0.54
                 ],
                 "gefs": [
                   0.14,
-                  0.48,
-                  0.39
+                  0.32,
+                  0.54
                 ]
               },
               "shrink": 0.5
             }
           },
           "ptype": {
-            "p_snow": 0.23,
+            "p_snow": 0.2,
             "rain_days": 0.97,
+            "snow_days": 0.26,
+            "climatology": {
+              "p_snow": 0.17,
+              "rain_days": 0.8,
+              "snow_days": 0.23
+            }
+          }
+        }
+      ],
+      "dynamical_sources": [
+        "ec46",
+        "gefs"
+      ]
+    },
+    "central": {
+      "weeks": [
+        {
+          "lead": 1,
+          "start": "2026-11-30",
+          "end": "2026-12-06",
+          "label": "1주 (11.30~12.06)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.139,
+                0.191,
+                0.671
+              ],
+              "display": [
+                10,
+                20,
+                70
+              ],
+              "normal_range": [
+                1.5,
+                3.5
+              ],
+              "ens_mean_corrected": 7.8,
+              "weights": {
+                "statistical": 0.4,
+                "ec46": 0.41,
+                "gefs": 0.18
+              },
+              "sources": {
+                "statistical": [
+                  0.17,
+                  0.25,
+                  0.58
+                ],
+                "ec46": [
+                  0.01,
+                  0.1,
+                  0.89
+                ],
+                "gefs": [
+                  0.01,
+                  0.01,
+                  0.98
+                ]
+              },
+              "shrink": 0.25
+            },
+            "cloud": {
+              "prob": [
+                0.155,
+                0.262,
+                0.583
+              ],
+              "display": [
+                10,
+                30,
+                60
+              ],
+              "normal_range": [
+                43.2,
+                55.5
+              ],
+              "ens_mean_corrected": 60.7,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.24,
+                  0.34,
+                  0.42
+                ],
+                "ec46": [
+                  0.08,
+                  0.29,
+                  0.62
+                ],
+                "gefs": [
+                  0.07,
+                  0.07,
+                  0.85
+                ]
+              },
+              "shrink": 0.25
+            },
+            "srad": {
+              "prob": [
+                0.51,
+                0.266,
+                0.224
+              ],
+              "display": [
+                50,
+                30,
+                20
+              ],
+              "normal_range": [
+                8.0,
+                8.8
+              ],
+              "ens_mean_corrected": 7.3,
+              "weights": {
+                "statistical": 0.15,
+                "ec46": 0.59,
+                "gefs": 0.26
+              },
+              "sources": {
+                "statistical": [
+                  0.56,
+                  0.25,
+                  0.19
+                ],
+                "ec46": [
+                  0.43,
+                  0.33,
+                  0.24
+                ],
+                "gefs": [
+                  0.89,
+                  0.04,
+                  0.07
+                ]
+              },
+              "shrink": 0.25
+            },
+            "precip": {
+              "prob": [
+                0.26,
+                0.288,
+                0.452
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                3.7,
+                9.8
+              ],
+              "ens_mean_corrected": 14.3,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.26,
+                  0.29,
+                  0.45
+                ],
+                "ec46": [
+                  0.28,
+                  0.28,
+                  0.45
+                ],
+                "gefs": [
+                  0.14,
+                  0.26,
+                  0.6
+                ]
+              },
+              "shrink": 0.25
+            }
+          },
+          "ptype": {
+            "p_snow": 0.24,
+            "rain_days": 1.69,
             "snow_days": 0.29,
             "climatology": {
+              "p_snow": 0.26,
+              "rain_days": 1.38,
+              "snow_days": 0.33
+            }
+          }
+        },
+        {
+          "lead": 2,
+          "start": "2026-12-07",
+          "end": "2026-12-13",
+          "label": "2주 (12.07~12.13)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.232,
+                0.28,
+                0.488
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                0.1,
+                2.2
+              ],
+              "ens_mean_corrected": 2.9,
+              "weights": {
+                "statistical": 0.33,
+                "ec46": 0.46,
+                "gefs": 0.21
+              },
+              "sources": {
+                "statistical": [
+                  0.19,
+                  0.27,
+                  0.54
+                ],
+                "ec46": [
+                  0.22,
+                  0.28,
+                  0.51
+                ],
+                "gefs": [
+                  0.07,
+                  0.17,
+                  0.76
+                ]
+              },
+              "shrink": 0.35
+            },
+            "cloud": {
+              "prob": [
+                0.157,
+                0.209,
+                0.634
+              ],
+              "display": [
+                20,
+                20,
+                60
+              ],
+              "normal_range": [
+                42.1,
+                53.2
+              ],
+              "ens_mean_corrected": 67.7,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.23,
+                  0.36,
+                  0.41
+                ],
+                "ec46": [
+                  0.04,
+                  0.08,
+                  0.87
+                ],
+                "gefs": [
+                  0.04,
+                  0.2,
+                  0.76
+                ]
+              },
+              "shrink": 0.35
+            },
+            "srad": {
+              "prob": [
+                0.555,
+                0.224,
+                0.221
+              ],
+              "display": [
+                60,
+                20,
+                20
+              ],
+              "normal_range": [
+                8.0,
+                8.7
+              ],
+              "ens_mean_corrected": 7.1,
+              "weights": {
+                "statistical": 0.12,
+                "ec46": 0.61,
+                "gefs": 0.27
+              },
+              "sources": {
+                "statistical": [
+                  0.58,
+                  0.25,
+                  0.17
+                ],
+                "ec46": [
+                  0.64,
+                  0.16,
+                  0.2
+                ],
+                "gefs": [
+                  0.79,
+                  0.14,
+                  0.07
+                ]
+              },
+              "shrink": 0.35
+            },
+            "precip": {
+              "prob": [
+                0.216,
+                0.259,
+                0.525
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                2.5,
+                7.4
+              ],
+              "ens_mean_corrected": 20.0,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.24,
+                  0.29,
+                  0.47
+                ],
+                "ec46": [
+                  0.16,
+                  0.22,
+                  0.62
+                ],
+                "gefs": [
+                  0.1,
+                  0.2,
+                  0.7
+                ]
+              },
+              "shrink": 0.35
+            }
+          },
+          "ptype": {
+            "p_snow": 0.22,
+            "rain_days": 1.73,
+            "snow_days": 0.28,
+            "climatology": {
+              "p_snow": 0.28,
+              "rain_days": 1.01,
+              "snow_days": 0.36
+            }
+          }
+        },
+        {
+          "lead": 3,
+          "start": "2026-12-14",
+          "end": "2026-12-20",
+          "label": "3주 (12.14~12.20)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.291,
+                0.312,
+                0.396
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                -1.1,
+                1.4
+              ],
+              "ens_mean_corrected": 0.7,
+              "weights": {
+                "statistical": 0.34,
+                "ec46": 0.46,
+                "gefs": 0.2
+              },
+              "sources": {
+                "statistical": [
+                  0.2,
+                  0.28,
+                  0.52
+                ],
+                "ec46": [
+                  0.35,
+                  0.29,
+                  0.35
+                ],
+                "gefs": [
+                  0.14,
+                  0.32,
+                  0.54
+                ]
+              },
+              "shrink": 0.45
+            },
+            "cloud": {
+              "prob": [
+                0.21,
+                0.294,
+                0.496
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                40.1,
+                51.9
+              ],
+              "ens_mean_corrected": 56.8,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.21,
+                  0.38,
+                  0.41
+                ],
+                "ec46": [
+                  0.08,
+                  0.26,
+                  0.66
+                ],
+                "gefs": [
+                  0.14,
+                  0.23,
+                  0.64
+                ]
+              },
+              "shrink": 0.45
+            },
+            "srad": {
+              "prob": [
+                0.422,
+                0.32,
+                0.258
+              ],
+              "display": [
+                40,
+                30,
+                30
+              ],
+              "normal_range": [
+                8.0,
+                8.8
+              ],
+              "ens_mean_corrected": 7.8,
+              "weights": {
+                "statistical": 0.11,
+                "ec46": 0.61,
+                "gefs": 0.27
+              },
+              "sources": {
+                "statistical": [
+                  0.58,
+                  0.25,
+                  0.16
+                ],
+                "ec46": [
+                  0.43,
+                  0.31,
+                  0.26
+                ],
+                "gefs": [
+                  0.6,
+                  0.32,
+                  0.07
+                ]
+              },
+              "shrink": 0.45
+            },
+            "precip": {
+              "prob": [
+                0.267,
+                0.318,
+                0.415
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                2.0,
+                5.6
+              ],
+              "ens_mean_corrected": 10.7,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.23,
+                  0.3,
+                  0.46
+                ],
+                "ec46": [
+                  0.26,
+                  0.26,
+                  0.49
+                ],
+                "gefs": [
+                  0.1,
+                  0.42,
+                  0.48
+                ]
+              },
+              "shrink": 0.45
+            }
+          },
+          "ptype": {
+            "p_snow": 0.31,
+            "rain_days": 1.0,
+            "snow_days": 0.38,
+            "climatology": {
+              "p_snow": 0.31,
+              "rain_days": 0.79,
+              "snow_days": 0.39
+            }
+          }
+        },
+        {
+          "lead": 4,
+          "start": "2026-12-21",
+          "end": "2026-12-27",
+          "label": "4주 (12.21~12.27)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.277,
+                0.328,
+                0.394
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                -1.9,
+                0.5
+              ],
+              "ens_mean_corrected": -0.1,
+              "weights": {
+                "statistical": 0.38,
+                "ec46": 0.43,
+                "gefs": 0.19
+              },
+              "sources": {
+                "statistical": [
+                  0.2,
+                  0.27,
+                  0.54
+                ],
+                "ec46": [
+                  0.29,
+                  0.33,
+                  0.37
+                ],
+                "gefs": [
+                  0.1,
+                  0.42,
+                  0.48
+                ]
+              },
+              "shrink": 0.5
+            },
+            "cloud": {
+              "prob": [
+                0.245,
+                0.309,
+                0.446
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                39.0,
+                50.4
+              ],
+              "ens_mean_corrected": 52.8,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.21,
+                  0.39,
+                  0.4
+                ],
+                "ec46": [
+                  0.1,
+                  0.24,
+                  0.66
+                ],
+                "gefs": [
+                  0.26,
+                  0.35,
+                  0.39
+                ]
+              },
+              "shrink": 0.5
+            },
+            "srad": {
+              "prob": [
+                0.429,
+                0.316,
+                0.255
+              ],
+              "display": [
+                40,
+                30,
+                30
+              ],
+              "normal_range": [
+                8.2,
+                8.9
+              ],
+              "ens_mean_corrected": 8.0,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.57,
+                  0.25,
+                  0.18
+                ],
+                "ec46": [
+                  0.53,
+                  0.29,
+                  0.18
+                ],
+                "gefs": [
+                  0.51,
+                  0.32,
+                  0.17
+                ]
+              },
+              "shrink": 0.5
+            },
+            "precip": {
+              "prob": [
+                0.27,
+                0.307,
+                0.423
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                1.3,
+                4.1
+              ],
+              "ens_mean_corrected": 10.7,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.24,
+                  0.31,
+                  0.45
+                ],
+                "ec46": [
+                  0.22,
+                  0.26,
+                  0.53
+                ],
+                "gefs": [
+                  0.17,
+                  0.32,
+                  0.51
+                ]
+              },
+              "shrink": 0.5
+            }
+          },
+          "ptype": {
+            "p_snow": 0.29,
+            "rain_days": 0.79,
+            "snow_days": 0.37,
+            "climatology": {
+              "p_snow": 0.32,
+              "rain_days": 0.56,
+              "snow_days": 0.4
+            }
+          }
+        }
+      ],
+      "dynamical_sources": [
+        "ec46",
+        "gefs"
+      ]
+    },
+    "honam": {
+      "weeks": [
+        {
+          "lead": 1,
+          "start": "2026-11-30",
+          "end": "2026-12-06",
+          "label": "1주 (11.30~12.06)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.15,
+                0.196,
+                0.654
+              ],
+              "display": [
+                10,
+                20,
+                70
+              ],
+              "normal_range": [
+                4.1,
+                6.0
+              ],
+              "ens_mean_corrected": 10.0,
+              "weights": {
+                "statistical": 0.5,
+                "ec46": 0.35,
+                "gefs": 0.15
+              },
+              "sources": {
+                "statistical": [
+                  0.17,
+                  0.23,
+                  0.6
+                ],
+                "ec46": [
+                  0.01,
+                  0.1,
+                  0.89
+                ],
+                "gefs": [
+                  0.01,
+                  0.01,
+                  0.98
+                ]
+              },
+              "shrink": 0.25
+            },
+            "cloud": {
+              "prob": [
+                0.248,
+                0.42,
+                0.332
+              ],
+              "display": [
+                30,
+                40,
+                30
+              ],
+              "normal_range": [
+                47.1,
+                61.3
+              ],
+              "ens_mean_corrected": 56.8,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.26,
+                  0.35,
+                  0.39
+                ],
+                "ec46": [
+                  0.24,
+                  0.51,
+                  0.26
+                ],
+                "gefs": [
+                  0.17,
+                  0.35,
+                  0.48
+                ]
+              },
+              "shrink": 0.25
+            },
+            "srad": {
+              "prob": [
+                0.382,
+                0.365,
+                0.253
+              ],
+              "display": [
+                40,
+                40,
+                20
+              ],
+              "normal_range": [
+                8.1,
+                9.1
+              ],
+              "ens_mean_corrected": 8.0,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.46,
+                  0.32,
+                  0.22
+                ],
+                "ec46": [
+                  0.26,
+                  0.45,
+                  0.29
+                ],
+                "gefs": [
+                  0.7,
+                  0.23,
+                  0.07
+                ]
+              },
+              "shrink": 0.25
+            },
+            "precip": {
+              "prob": [
+                0.233,
+                0.333,
+                0.434
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                2.9,
+                11.8
+              ],
+              "ens_mean_corrected": 16.0,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.23,
+                  0.3,
+                  0.47
+                ],
+                "ec46": [
+                  0.24,
+                  0.37,
+                  0.39
+                ],
+                "gefs": [
+                  0.1,
+                  0.26,
+                  0.64
+                ]
+              },
+              "shrink": 0.25
+            }
+          },
+          "ptype": {
+            "p_snow": 0.19,
+            "rain_days": 1.5,
+            "snow_days": 0.26,
+            "climatology": {
+              "p_snow": 0.1,
+              "rain_days": 1.36,
+              "snow_days": 0.12
+            }
+          }
+        },
+        {
+          "lead": 2,
+          "start": "2026-12-07",
+          "end": "2026-12-13",
+          "label": "2주 (12.07~12.13)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.234,
+                0.257,
+                0.508
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                2.8,
+                4.8
+              ],
+              "ens_mean_corrected": 5.3,
+              "weights": {
+                "statistical": 0.45,
+                "ec46": 0.38,
+                "gefs": 0.17
+              },
+              "sources": {
+                "statistical": [
+                  0.16,
+                  0.21,
+                  0.63
+                ],
+                "ec46": [
+                  0.26,
+                  0.22,
+                  0.53
+                ],
+                "gefs": [
+                  0.07,
+                  0.23,
+                  0.7
+                ]
+              },
+              "shrink": 0.35
+            },
+            "cloud": {
+              "prob": [
+                0.156,
+                0.248,
+                0.596
+              ],
+              "display": [
+                20,
+                20,
+                60
+              ],
+              "normal_range": [
+                51.1,
+                62.2
+              ],
+              "ens_mean_corrected": 72.8,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.28,
+                  0.32,
+                  0.4
+                ],
+                "ec46": [
+                  0.01,
+                  0.2,
+                  0.79
+                ],
+                "gefs": [
+                  0.1,
+                  0.17,
+                  0.73
+                ]
+              },
+              "shrink": 0.35
+            },
+            "srad": {
+              "prob": [
+                0.557,
+                0.241,
+                0.202
+              ],
+              "display": [
+                60,
+                20,
+                20
+              ],
+              "normal_range": [
+                7.9,
+                8.8
+              ],
+              "ens_mean_corrected": 7.2,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.48,
+                  0.31,
+                  0.21
+                ],
+                "ec46": [
+                  0.7,
+                  0.2,
+                  0.1
+                ],
+                "gefs": [
+                  0.7,
+                  0.14,
+                  0.17
+                ]
+              },
+              "shrink": 0.35
+            },
+            "precip": {
+              "prob": [
+                0.19,
+                0.22,
+                0.59
+              ],
+              "display": [
+                20,
+                20,
+                60
+              ],
+              "normal_range": [
+                2.0,
+                8.0
+              ],
+              "ens_mean_corrected": 24.1,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.21,
+                  0.3,
+                  0.49
+                ],
+                "ec46": [
+                  0.1,
+                  0.16,
+                  0.74
+                ],
+                "gefs": [
+                  0.1,
+                  0.1,
+                  0.79
+                ]
+              },
+              "shrink": 0.35
+            }
+          },
+          "ptype": {
+            "p_snow": 0.26,
+            "rain_days": 1.75,
+            "snow_days": 0.36,
+            "climatology": {
+              "p_snow": 0.15,
+              "rain_days": 1.13,
+              "snow_days": 0.19
+            }
+          }
+        },
+        {
+          "lead": 3,
+          "start": "2026-12-14",
+          "end": "2026-12-20",
+          "label": "3주 (12.14~12.20)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.291,
+                0.279,
+                0.43
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                2.0,
+                3.8
+              ],
+              "ens_mean_corrected": 3.2,
+              "weights": {
+                "statistical": 0.46,
+                "ec46": 0.37,
+                "gefs": 0.16
+              },
+              "sources": {
+                "statistical": [
+                  0.17,
+                  0.2,
+                  0.63
+                ],
+                "ec46": [
+                  0.37,
+                  0.24,
+                  0.39
+                ],
+                "gefs": [
+                  0.23,
+                  0.32,
+                  0.45
+                ]
+              },
+              "shrink": 0.45
+            },
+            "cloud": {
+              "prob": [
+                0.25,
+                0.291,
+                0.459
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                51.3,
+                62.5
+              ],
+              "ens_mean_corrected": 62.5,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.28,
+                  0.31,
+                  0.41
+                ],
+                "ec46": [
+                  0.1,
+                  0.28,
+                  0.62
+                ],
+                "gefs": [
+                  0.32,
+                  0.2,
+                  0.48
+                ]
+              },
+              "shrink": 0.45
+            },
+            "srad": {
+              "prob": [
+                0.357,
+                0.318,
+                0.325
+              ],
+              "display": [
+                40,
+                30,
+                30
+              ],
+              "normal_range": [
+                7.9,
+                8.8
+              ],
+              "ens_mean_corrected": 8.1,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.5,
+                  0.29,
+                  0.2
+                ],
+                "ec46": [
+                  0.35,
+                  0.31,
+                  0.33
+                ],
+                "gefs": [
+                  0.39,
+                  0.29,
+                  0.32
+                ]
+              },
+              "shrink": 0.45
+            },
+            "precip": {
+              "prob": [
+                0.234,
+                0.299,
+                0.467
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                1.6,
+                5.7
+              ],
+              "ens_mean_corrected": 13.0,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.19,
+                  0.31,
+                  0.5
+                ],
+                "ec46": [
+                  0.14,
+                  0.26,
+                  0.6
+                ],
+                "gefs": [
+                  0.17,
+                  0.29,
+                  0.54
+                ]
+              },
+              "shrink": 0.45
+            }
+          },
+          "ptype": {
+            "p_snow": 0.25,
+            "rain_days": 1.08,
+            "snow_days": 0.34,
+            "climatology": {
               "p_snow": 0.2,
-              "rain_days": 0.8,
-              "snow_days": 0.24
+              "rain_days": 0.91,
+              "snow_days": 0.25
+            }
+          }
+        },
+        {
+          "lead": 4,
+          "start": "2026-12-21",
+          "end": "2026-12-27",
+          "label": "4주 (12.21~12.27)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.289,
+                0.306,
+                0.405
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                1.1,
+                3.1
+              ],
+              "ens_mean_corrected": 2.5,
+              "weights": {
+                "statistical": 0.49,
+                "ec46": 0.36,
+                "gefs": 0.16
+              },
+              "sources": {
+                "statistical": [
+                  0.19,
+                  0.21,
+                  0.6
+                ],
+                "ec46": [
+                  0.35,
+                  0.29,
+                  0.35
+                ],
+                "gefs": [
+                  0.17,
+                  0.45,
+                  0.39
+                ]
+              },
+              "shrink": 0.5
+            },
+            "cloud": {
+              "prob": [
+                0.3,
+                0.277,
+                0.423
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                51.5,
+                60.9
+              ],
+              "ens_mean_corrected": 60.4,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.28,
+                  0.31,
+                  0.41
+                ],
+                "ec46": [
+                  0.2,
+                  0.22,
+                  0.58
+                ],
+                "gefs": [
+                  0.42,
+                  0.2,
+                  0.39
+                ]
+              },
+              "shrink": 0.5
+            },
+            "srad": {
+              "prob": [
+                0.421,
+                0.252,
+                0.326
+              ],
+              "display": [
+                40,
+                30,
+                30
+              ],
+              "normal_range": [
+                8.1,
+                8.9
+              ],
+              "ens_mean_corrected": 8.2,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.51,
+                  0.29,
+                  0.2
+                ],
+                "ec46": [
+                  0.56,
+                  0.14,
+                  0.29
+                ],
+                "gefs": [
+                  0.39,
+                  0.2,
+                  0.42
+                ]
+              },
+              "shrink": 0.5
+            },
+            "precip": {
+              "prob": [
+                0.239,
+                0.297,
+                0.464
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                1.3,
+                4.5
+              ],
+              "ens_mean_corrected": 14.1,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.19,
+                  0.31,
+                  0.5
+                ],
+                "ec46": [
+                  0.14,
+                  0.29,
+                  0.56
+                ],
+                "gefs": [
+                  0.14,
+                  0.17,
+                  0.7
+                ]
+              },
+              "shrink": 0.5
+            }
+          },
+          "ptype": {
+            "p_snow": 0.28,
+            "rain_days": 0.92,
+            "snow_days": 0.41,
+            "climatology": {
+              "p_snow": 0.25,
+              "rain_days": 0.72,
+              "snow_days": 0.32
+            }
+          }
+        }
+      ],
+      "dynamical_sources": [
+        "ec46",
+        "gefs"
+      ]
+    },
+    "yeongnam": {
+      "weeks": [
+        {
+          "lead": 1,
+          "start": "2026-11-30",
+          "end": "2026-12-06",
+          "label": "1주 (11.30~12.06)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.134,
+                0.218,
+                0.648
+              ],
+              "display": [
+                10,
+                20,
+                70
+              ],
+              "normal_range": [
+                3.7,
+                5.9
+              ],
+              "ens_mean_corrected": 9.5,
+              "weights": {
+                "statistical": 0.43,
+                "ec46": 0.39,
+                "gefs": 0.17
+              },
+              "sources": {
+                "statistical": [
+                  0.15,
+                  0.28,
+                  0.57
+                ],
+                "ec46": [
+                  0.01,
+                  0.14,
+                  0.85
+                ],
+                "gefs": [
+                  0.01,
+                  0.01,
+                  0.98
+                ]
+              },
+              "shrink": 0.25
+            },
+            "cloud": {
+              "prob": [
+                0.149,
+                0.302,
+                0.549
+              ],
+              "display": [
+                10,
+                30,
+                60
+              ],
+              "normal_range": [
+                33.1,
+                47.2
+              ],
+              "ens_mean_corrected": 52.1,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.18,
+                  0.42,
+                  0.4
+                ],
+                "ec46": [
+                  0.06,
+                  0.31,
+                  0.62
+                ],
+                "gefs": [
+                  0.1,
+                  0.2,
+                  0.7
+                ]
+              },
+              "shrink": 0.25
+            },
+            "srad": {
+              "prob": [
+                0.514,
+                0.257,
+                0.229
+              ],
+              "display": [
+                50,
+                30,
+                20
+              ],
+              "normal_range": [
+                8.9,
+                9.9
+              ],
+              "ens_mean_corrected": 8.3,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.46,
+                  0.35,
+                  0.19
+                ],
+                "ec46": [
+                  0.47,
+                  0.26,
+                  0.28
+                ],
+                "gefs": [
+                  0.85,
+                  0.14,
+                  0.01
+                ]
+              },
+              "shrink": 0.25
+            },
+            "precip": {
+              "prob": [
+                0.221,
+                0.335,
+                0.445
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                1.0,
+                8.2
+              ],
+              "ens_mean_corrected": 16.3,
+              "weights": {
+                "statistical": 0.11,
+                "ec46": 0.62,
+                "gefs": 0.27
+              },
+              "sources": {
+                "statistical": [
+                  0.2,
+                  0.32,
+                  0.48
+                ],
+                "ec46": [
+                  0.26,
+                  0.37,
+                  0.37
+                ],
+                "gefs": [
+                  0.01,
+                  0.26,
+                  0.73
+                ]
+              },
+              "shrink": 0.25
+            }
+          },
+          "ptype": {
+            "p_snow": 0.11,
+            "rain_days": 1.35,
+            "snow_days": 0.14,
+            "climatology": {
+              "p_snow": 0.02,
+              "rain_days": 1.06,
+              "snow_days": 0.02
+            }
+          }
+        },
+        {
+          "lead": 2,
+          "start": "2026-12-07",
+          "end": "2026-12-13",
+          "label": "2주 (12.07~12.13)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.217,
+                0.264,
+                0.519
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                2.3,
+                4.5
+              ],
+              "ens_mean_corrected": 5.5,
+              "weights": {
+                "statistical": 0.39,
+                "ec46": 0.42,
+                "gefs": 0.19
+              },
+              "sources": {
+                "statistical": [
+                  0.14,
+                  0.25,
+                  0.61
+                ],
+                "ec46": [
+                  0.22,
+                  0.24,
+                  0.54
+                ],
+                "gefs": [
+                  0.04,
+                  0.17,
+                  0.79
+                ]
+              },
+              "shrink": 0.35
+            },
+            "cloud": {
+              "prob": [
+                0.133,
+                0.178,
+                0.689
+              ],
+              "display": [
+                10,
+                20,
+                70
+              ],
+              "normal_range": [
+                32.0,
+                46.6
+              ],
+              "ens_mean_corrected": 69.1,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.19,
+                  0.41,
+                  0.4
+                ],
+                "ec46": [
+                  0.01,
+                  0.03,
+                  0.97
+                ],
+                "gefs": [
+                  0.01,
+                  0.14,
+                  0.85
+                ]
+              },
+              "shrink": 0.35
+            },
+            "srad": {
+              "prob": [
+                0.6,
+                0.233,
+                0.167
+              ],
+              "display": [
+                60,
+                20,
+                20
+              ],
+              "normal_range": [
+                8.9,
+                9.8
+              ],
+              "ens_mean_corrected": 7.2,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.46,
+                  0.36,
+                  0.18
+                ],
+                "ec46": [
+                  0.74,
+                  0.2,
+                  0.06
+                ],
+                "gefs": [
+                  0.85,
+                  0.07,
+                  0.07
+                ]
+              },
+              "shrink": 0.35
+            },
+            "precip": {
+              "prob": [
+                0.168,
+                0.212,
+                0.62
+              ],
+              "display": [
+                20,
+                20,
+                60
+              ],
+              "normal_range": [
+                0.6,
+                5.6
+              ],
+              "ens_mean_corrected": 26.1,
+              "weights": {
+                "statistical": 0.11,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.19,
+                  0.32,
+                  0.5
+                ],
+                "ec46": [
+                  0.06,
+                  0.12,
+                  0.81
+                ],
+                "gefs": [
+                  0.07,
+                  0.14,
+                  0.79
+                ]
+              },
+              "shrink": 0.35
+            }
+          },
+          "ptype": {
+            "p_snow": 0.08,
+            "rain_days": 1.78,
+            "snow_days": 0.09,
+            "climatology": {
+              "p_snow": 0.02,
+              "rain_days": 0.9,
+              "snow_days": 0.02
+            }
+          }
+        },
+        {
+          "lead": 3,
+          "start": "2026-12-14",
+          "end": "2026-12-20",
+          "label": "3주 (12.14~12.20)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.279,
+                0.311,
+                0.41
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                1.4,
+                3.5
+              ],
+              "ens_mean_corrected": 3.1,
+              "weights": {
+                "statistical": 0.39,
+                "ec46": 0.42,
+                "gefs": 0.19
+              },
+              "sources": {
+                "statistical": [
+                  0.15,
+                  0.28,
+                  0.57
+                ],
+                "ec46": [
+                  0.35,
+                  0.29,
+                  0.35
+                ],
+                "gefs": [
+                  0.14,
+                  0.32,
+                  0.54
+                ]
+              },
+              "shrink": 0.45
+            },
+            "cloud": {
+              "prob": [
+                0.185,
+                0.265,
+                0.55
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                31.3,
+                44.9
+              ],
+              "ens_mean_corrected": 53.6,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.19,
+                  0.41,
+                  0.4
+                ],
+                "ec46": [
+                  0.03,
+                  0.14,
+                  0.83
+                ],
+                "gefs": [
+                  0.1,
+                  0.29,
+                  0.6
+                ]
+              },
+              "shrink": 0.45
+            },
+            "srad": {
+              "prob": [
+                0.413,
+                0.36,
+                0.227
+              ],
+              "display": [
+                40,
+                40,
+                20
+              ],
+              "normal_range": [
+                8.9,
+                9.9
+              ],
+              "ens_mean_corrected": 8.5,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.45,
+                  0.38,
+                  0.17
+                ],
+                "ec46": [
+                  0.47,
+                  0.35,
+                  0.18
+                ],
+                "gefs": [
+                  0.51,
+                  0.45,
+                  0.04
+                ]
+              },
+              "shrink": 0.45
+            },
+            "precip": {
+              "prob": [
+                0.234,
+                0.278,
+                0.488
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                0.3,
+                3.9
+              ],
+              "ens_mean_corrected": 13.4,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.17,
+                  0.32,
+                  0.51
+                ],
+                "ec46": [
+                  0.2,
+                  0.18,
+                  0.62
+                ],
+                "gefs": [
+                  0.04,
+                  0.32,
+                  0.64
+                ]
+              },
+              "shrink": 0.45
+            }
+          },
+          "ptype": {
+            "p_snow": 0.07,
+            "rain_days": 0.98,
+            "snow_days": 0.08,
+            "climatology": {
+              "p_snow": 0.04,
+              "rain_days": 0.75,
+              "snow_days": 0.04
+            }
+          }
+        },
+        {
+          "lead": 4,
+          "start": "2026-12-21",
+          "end": "2026-12-27",
+          "label": "4주 (12.21~12.27)",
+          "vars": {
+            "temp": {
+              "prob": [
+                0.295,
+                0.314,
+                0.391
+              ],
+              "display": [
+                30,
+                30,
+                40
+              ],
+              "normal_range": [
+                0.7,
+                2.7
+              ],
+              "ens_mean_corrected": 2.2,
+              "weights": {
+                "statistical": 0.42,
+                "ec46": 0.4,
+                "gefs": 0.18
+              },
+              "sources": {
+                "statistical": [
+                  0.16,
+                  0.32,
+                  0.52
+                ],
+                "ec46": [
+                  0.41,
+                  0.26,
+                  0.33
+                ],
+                "gefs": [
+                  0.14,
+                  0.32,
+                  0.54
+                ]
+              },
+              "shrink": 0.5
+            },
+            "cloud": {
+              "prob": [
+                0.229,
+                0.295,
+                0.476
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                30.2,
+                42.2
+              ],
+              "ens_mean_corrected": 48.4,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.18,
+                  0.43,
+                  0.39
+                ],
+                "ec46": [
+                  0.08,
+                  0.2,
+                  0.72
+                ],
+                "gefs": [
+                  0.2,
+                  0.32,
+                  0.48
+                ]
+              },
+              "shrink": 0.5
+            },
+            "srad": {
+              "prob": [
+                0.466,
+                0.285,
+                0.249
+              ],
+              "display": [
+                50,
+                30,
+                20
+              ],
+              "normal_range": [
+                9.1,
+                10.1
+              ],
+              "ens_mean_corrected": 8.8,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.45,
+                  0.39,
+                  0.16
+                ],
+                "ec46": [
+                  0.66,
+                  0.16,
+                  0.18
+                ],
+                "gefs": [
+                  0.51,
+                  0.35,
+                  0.14
+                ]
+              },
+              "shrink": 0.5
+            },
+            "precip": {
+              "prob": [
+                0.196,
+                0.333,
+                0.471
+              ],
+              "display": [
+                20,
+                30,
+                50
+              ],
+              "normal_range": [
+                0.1,
+                2.2
+              ],
+              "ens_mean_corrected": 13.6,
+              "weights": {
+                "statistical": 0.1,
+                "ec46": 0.62,
+                "gefs": 0.28
+              },
+              "sources": {
+                "statistical": [
+                  0.17,
+                  0.33,
+                  0.5
+                ],
+                "ec46": [
+                  0.06,
+                  0.29,
+                  0.64
+                ],
+                "gefs": [
+                  0.01,
+                  0.42,
+                  0.57
+                ]
+              },
+              "shrink": 0.5
+            }
+          },
+          "ptype": {
+            "p_snow": 0.08,
+            "rain_days": 0.77,
+            "snow_days": 0.09,
+            "climatology": {
+              "p_snow": 0.06,
+              "rain_days": 0.58,
+              "snow_days": 0.06
             }
           }
         }
@@ -729,5 +2889,5 @@
     "rmm1": 0.0,
     "rmm2": 0.0
   },
-  "narrative": "## 해설 (자동 요약)\n**전국**\n- 1주 (11.30~12.06): 기온 평년보다 높음, 운량 평년보다 많음, 일사량 평년보다 적음, 강수량 평년보다 많음\n- 2주 (12.07~12.13): 기온 평년보다 높음, 운량 평년보다 많음, 일사량 평년보다 적음, 강수량 평년보다 많음\n- 3주 (12.14~12.20): 기온 평년보다 대체로 높음, 운량 평년보다 많음, 일사량 평년보다 대체로 적음, 강수량 평년보다 대체로 많음\n- 4주 (12.21~12.27): 기온 평년보다 대체로 높음, 운량 평년보다 많음, 일사량 평년보다 대체로 적음, 강수량 평년과 비슷하거나 많음"
+  "narrative": "## 해설 (자동 요약)\n**전국**\n- 1주 (11.30~12.06): 기온 평년보다 높음, 운량 평년보다 많음, 일사량 평년보다 적음, 강수량 평년보다 많음\n- 2주 (12.07~12.13): 기온 평년보다 높음, 운량 평년보다 많음, 일사량 평년보다 적음, 강수량 평년보다 많음\n- 3주 (12.14~12.20): 기온 평년보다 대체로 높음, 운량 평년보다 많음, 일사량 평년과 비슷하거나 적음, 강수량 평년보다 대체로 많음\n- 4주 (12.21~12.27): 기온 평년보다 대체로 높음, 운량 평년보다 대체로 많음, 일사량 평년보다 대체로 적음, 강수량 평년보다 대체로 많음\n**중부**\n- 1주 (11.30~12.06): 기온 평년보다 높음, 운량 평년보다 많음, 일사량 평년보다 적음, 강수량 평년보다 대체로 많음\n- 2주 (12.07~12.13): 기온 평년보다 높음, 운량 평년보다 많음, 일사량 평년보다 적음, 강수량 평년보다 많음\n- 3주 (12.14~12.20): 기온 평년보다 대체로 높음, 운량 평년보다 많음, 일사량 평년보다 대체로 적음, 강수량 평년보다 대체로 많음, 눈 올 확률 31%\n- 4주 (12.21~12.27): 기온 평년보다 대체로 높음, 운량 평년보다 많음, 일사량 평년보다 대체로 적음, 강수량 평년보다 대체로 많음\n**호남**\n- 1주 (11.30~12.06): 기온 평년보다 높음, 운량 평년과 대체로 비슷, 일사량 평년과 비슷하거나 적음, 강수량 평년보다 많음\n- 2주 (12.07~12.13): 기온 평년보다 높음, 운량 평년보다 많음, 일사량 평년보다 적음, 강수량 평년보다 많음\n- 3주 (12.14~12.20): 기온 평년보다 대체로 높음, 운량 평년보다 많음, 일사량 평년보다 대체로 적음, 강수량 평년보다 많음\n- 4주 (12.21~12.27): 기온 평년보다 대체로 높음, 운량 평년보다 대체로 많음, 일사량 평년보다 대체로 적음, 강수량 평년보다 많음\n**경상**\n- 1주 (11.30~12.06): 기온 평년보다 높음, 운량 평년보다 많음, 일사량 평년보다 적음, 강수량 평년보다 많음\n- 2주 (12.07~12.13): 기온 평년보다 높음, 운량 평년보다 많음, 일사량 평년보다 적음, 강수량 평년보다 많음\n- 3주 (12.14~12.20): 기온 평년보다 대체로 높음, 운량 평년보다 많음, 일사량 평년과 비슷하거나 적음, 강수량 평년보다 많음\n- 4주 (12.21~12.27): 기온 평년보다 대체로 높음, 운량 평년보다 많음, 일사량 평년보다 적음, 강수량 평년보다 많음"
 }
