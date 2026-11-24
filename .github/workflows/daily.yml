@@ -26,6 +26,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main          # 앞 실행이 커밋한 최신 기록(store·era5)부터 시작 (대기 중 밀린 실행 대비)
 
       - uses: actions/setup-python@v5
         with:
@@ -60,7 +62,7 @@ jobs:
           git config user.email "kwagent-bot@users.noreply.github.com"
           for f in data/era5 data/store.sqlite reports; do if [ -e "$f" ]; then git add "$f"; fi; done
           git commit -m "daily $(date +%F)" || echo "변경 없음"
-          git pull --rebase --autostash origin main || true
+          git pull --rebase --autostash origin main || { git rebase --abort; echo '::error::기록 충돌 — 다른 실행이 먼저 커밋함'; exit 1; }
           git push
 
       - uses: actions/configure-pages@v5

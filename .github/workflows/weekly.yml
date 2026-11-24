@@ -33,6 +33,8 @@ jobs:
     timeout-minutes: 170
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main          # 앞 실행이 커밋한 최신 기록(store·era5)부터 시작 (대기 중 밀린 실행 대비)
 
       - name: 할 일 판단
         id: mode
@@ -99,7 +101,7 @@ jobs:
           for f in data/era5 data/store.sqlite data/models reports; do if [ -e "$f" ]; then git add "$f"; fi; done
           if [ "${{ steps.backfill.outputs.complete }}" = "true" ]; then msg="forecast $(date +%F)"; else msg="ERA5 자료 이어 받기 $(date +%F' '%H:%M)"; fi
           git commit -m "$msg" || echo "변경 없음"
-          git pull --rebase --autostash origin main || true
+          git pull --rebase --autostash origin main || { git rebase --abort; echo '::error::기록 충돌 — 다른 실행이 먼저 커밋함'; exit 1; }
           git push
 
       - uses: actions/configure-pages@v5
