@@ -65,6 +65,6 @@ def test_daily_end_to_end(cfg):
     from kwagent import site
     s = Path(site.build(cfg, agent.store))
     html = (s / "daily.html").read_text(encoding="utf-8")
-    assert "2주 일별 예측" in html and "최고(°C)" in html and "중부권" in html
+    assert "2주 일별 예측" in html and "최고<span" in html and "중부권" in html
     assert (s / "img" / f"daily_{result['issue']}_korea.png").exists()
     assert "2주 일별 예측" in (s / "verification.html").read_text(encoding="utf-8")

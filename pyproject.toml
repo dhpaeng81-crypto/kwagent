@@ -21,3 +21,6 @@ kwagent = "kwagent.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["kwagent*"]
+
+[tool.setuptools.package-data]
+kwagent = ["static/*"]

@@ -78,7 +78,9 @@ def test_end_to_end_offline(cfg):
 
     from kwagent import site
     s = Path(site.build(cfg, agent.store))
-    for name in ("index.html", "archive.html", "verification.html", "img/verification.png",
-                 f"f/{result['issue']}.html"):
+    for name in ("index.html", "month.html", "archive.html", "verification.html", "img/verification.png",
+                 f"f/{result['issue']}.html", "apple-touch-icon.png", "icon-512.png", "manifest.webmanifest"):
         assert (s / name).exists(), name
-    assert "중부권" in (s / "index.html").read_text(encoding="utf-8")
+    assert "중부권" in (s / "month.html").read_text(encoding="utf-8")
+    index = (s / "index.html").read_text(encoding="utf-8")
+    assert "2주 일별 예측" in index and 'rel="apple-touch-icon"' in index
