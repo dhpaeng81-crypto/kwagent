@@ -11,6 +11,14 @@
     cloud: ["#c99a2e", "#b3bac1", "#56657a"], srad: ["#6f7d96", "#b3bac1", "#d9831a"],
   };
 
+  if (window.matchMedia("(max-width: 640px)").matches) {  // 휴대폰: 축 이름 빼고 범례 작게
+    Chart.register({ id: "narrowFit", beforeInit(ch) {
+      const o = ch.config.options;
+      for (const s of Object.values(o.scales || {})) if (s.title) s.title.display = false;
+      const pl = (o.plugins = o.plugins || {}), lg = (pl.legend = pl.legend || {}), lb = (lg.labels = lg.labels || {});
+      lb.font = { size: 11 }; lb.boxWidth = 10; lb.padding = 8;
+    } });
+  }
   Chart.defaults.font.family = "'Noto Sans KR', system-ui, sans-serif";
   Chart.defaults.font.size = 12;
   Chart.defaults.color = "#5b6670";

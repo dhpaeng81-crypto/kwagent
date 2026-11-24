@@ -174,12 +174,4 @@
       sc.update();
     }
   }
-  // 그래프 고르기 버튼 (기온·강수·구름·일사량)
-  document.querySelectorAll(".seggroup").forEach((g) => {
-    const bs = g.querySelectorAll(".seg button");
-    bs.forEach((b) => b.addEventListener("click", () => {
-      bs.forEach((x) => x.classList.toggle("on", x === b));
-      g.querySelectorAll(".cbox[data-k], .note[data-k]").forEach((el) => { el.hidden = el.dataset.k !== b.dataset.k; });
-    }));
-  });
 })();

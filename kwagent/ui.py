@@ -81,3 +81,49 @@ def daily_headlines(days: list[dict]) -> list[tuple[str, str]]:
     elif not snow:
         out.append(("calm", "2주 동안 큰 비 소식 없음"))
     return out
+
+
+# ---------------------------------------------------------------- 1개월 전망 '한눈에'
+# 변수별 쉬운 말: (낮을 때, 높을 때)
+MONTH_WORDS = {"temp": ("쌀쌀", "따뜻"), "cloud": ("구름 적음", "구름 많음"),
+               "srad": ("햇빛 적음", "햇빛 많음"), "precip": ("건조", "비 많음")}
+CAT_COLORS = {"temp": ("#3d6fc4", "#9aa3ac", "#c9473b"), "precip": ("#9c6b3c", "#9aa3ac", "#2e8a5a"),
+              "cloud": ("#c99a2e", "#9aa3ac", "#56657a"), "srad": ("#6f7d96", "#9aa3ac", "#d9831a")}
+
+
+def month_chips(rd: dict, vars_: list[str]) -> list[tuple[str, str, str]]:
+    """4주 전체 경향을 짧은 말로: [(변수, 색, 말)]. 높음-낮음 확률 차이의 4주 평균으로 판단."""
+    out = []
+    for v in vars_:
+        w = [wk["vars"][v]["prob"] for wk in rd["weeks"] if v in wk["vars"]]
+        if not w:
+            continue
+        tend = sum(p[2] - p[0] for p in w) / len(w)
+        early = sum(p[2] - p[0] for p in w[:2]) / max(1, len(w[:2]))
+        late = sum(p[2] - p[0] for p in w[2:]) / max(1, len(w[2:]))
+        lo, hi = MONTH_WORDS.get(v, ("낮음", "높음"))
+        col = CAT_COLORS.get(v, CAT_COLORS["temp"])
+        if early > 0.15 and late < -0.15 or early < -0.15 and late > 0.15:
+            word = f"초반 {hi if early > 0 else lo} → 후반 {hi if late > 0 else lo}"
+            c = col[1]
+        elif abs(tend) <= 0.12:
+            word = {"temp": "기온 평년 수준", "cloud": "구름 평년 수준", "srad": "햇빛 평년 수준",
+                    "precip": "강수 평년 수준"}.get(v, "평년 수준")
+            c = col[1]
+        else:
+            word = ("" if abs(tend) > 0.3 else "대체로 ") + (hi if tend > 0 else lo)
+            c = col[2] if tend > 0 else col[0]
+        out.append((v, c, word))
+    return out
+
+
+def month_cell(display: list[int], var: str, cats: tuple[str, str, str]) -> tuple[str, str, float]:
+    """색깔표 한 칸: (말, 배경색, 진하기 0~1). 같은 확률이 겹치면 '비슷~높음'처럼."""
+    order = sorted(range(3), key=lambda k: -display[k])
+    i = order[0]
+    col = CAT_COLORS.get(var, CAT_COLORS["temp"])
+    if display[order[0]] == display[order[1]]:
+        a, b = sorted(order[:2])
+        return f"{cats[a]}~{cats[b]}", "#9aa3ac", 0.25
+    strength = max(0.0, min(1.0, (display[i] - 33) / 40))   # 40%면 옅게, 70% 이상이면 진하게
+    return cats[i], col[i], strength

@@ -105,6 +105,33 @@ h3.sec{font-size:17px;margin:30px 0 10px}h3.sec .q{font-size:12.5px;font-weight:
 .dmore dt{color:var(--quiet)}.dmore dd{margin:0}
 details.about{margin:30px 0 0;color:var(--quiet);font-size:13px;line-height:1.7}
 details.about summary{cursor:pointer;font-weight:600;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 12px}
+.chip{padding:7px 14px;border-radius:999px;font-size:15px;font-weight:600;color:var(--c);
+background:color-mix(in srgb,var(--c) 12%,white);border:1px solid color-mix(in srgb,var(--c) 30%,white)}
+.card.grid4{padding:10px 12px 8px}
+table.mgrid{table-layout:fixed}table.mgrid th,table.mgrid td{border:0;padding:4px 3px}
+table.mgrid tr:first-child th{font-size:13px;color:var(--ink);font-weight:600}
+table.mgrid tr:first-child th span{display:block;font-size:11px;color:var(--quiet);font-weight:400}
+table.mgrid th.l{width:76px;font-size:13.5px;color:var(--ink)}
+table.mgrid td{background:color-mix(in srgb,var(--c) calc(var(--s)*100%),white);border-radius:8px;
+border:3px solid var(--bg);height:54px;line-height:1.25}
+table.mgrid td b{display:block;font-size:14px}table.mgrid td span{font-size:12px;opacity:.8}
+table.mgrid td.dk{color:#fff}
+table.mgrid td.sn{background:#f1f4f8;--c:#fff}table.mgrid td.sn.up{background:#e2ecfb;color:#2357a8}
+table.mgrid td.sn b{font-size:14px}
+.grid4 .note{margin:6px 4px 2px;font-size:12px}
+details.fold{margin:10px 0 0}details.fold>summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-weight:600;
+list-style:none;padding:6px 0}details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"＋ ";}details.fold[open]>summary::before{content:"－ ";}
+details.fold.narr{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 16px;margin:0 0 8px}
+details.fold.narr .foldbody{font-size:14px}.foldbody h2{display:none}
+.segpane[hidden]{display:none}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:16px 0 4px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.tile b{display:block;font-size:24px;line-height:1.2;margin-bottom:2px}.tile span{display:block;font-size:13px;color:var(--quiet);line-height:1.45}
+.tile.good b{color:#1f7a4d}.tile.bad b{color:#b3372d}
+.card.empty{color:var(--quiet);font-size:14px}.card.empty b{color:var(--ink)}
+.seggroup .sel{margin:0 0 6px}
 @media (max-width:640px){
 .wrap{padding:0 14px}
 header .wrap{height:auto;flex-wrap:wrap;padding-top:10px;padding-bottom:4px;row-gap:2px}
@@ -118,7 +145,8 @@ td small{display:block;font-size:10.5px;line-height:1.3}
 table.daily td.l{white-space:nowrap;font-size:12.5px}
 .cbox{height:240px}.cbox.m{height:220px}
 .phead{margin-top:20px}.hl{font-size:14.5px}.heads{padding:2px 14px}.dc{flex-basis:62px}
-.dhead,.drow summary{grid-template-columns:74px 26px 1fr 42px 12px;padding:10px 12px}.dmore{padding:6px 12px 14px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
+.dhead,.drow summary{grid-template-columns:74px 26px 1fr 42px 12px;padding:10px 12px}
+table.mgrid th.l{width:58px;font-size:12.5px}table.mgrid td{height:50px;border-width:2px}table.mgrid td b{font-size:12.5px}.chip{font-size:14px;padding:6px 12px}.tiles{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:10px 12px}.tile b{font-size:20px}.tile span{font-size:12px}.seg button{font-size:13px}.dmore{padding:6px 12px 14px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
 }
 """
 
@@ -178,7 +206,10 @@ def _region_tabs(regions) -> str:
         + "</div>")
 
 
-REGION_JS = """<script>(function(){var b=document.querySelectorAll('.rtabs button');if(!b.length)return;
+REGION_JS = """<script>document.querySelectorAll('.seggroup').forEach(function(g){var bs=g.querySelectorAll('.seg button');
+bs.forEach(function(b){b.addEventListener('click',function(){bs.forEach(function(x){x.classList.toggle('on',x===b)});
+g.querySelectorAll(':scope>[data-k]').forEach(function(el){el.hidden=el.dataset.k!==b.dataset.k})})})});
+(function(){var b=document.querySelectorAll('.rtabs button');if(!b.length)return;
 var s=document.querySelectorAll('.rsec');function pick(r){var ok=false;b.forEach(function(x){if(x.dataset.r===r)ok=true});
 if(!ok)r=b[0].dataset.r;b.forEach(function(x){x.classList.toggle('on',x.dataset.r===r);x.setAttribute('aria-selected',x.dataset.r===r)});
 s.forEach(function(x){x.hidden=x.dataset.region!==r});try{localStorage.setItem('kw-region',r)}catch(e){}}
@@ -248,55 +279,101 @@ def _prob_cells(display: list[int], var: str) -> str:
     return "".join(cells)
 
 
+def _seg_card(tabs: list[tuple[str, str, str, str]]) -> str:
+    """버튼으로 골라 보는 카드. tabs = [(키, 버튼 이름, 설명, 내용 html)]."""
+    seg = "".join(f"<button type='button' data-k='{k}'{' class=on' if i == 0 else ''}>{name}</button>"
+                  for i, (k, name, _, _) in enumerate(tabs))
+    body = "".join(f"<div class='segpane' data-k='{k}'{'' if i == 0 else ' hidden'}>"
+                   f"{f'<p class=note>{desc}</p>' if desc else ''}{html_}</div>"
+                   for i, (k, _, desc, html_) in enumerate(tabs))
+    return f"<div class='card chartcard seggroup'><div class='seg' role='tablist'>{seg}</div>{body}</div>"
+
+
+def _fold(title: str, html_: str, cls: str = "") -> str:
+    return f"<details class='fold {cls}'><summary>{title}</summary><div class='foldbody'>{html_}</div></details>"
+
+
 def forecast_body(result: dict, img_prefix: str) -> str:
+    from .ui import month_cell, month_chips
     issue = result["issue"]
     ix = result.get("indices", {})
     regions = list(result["regions"])
     root = img_prefix[:-len("img/")]
-    parts = [f"<div class='headrow'><div><h1>1개월 기상전망</h1><p class='sub'>발표 {issue} · 다음다음 주 월요일부터 4주 · "
-             "막대에 마우스를 올리거나 눌러 보면 평년 범위와 모델별 확률이 나옵니다</p></div>"
-             f"<a class='btn' href='{root}forecast_{issue}.xlsx' download>엑셀로 받기</a></div>"]
+    first = next(iter(result["regions"].values()))["weeks"]
+    span = f"{first[0]['start'][5:].replace('-', '.')}~{first[-1]['end'][5:].replace('-', '.')}"
+    _, mo, dd = issue.split("-")
+    parts = [f"<div class='phead'><div><h1>1개월 전망</h1><p class='meta'>{int(mo)}월 {int(dd)}일 발표 · "
+             f"{span} (4주)</p></div><a class='btn ghost' href='{root}forecast_{issue}.xlsx' download>엑셀</a></div>"]
     parts.append(_region_tabs(regions))
     narr = _split_narrative(result.get("narrative") or "", regions)
-    if narr is None and result.get("narrative"):
-        parts.append(f'<div class="card narr">{md_to_html(result["narrative"])}</div>')
     for region in regions:
         rd = result["regions"][region]
-        parts.append(f"<section class='rsec' data-region='{region}'>"
-                     f'<h2 id="{region}">{REGION_LABELS.get(region, region)}</h2>')
+        vs = result_vars(rd)
+        parts.append(f"<section class='rsec' data-region='{region}'>")
+        # 1) 한눈에: 4주 경향 낱말 + 4주 × 변수 색깔표
+        chips = month_chips(rd, vs)
+        parts.append("<div class='chips'>" + "".join(
+            f"<span class='chip' style='--c:{c}'>{w}</span>" for _, c, w in chips) + "</div>")
+        head = "".join(f"<th>{wk['label'].split(' ')[0]}<span>{wk['start'][5:].replace('-', '.')}~</span></th>"
+                       for wk in rd["weeks"])
+        rows = []
+        for v in vs:
+            cats = tuple(VAR_LABEL[v][1:4])
+            cells = []
+            for wk in rd["weeks"]:
+                d = wk["vars"][v]
+                word, col, s = month_cell(d["display"], v, cats)
+                pct = max(d["display"])
+                dark = s >= 0.8
+                cells.append(f"<td style='--c:{col};--s:{0.18 + 0.72 * s:.2f}' class='{'dk' if dark else ''}' "
+                             f"title='{_verdict(d['display'], v)} ({'/'.join(str(x) for x in d['display'])}%)'>"
+                             f"<b>{word}</b><span>{pct}%</span></td>")
+            rows.append(f"<tr><th class='l'>{VAR_LABEL[v][0]}</th>{''.join(cells)}</tr>")
+        snow = "".join(
+            f"<td class='sn{' up' if wk['ptype']['p_snow'] > wk['ptype']['climatology']['p_snow'] + 0.05 else ''}'>"
+            f"<b>{wk['ptype']['p_snow']*100:.0f}%</b><span>평년 {wk['ptype']['climatology']['p_snow']*100:.0f}%</span></td>"
+            for wk in rd["weeks"])
+        rows.append(f"<tr><th class='l'>눈 올 확률</th>{snow}</tr>")
+        parts.append(f"<div class='card grid4'><table class='mgrid'><tr><th></th>{head}</tr>{''.join(rows)}</table>"
+                     "<p class='note'>칸 색이 진할수록 확률이 높음 · 숫자는 가장 큰 쪽 확률</p></div>")
         if narr and narr.get(region):
-            parts.append(f'<div class="card narr">{md_to_html(narr[region])}</div>')
-        parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 확률" '
-                     f'src="{img_prefix}forecast_{issue}_{region}.png"></noscript>')
-        for v in result_vars(rd):
+            parts.append(_fold("자동 해설 전문", md_to_html(narr[region]), "narr"))
+        elif narr is None and result.get("narrative") and region == regions[0]:
+            parts.append(_fold("자동 해설 전문", md_to_html(result["narrative"]), "narr"))
+        # 2) 그래프: 변수 버튼 + 표 접기
+        tabs = []
+        for v in vs:
             name, lo, mid, hi, unit = VAR_LABEL[v]
-            chart = (f"<p class='note'>{MONTH_DESC.get(v, '')}</p>"
-                     f"<div class='cbox m'><canvas id='m-{region}-{v}' aria-label='{name} 확률'></canvas></div>")
-            rows = []
+            trs = []
             for wk in rd["weeks"]:
                 d = wk["vars"][v]
                 a, b = d["normal_range"]
-                rows.append(f"<tr><td class='l'>{wk['label']}</td><td>{a}~{b}</td>"
-                            f"{_prob_cells(d['display'], v)}<td class='verdict l'>"
-                            f"{_verdict(d['display'], v)}</td></tr>")
-            parts.append(f"<div class='card chartcard'><h3>{name}</h3>{chart}<table class='mt'><tr><th class='l'>주</th>"
-                         f"<th>평년비슷범위({unit})</th><th>{lo}</th><th>{mid}</th><th>{hi}</th>"
-                         f"<th class='l'>전망</th></tr>{''.join(rows)}</table></div>")
-        rows = "".join(
-            f"<tr><td class='l'>{wk['label']}</td><td>{wk['ptype']['rain_days']:.1f}</td>"
+                trs.append(f"<tr><td class='l'>{wk['label'].split(' ')[0]}</td><td>{a}~{b}</td>"
+                           f"{_prob_cells(d['display'], v)}<td class='verdict l'>{_verdict(d['display'], v)}</td></tr>")
+            table = (f"<table class='mt'><tr><th class='l'>주</th><th>평년 범위<span class='u'>{unit}</span></th>"
+                     f"<th>{lo}</th><th>{mid}</th><th>{hi}</th><th class='l'>전망</th></tr>{''.join(trs)}</table>")
+            tabs.append((v, name, MONTH_DESC.get(v, ""),
+                         f"<div class='cbox m'><canvas id='m-{region}-{v}' aria-label='{name} 확률'></canvas></div>"
+                         + _fold("표로 보기", table)))
+        trs = "".join(
+            f"<tr><td class='l'>{wk['label'].split(' ')[0]}</td><td>{wk['ptype']['rain_days']:.1f}</td>"
             f"<td>{wk['ptype']['snow_days']:.1f}</td><td>{wk['ptype']['p_snow']*100:.0f}%</td>"
             f"<td>{wk['ptype']['climatology']['p_snow']*100:.0f}%</td></tr>" for wk in rd["weeks"])
-        parts.append("<div class='card chartcard'><h3>강수형태 (비/눈)</h3>"
-                     "<p class='note'>막대는 주별 비·눈 오는 날 수, 선은 눈이 하루라도 올 확률</p>"
+        tabs.append(("ptype", "비·눈", "막대는 주별 비·눈 오는 날 수, 선은 눈이 하루라도 올 확률",
                      f"<div class='cbox m'><canvas id='m-{region}-ptype' aria-label='강수형태'></canvas></div>"
-                     "<table class='mt'><tr><th class='l'>주</th>"
-                     "<th>비 오는 날(일)</th><th>눈 오는 날(일)</th><th>눈 올 확률</th><th>평년 눈 확률</th>"
-                     f"</tr>{rows}</table></div>")
-        src = ", ".join(SOURCE_LABEL.get(s, s) for s in rd.get("dynamical_sources", [])) or "없음(통계모델만)"
-        parts.append(f"<p class='note'>사용한 역학모델: {src}</p></section>")
-    if ix:
-        parts.append("<p class='note'>발표 시점 기후지수 — Niño3.4 {nino34:+.2f}, AO(7일) {ao:+.2f}, "
-                     "MJO RMM1/RMM2 {rmm1:+.2f}/{rmm2:+.2f}</p>".format(**ix))
+                     + _fold("표로 보기", "<table class='mt'><tr><th class='l'>주</th><th>비 오는 날</th><th>눈 오는 날</th>"
+                                       f"<th>눈 확률</th><th>평년 눈 확률</th></tr>{trs}</table>")))
+        parts.append("<h3 class='sec'>주별 확률 <span class='q'>· 막대를 누르면 평년 범위와 모델별 확률</span></h3>")
+        parts.append(_seg_card(tabs))
+        parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 확률" '
+                     f'src="{img_prefix}forecast_{issue}_{region}.png"></noscript></section>')
+    srcs = sorted({s for rd in result["regions"].values() for s in rd.get("dynamical_sources", [])})
+    src = ", ".join(SOURCE_LABEL.get(s, s) for s in srcs) or "없음(통계모델만)"
+    ixs = ("Niño3.4 {nino34:+.2f}, AO(7일) {ao:+.2f}, MJO RMM1/RMM2 {rmm1:+.2f}/{rmm2:+.2f}".format(**ix)) if ix else "-"
+    parts.append("<details class='about'><summary>자료와 방법</summary>"
+                 "<p>대상은 발표일이 속한 주의 다음다음 주 월요일부터 4주입니다. 1991~2020년 평년을 셋으로 나눠 "
+                 "낮음·비슷·높음(강수·운량·일사량은 적음·비슷·많음)에 들 확률을 10% 단위로 냅니다. "
+                 f"통계모델과 역학모델({src})을 지난 성적에 따라 섞습니다. 발표 시점 기후지수: {ixs}.</p></details>")
     data = {"regions": {}}
     for region in regions:
         rd = result["regions"][region]
@@ -319,10 +396,10 @@ def forecast_body(result: dict, img_prefix: str) -> str:
 
 
 MONTH_DESC = {
-    "temp": "주평균 기온이 평년(1991~2020)보다 낮을/비슷할/높을 확률",
-    "cloud": "주평균 운량(하늘을 덮은 구름 비율)이 평년보다 적을/비슷할/많을 확률",
-    "srad": "주평균 일사량(땅에 닿는 햇빛 에너지)이 평년보다 적을/비슷할/많을 확률",
-    "precip": "한 주 강수량 합계가 평년보다 적을/비슷할/많을 확률",
+    "temp": "주평균 기온이 평년보다 낮을·비슷할·높을 확률",
+    "cloud": "주평균 운량(하늘을 덮은 구름 비율)이 적을·비슷할·많을 확률",
+    "srad": "주평균 일사량(땅에 닿는 햇빛)이 적을·비슷할·많을 확률",
+    "precip": "한 주 강수량 합계가 적을·비슷할·많을 확률",
 }
 
 
@@ -441,17 +518,26 @@ def _order(regions) -> list[str]:
     return [r for r in REGION_ORDER if r in regions] + [r for r in regions if r not in REGION_ORDER]
 
 
-def daily_verification_body(store):
+def _pct_word(x: float) -> str:
+    """평년 대비 개선(0.41) → '평년보다 41% 정확'."""
+    return f"평년보다 {abs(x)*100:.0f}% {'정확' if x >= 0 else '부정확'}"
+
+
+def _tile(value: str, label: str, good: bool | None) -> str:
+    cls = "" if good is None else (" good" if good else " bad")
+    return f"<div class='tile{cls}'><b>{value}</b><span>{label}</span></div>"
+
+
+def daily_verification_parts(store):
+    """2주 일별 성적: 권역별 (요약 타일들, 본문 html), 그래프 자료."""
     from .daily import DLABEL, LEAD_BINS, MODEL_LABEL, summary
     s = summary(store)
-    head = ("<h2>2주 일별 예측</h2><p class='sub'>정답 ERA5. 평년 대비 개선 = 1 − 오차/평년예보 오차 "
-            "(0보다 크면 평년보다 나음). 범위 적중률은 10~90% 범위에 실제 값이 든 비율(80%가 이상적).</p>")
     if s.empty:
-        return head + "<div class='card'>아직 채점된 일별 예측이 없습니다. 첫 예측 후 약 1주가 지나면 나타납니다.</div>", None
+        return {}, None
     bins = [b for _, _, b in LEAD_BINS]
     _num = lambda x: None if pd.isna(x) else round(float(x), 3)  # noqa: E731
     vdata = {"bins": bins, "regions": {}}
-    out = head
+    out = {}
     for region in _order(s["region"]):
         c = s[(s["region"] == region) & (s["source"] == "combined")]
         rv = vdata["regions"][region] = {"vars": [], "models": {}}
@@ -466,16 +552,15 @@ def daily_verification_body(store):
             m = s[(s["region"] == region) & (s["var"] == var)]
             rv["models"][var] = {src: {r.bin: {"mae": _num(r.mae), "bias": _num(r.bias), "n": int(r.n)}
                                        for r in g.itertuples()} for src, g in m.groupby("source")}
-        opts = "".join(f"<option value='{v['key']}'>{v['name']}</option>" for v in rv["vars"])
-        out += (f"<section class='rsec' data-region='{region}'>"
-                f"<h3 class='rg'>{REGION_LABELS.get(region, region)}</h3>"
-                "<div class='card chartcard'><h3>평년 대비 개선 (최종 예측)</h3>"
-                "<p class='note'>막대가 0보다 높을수록 '평년값으로 찍기'보다 정확. 진한 색일수록 가까운 날</p>"
-                f"<div class='cbox'><canvas id='v-daily-skill-{region}' aria-label='평년 대비 개선'></canvas></div></div>"
-                "<div class='card chartcard'><div class='headrow'><div><h3>모델별 평균 오차</h3>"
-                "<p class='note'>어느 모델이 잘 맞는지 비교 (막대가 낮을수록 정확)</p></div>"
-                f"<select id='v-daily-var-{region}' class='sel' aria-label='변수'>{opts}</select></div>"
-                f"<div class='cbox'><canvas id='v-daily-models-{region}' aria-label='모델별 평균 오차'></canvas></div></div>")
+        tiles = []
+        ci = c.set_index(["var", "bin"])
+        for var, b in (("tmax", bins[0]), ("tmin", bins[0]), ("tmax", bins[-1])):
+            if (var, b) in ci.index and not pd.isna(ci.at[(var, b), "skill"]):
+                sk = ci.at[(var, b), "skill"]
+                tiles.append(_tile(f"{sk*100:+.0f}%", f"{DLABEL[var][0]} · {b}<br>평년값보다 {'정확' if sk > 0 else '부정확'}", sk > 0))
+        if ("precip", bins[0]) in ci.index and not pd.isna(ci.at[("precip", bins[0]), "bss"]):
+            bs = ci.at[("precip", bins[0]), "bss"]
+            tiles.append(_tile(f"{bs*100:+.0f}%", f"강수확률 · {bins[0]}<br>평년값보다 {'정확' if bs > 0 else '부정확'}", bs > 0))
         rows = []
         for var in DLABEL:
             sub = c[c["var"] == var].set_index("bin")
@@ -491,47 +576,54 @@ def daily_verification_body(store):
                                                      f"{r['skill']:+.2f}</span>")
                 cells.append(f"<td>{r['mae']:.2f} {sk}<small> · 적중 {r['cover']*100:.0f}% · {int(r['n'])}건</small></td>")
             rows.append(f"<tr><td class='l'>{DLABEL[var][0]} ({DLABEL[var][1]})</td>{''.join(cells)}</tr>")
-        out += ("<div class='card'><h3>최종(결합) — 평균 오차 · 평년 대비 개선</h3><table><tr><th class='l'>변수</th>"
-                + "".join(f"<th>{b}</th>" for b in bins) + "</tr>" + "".join(rows) + "</table></div>")
+        t1 = ("<table class='mt'><tr><th class='l'>변수</th>" + "".join(f"<th>{b}</th>" for b in bins) + "</tr>"
+              + "".join(rows) + "</table><p class='note'>평균 오차와 평년 대비 개선(색 숫자) · 적중 = 10~90% 범위에 든 비율(80%가 이상적)</p>")
         pc = c[c["var"] == "precip"].set_index("bin")
         if not pc.empty and pc["brier"].notna().any():
             cells = "".join("<td>-</td>" if b not in pc.index or pd.isna(pc.at[b, "brier"]) else
                             f"<td>{pc.at[b, 'brier']:.3f}" + ("" if pd.isna(pc.at[b, "bss"]) else
                                                               f" <span class='{'pos' if pc.at[b, 'bss'] > 0 else 'neg'}'>"
                                                               f"{pc.at[b, 'bss']:+.2f}</span>") + "</td>" for b in bins)
-            out += ("<div class='card'><h3>강수확률 (Brier 점수 · 평년 대비 개선)</h3><table><tr><th class='l'></th>"
-                    + "".join(f"<th>{b}</th>" for b in bins) + f"</tr><tr><td class='l'>최종(결합)</td>{cells}</tr></table></div>")
+            t1 += ("<table class='mt'><tr><th class='l'>강수확률 Brier</th>" + "".join(f"<th>{b}</th>" for b in bins)
+                   + f"</tr><tr><td class='l'>최종(결합)</td>{cells}</tr></table>")
         m = s[(s["region"] == region) & (s["var"] == "tmax")]
+        t2 = ""
         if not m.empty:
             piv = m.pivot_table(index="source", columns="bin", values="mae")
-            rows = "".join(f"<tr><td class='l'>{MODEL_LABEL.get(src, src)}</td>" + "".join(
-                "<td>-</td>" if b not in piv.columns or pd.isna(piv.at[src, b]) else f"<td>{piv.at[src, b]:.2f}</td>"
-                for b in bins) + "</tr>" for src in piv.index)
-            out += ("<div class='card'><h3>모델별 최고기온 평균 오차(°C)</h3><table><tr><th class='l'>모델</th>"
-                    + "".join(f"<th>{b}</th>" for b in bins) + "</tr>" + rows + "</table></div>")
-        out += "</section>"
+            t2 = ("<table class='mt'><tr><th class='l'>최고기온 오차(°C)</th>" + "".join(f"<th>{b}</th>" for b in bins)
+                  + "</tr>" + "".join(f"<tr><td class='l'>{MODEL_LABEL.get(src, src)}</td>" + "".join(
+                      "<td>-</td>" if b not in piv.columns or pd.isna(piv.at[src, b]) else f"<td>{piv.at[src, b]:.2f}</td>"
+                      for b in bins) + "</tr>" for src in piv.index) + "</table>")
+        opts = "".join(f"<option value='{v['key']}'>{v['name']}</option>" for v in rv["vars"])
+        card = _seg_card([
+            ("skill", "평년 대비 개선", "막대가 0보다 높을수록 '평년값으로 찍기'보다 정확 · 진한 색일수록 가까운 날",
+             f"<div class='cbox'><canvas id='v-daily-skill-{region}' aria-label='평년 대비 개선'></canvas></div>"
+             + _fold("표로 보기", t1)),
+            ("models", "모델별 오차", "어느 모델이 잘 맞는지 (막대가 낮을수록 정확)",
+             f"<select id='v-daily-var-{region}' class='sel' aria-label='변수'>{opts}</select>"
+             f"<div class='cbox'><canvas id='v-daily-models-{region}' aria-label='모델별 평균 오차'></canvas></div>"
+             + (_fold("표로 보기", t2) if t2 else "")),
+        ])
+        out[region] = (tiles, card)
     return out, vdata
 
 
-def verification_body(store, img_dir: Path) -> str:
+def month_verification_parts(store, img_dir: Path):
+    """1개월 성적: 권역별 (요약 타일들, 본문 html), 그래프 자료."""
     summ = store.summary()
-    parts = ["<h2>1개월 전망</h2><p class='sub'>RPSS = 평년(33/33/33%) 예보 대비 개선율. "
-             "0보다 크면 평년 예보보다 낫습니다. 지난 예측을 ERA5 로 채점해 매주 쌓입니다.</p>"]
     if summ.empty:
-        parts.append("<div class='card'>아직 채점된 1개월 전망이 없습니다. 첫 전망의 대상 기간(4주)이 지나고 "
-                     "약 1주 뒤부터 나타납니다.</div>")
-        return "".join(parts), None
+        return {}, None
     summ = summ[summ["source"] != "blend_raw"]
     _plot_verification(summ, img_dir / "verification.png")
-    parts.append('<noscript><img class="chart" alt="RPSS" src="img/verification.png"></noscript>')
-    mdata = {"regions": {}}
     snow = store.df("SELECT region, lead, p_snow, obs_snow FROM ptype_verification WHERE source='combined'")
     if not snow.empty:
         snow["bs"] = (snow["p_snow"] - snow["obs_snow"]) ** 2
         snow = snow.groupby(["region", "lead"])["bs"].agg(["mean", "size"]).reset_index()
+    mdata = {"regions": {}}
+    out = {}
     for region in _order(summ["region"]):
-        parts.append(f"<section class='rsec' data-region='{region}'><h3 class='rg'>{REGION_LABELS.get(region, region)}</h3>")
         mdata["regions"][region] = {"vars": []}
+        tiles, tabs = [], []
         for v in VARS:
             sub = summ[(summ["region"] == region) & (summ["var"] == v)]
             if sub.empty:
@@ -539,41 +631,61 @@ def verification_body(store, img_dir: Path) -> str:
             mdata["regions"][region]["vars"].append({"key": v, "name": VAR_LABEL[v][0], "sources": {
                 s: [{"lead": int(r.lead), "rpss": float(r.rpss), "n": int(r.n)} for r in g.sort_values("lead").itertuples()]
                 for s, g in sub.groupby("source")}})
+            comb = sub[sub["source"] == "combined"]
+            if not comb.empty:
+                x = float(comb["rpss"].mean())
+                tiles.append(_tile(f"{x:+.2f}", f"1개월 {VAR_LABEL[v][0]} · RPSS<br>{'평년 예보보다 나음' if x > 0 else '평년 예보보다 못함'}", x > 0))
             piv = sub.pivot_table(index="source", columns="lead", values="rpss")
             cnt = sub.groupby("source")["n"].max()
-            head = "".join(f"<th>{c}주</th>" for c in piv.columns)
             rows = []
-            for s in ["combined", "statistical", "ec46", "gefs"]:
-                if s not in piv.index:
+            for s_ in ["combined", "statistical", "ec46", "gefs"]:
+                if s_ not in piv.index:
                     continue
-                cells = "".join(
-                    "<td>-</td>" if pd.isna(x) else
-                    f"<td class='{'pos' if x > 0 else 'neg'}'>{x:+.2f}</td>" for x in piv.loc[s])
-                rows.append(f"<tr><td class='l'>{SOURCE_LABEL.get(s, s)}</td>{cells}"
-                            f"<td>{int(cnt.get(s, 0))}</td></tr>")
-            parts.append(f"<div class='card chartcard'><h3>{VAR_LABEL[v][0]}</h3>"
-                         "<p class='note'>몇 주 앞 예측인지(가로)에 따른 정확도. 선이 0보다 위면 평년보다 나음</p>"
+                cells = "".join("<td>-</td>" if pd.isna(x) else
+                                f"<td class='{'pos' if x > 0 else 'neg'}'>{x:+.2f}</td>" for x in piv.loc[s_])
+                rows.append(f"<tr><td class='l'>{SOURCE_LABEL.get(s_, s_)}</td>{cells}<td>{int(cnt.get(s_, 0))}</td></tr>")
+            table = (f"<table class='mt'><tr><th class='l'>예측원</th>{''.join(f'<th>{c}주</th>' for c in piv.columns)}"
+                     f"<th>채점 수</th></tr>{''.join(rows)}</table>")
+            tabs.append((v, VAR_LABEL[v][0], "몇 주 앞 예측인지(가로)에 따른 정확도 · 선이 0보다 위면 평년보다 나음",
                          f"<div class='cbox m'><canvas id='v-{region}-{v}' aria-label='{VAR_LABEL[v][0]} RPSS'></canvas></div>"
-                         f"<table class='mt'><tr><th class='l'>예측원</th>"
-                         f"{head}<th>채점 수</th></tr>{''.join(rows)}</table></div>")
+                         + _fold("표로 보기", table)))
         sn = snow[snow["region"] == region] if not snow.empty else snow
         if not sn.empty:
             rows = "".join(f"<tr><td class='l'>{r.lead}주</td><td>{r.mean:.3f}</td><td>{r.size}</td></tr>"
                            for r in sn.itertuples())
-            parts.append("<div class='card'><h3>눈 올 확률 (Brier 점수, 0이 완벽)</h3><table><tr>"
-                         f"<th class='l'>몇 주 앞</th><th>Brier</th><th>채점 수</th></tr>{rows}</table></div>")
-        parts.append("</section>")
-    return "".join(parts), mdata
+            tabs.append(("snow", "눈", "눈 올 확률의 Brier 점수 (0이 완벽, 작을수록 정확)",
+                         "<table class='mt'><tr><th class='l'>몇 주 앞</th><th>Brier</th><th>채점 수</th></tr>"
+                         f"{rows}</table>"))
+        out[region] = (tiles, _seg_card(tabs) if tabs else "")
+    return out, mdata
 
 
 def verification_page(store, img_dir: Path) -> str:
-    month_html, mdata = verification_body(store, img_dir)
-    daily_html, ddata = daily_verification_body(store)
-    head = ("<div class='headrow'><div><h1>정확도</h1><p class='sub'>지난 예측을 실제 날씨(ERA5)와 맞춰 본 성적표 · "
-            "그래프에 마우스를 올리거나 눌러 보면 수치가 나옵니다</p></div>"
-            "<a class='btn' href='verification.xlsx' download>엑셀로 받기</a></div>")
-    regions = list((mdata or {}).get("regions", {})) + list((ddata or {}).get("regions", {}))
-    out = head + _region_tabs(_order(regions)) + daily_html + month_html
+    dparts, ddata = daily_verification_parts(store)
+    mparts, mdata = month_verification_parts(store, img_dir)
+    regions = _order(list(dparts) + list(mparts))
+    head = ("<div class='phead'><div><h1>정확도</h1><p class='meta'>지난 예측을 실제 날씨(ERA5)와 맞춰 본 성적</p></div>"
+            "<a class='btn ghost' href='verification.xlsx' download>엑셀</a></div>")
+    out = head + _region_tabs(regions)
+    if not regions:
+        out += ("<div class='card empty'><b>아직 채점된 예측이 없습니다</b><p>2주 일별 예측은 약 1주 뒤부터, "
+                "1개월 전망은 첫 전망의 대상 4주가 지난 뒤부터 성적이 쌓입니다.</p></div>")
+    for region in regions:
+        dt, dcard = dparts.get(region, ([], ""))
+        mt, mcard = mparts.get(region, ([], ""))
+        out += f"<section class='rsec' data-region='{region}'>"
+        if dt or mt:
+            out += "<div class='tiles'>" + "".join(dt + mt) + "</div>"
+        out += "<h3 class='sec'>2주 일별 예측</h3>" + (dcard or "<div class='card empty'>아직 채점된 일별 예측이 없습니다. "
+                                                         "첫 예측 후 약 1주가 지나면 나타납니다.</div>")
+        out += "<h3 class='sec'>1개월 전망</h3>" + (mcard or "<div class='card empty'>아직 채점된 1개월 전망이 없습니다. "
+                                                      "첫 전망의 대상 4주가 지나고 약 1주 뒤부터 나타납니다.</div>")
+        out += "</section>"
+    out += ("<details class='about'><summary>점수 읽는 법</summary><p><b>평년 대비 개선</b>: 1 − 예측 오차 ÷ '평년값으로 찍기' 오차. "
+            "0보다 크면 평년값보다 정확하고, +40%면 오차가 40% 작다는 뜻입니다. "
+            "<b>RPSS</b>(1개월): 평년(33/33/33%) 확률 예보보다 얼마나 나은지. 0보다 크면 나음, 1개월 예측에선 +0.1만 돼도 쓸모 있는 수준. "
+            "<b>Brier</b>: 확률 예보의 오차(0이 완벽). <b>범위 적중률</b>: 실제 값이 10~90% 범위에 든 비율(80%가 이상적). "
+            "정답은 ERA5 재분석 자료(주요 지점 평균)입니다.</p></details>")
     if mdata or ddata:
         blob = json.dumps({"month": mdata, "daily": ddata}, ensure_ascii=False,
                           separators=(",", ":")).replace("</", "<\\/")
