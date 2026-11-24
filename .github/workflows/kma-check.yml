@@ -1,0 +1,38 @@
+# 기상청 1개월전망 자료 출처 확인용 (수동 실행). 받은 내용을 로그에 찍기만 하고 아무것도 저장·배포하지 않는다.
+name: kma-check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 도구
+        run: sudo apt-get install -y -qq poppler-utils >/dev/null 2>&1 || true
+      - name: 기상청 주소 시험
+        run: |
+          UA="Mozilla/5.0 (X11; Linux x86_64) kwagent-check"
+          try() {
+            echo "=================== $1"
+            curl -sS -L -m 40 -A "$UA" -o out.bin -D hdr.txt -w "HTTP %{http_code} | %{content_type} | %{size_download} bytes | %{url_effective}\n" "$1" || echo "curl 실패"
+            grep -i -E "^(content-type|content-disposition|location):" hdr.txt | head -5
+            if file out.bin | grep -qi pdf; then
+              pdftotext -layout out.bin out.txt && echo "--- PDF 본문 앞부분" && head -c 6000 out.txt
+            else
+              echo "--- 본문 앞부분(태그 제거)" && sed -e 's/<[^>]*>/ /g' out.bin | tr -s ' \t' ' ' | grep -v '^\s*$' | head -c 4000
+              echo; echo "--- 링크 중 pdf/1month/fct_mon"; grep -o -i -E "(href|src)=\"[^\"]*(pdf|1month|fct_mon|long)[^\"]*\"" out.bin | sort -u | head -40
+            fi
+            echo
+          }
+          for d in 20261119 20261112; do
+            try "https://www.weather.go.kr/w/repositary/xml/fct/mon/fct_mon1_108_${d}.pdf"
+          done
+          try "https://www.weather.go.kr/w/weather/forecast/long-term/1month.do"
+          try "https://www.weather.go.kr/w/weather/forecast/long-term/1month-forecast.do"
+          try "https://www.weather.go.kr/w/weather/forecast/long-term.do"
+          try "https://apihub.kma.go.kr/"
