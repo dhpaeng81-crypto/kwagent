@@ -177,7 +177,7 @@ ICON_HEAD = ('<link rel="icon" href="{root}favicon.svg" type="image/svg+xml">'
              '<meta name="apple-mobile-web-app-status-bar-style" content="default">')
 MANIFEST = {
     "name": "한국 기상전망", "short_name": "기상전망", "lang": "ko",
-    "description": "2주 일별 예측과 1개월 기상전망",
+    "description": "4주 일별 예측과 1개월 기상전망",
     "start_url": "./index.html", "scope": "./", "display": "standalone",
     "background_color": "#fafbfc", "theme_color": "#1f6fd1",
     "icons": [
@@ -518,7 +518,7 @@ def daily_body(result: dict, img_prefix: str) -> str:
             span = f"{tdays[0]['label'].split('(')[0]}~{tdays[-1]['label'].split('(')[0]}"
             parts.append(f"<h3 class='sec'>3~4주 뒤 경향 <span class='q'>· {span} · 날짜별 값 대신 평년보다 어느 쪽일지</span></h3>"
                          + _seg_card(tabs))
-        parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 2주 일별" '
+        parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 일별 예측" '
                      f'src="{img_prefix}daily_{issue}_{region}.png"></noscript>')
         # 3) 날짜별 자세히: 누르면 펼침
         rows = []
@@ -719,7 +719,7 @@ def verification_page(store, img_dir: Path) -> str:
             "<a class='btn ghost' href='verification.xlsx' download>엑셀</a></div>")
     out = head + _region_tabs(regions)
     if not regions:
-        out += ("<div class='card empty'><b>아직 채점된 예측이 없습니다</b><p>2주 일별 예측은 약 1주 뒤부터, "
+        out += ("<div class='card empty'><b>아직 채점된 예측이 없습니다</b><p>일별 예측은 약 1주 뒤부터, "
                 "1개월 전망은 첫 전망의 대상 4주가 지난 뒤부터 성적이 쌓입니다.</p></div>")
     for region in regions:
         dt, dcard = dparts.get(region, ([], ""))
@@ -774,11 +774,11 @@ def verification_excel(store, path: Path, daily_days: int = 120) -> Path:
                              {"issue": "발표일", "region": "영역", "var": "변수", "source": "예측원", "lead": "몇 주 앞",
                               "start": "대상 주 시작", "obs": "실제 값", "obs_cat": "실제 구간(0낮음·1비슷·2높음)",
                               "rps": "RPS", "rps_clim": "평년 RPS", "err": "오차"}),
-        "2주 일별 정확도": nice(summary(store), {"region": "영역", "var": "변수", "source": "예측원", "bin": "예보일",
+        "일별 정확도": nice(summary(store), {"region": "영역", "var": "변수", "source": "예측원", "bin": "예보일",
                                            "mae": "평균 오차", "mae_clim": "평년 오차", "skill": "평년 대비 개선",
                                            "bias": "치우침", "cover": "범위 적중률", "brier": "강수확률 Brier",
                                            "bss": "Brier 개선", "n": "채점 수"}),
-        f"2주 일별 채점(최근 {daily_days}일)": nice(
+        f"일별 채점(최근 {daily_days}일)": nice(
             store.df("SELECT * FROM daily_verification WHERE date >= (SELECT date(max(date), ?) FROM daily_verification) "
                      "ORDER BY date, region, var, source, lead",
                      (f"-{daily_days} day",)),
@@ -879,8 +879,9 @@ def build(cfg, store, out: str | Path | None = None) -> str:
         from .daily import to_excel
         to_excel(latest, site / f"daily_{latest['issue']}.xlsx")
     else:
-        body = "<h1>2주 일별 예측</h1><div class='card'>아직 일별 예측이 없습니다. 매일 아침 6시 40분에 만들어집니다.</div>"
-    page = _page("2주 일별 예측", body, "daily")
+        body = "<h1>일별 예측</h1><div class='card'>아직 일별 예측이 없습니다. 매일 아침 6시 40분에 만들어집니다.</div>"
+    ndays = max((len(rd["days"]) for rd in latest["regions"].values()), default=14) if dailies else 14
+    page = _page(f"{'4주' if ndays > 14 else '2주'} 일별 예측 · 한국 기상전망", body, "daily")
     for name in ("index.html", "daily.html"):          # 기본 화면 = 2주 일별 (daily.html 은 옛 주소)
         (site / name).write_text(page, encoding="utf-8")
     # 홈 화면 추가용 아이콘·매니페스트

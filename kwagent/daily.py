@@ -397,7 +397,7 @@ def summary(store) -> pd.DataFrame:
 
 # ---------------------------------------------------------------- 보고서
 def to_markdown(result: dict) -> str:
-    L = [f"# 2주 일별 예측 (발표 {result['issue']})", "",
+    L = [f"# 일별 예측 (발표 {result['issue']})", "",
          "사용한 모델: " + (", ".join(f"{MODEL_LABEL.get(k, k)} {v}멤버" for k, v in result["models"].items())
                          or "없음"), ""]
     for region, rd in result["regions"].items():
@@ -476,7 +476,7 @@ def plot(result: dict, out_dir) -> list[str]:
         for ax in axes.flat:
             ax.spines[["top", "right"]].set_visible(False)
             ax.set_xticks(x, lab, fontsize=8, rotation=0)
-        fig.suptitle(f"{REGION_LABELS.get(region, region)} 2주 일별 예측 · 발표 {result['issue']}", y=1.0)
+        fig.suptitle(f"{REGION_LABELS.get(region, region)} 일별 예측 · 발표 {result['issue']}", y=1.0)
         fig.tight_layout()
         p = out_dir / f"daily_{result['issue']}_{region}.png"
         fig.savefig(p, dpi=120, bbox_inches="tight")

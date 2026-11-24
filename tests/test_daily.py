@@ -79,4 +79,4 @@ def test_daily_end_to_end(cfg):
     vh = (s / "verification.html").read_text(encoding="utf-8")
     assert "일별 예측" in vh and "v-daily-skill-honam" in vh and "verify.js" in vh
     vx = pd.read_excel(s / "verification.xlsx", sheet_name=None)
-    assert "2주 일별 정확도" in vx and len(vx["2주 일별 정확도"]) > 10
+    assert "일별 정확도" in vx and len(vx["일별 정확도"]) > 10
