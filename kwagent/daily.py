@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import date, timedelta
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -403,3 +404,79 @@ def run(agent, issue: date | None = None) -> dict:
     verify(agent, obs=obs)
     result = forecast(agent, issue, obs=obs)
     return publish(agent, result)
+
+
+# ---------------------------------------------------------------- 엑셀 내려받기
+XLSX_COLS = [  # (머리글, 변수, 키, 배율, 소수 자릿수)
+    ("최저기온(°C)", "tmin", "q50", 1, 1), ("최저 10%", "tmin", "q10", 1, 1), ("최저 90%", "tmin", "q90", 1, 1),
+    ("최저 평년", "tmin", "normal", 1, 1),
+    ("최고기온(°C)", "tmax", "q50", 1, 1), ("최고 10%", "tmax", "q10", 1, 1), ("최고 90%", "tmax", "q90", 1, 1),
+    ("최고 평년", "tmax", "normal", 1, 1),
+    ("평균기온(°C)", "temp", "q50", 1, 1), ("평균 평년", "temp", "normal", 1, 1),
+    ("운량(%)", "cloud", "q50", 1, 0), ("운량 10%", "cloud", "q10", 1, 0), ("운량 90%", "cloud", "q90", 1, 0),
+    ("운량 평년", "cloud", "normal", 1, 0),
+    ("강수확률(%)", "precip", "pop", 100, 0), ("강수확률 평년(%)", "precip", "pop_normal", 100, 0),
+    ("강수량(mm)", "precip", "q50", 1, 1), ("강수량 10%", "precip", "q10", 1, 1), ("강수량 90%", "precip", "q90", 1, 1),
+    ("강수량 평년", "precip", "normal", 1, 1), ("눈 확률(%)", "precip", "p_snow", 100, 0),
+    ("일사량(MJ/m²)", "srad", "q50", 1, 1), ("일사량 10%", "srad", "q10", 1, 1), ("일사량 90%", "srad", "q90", 1, 1),
+    ("일사량 평년", "srad", "normal", 1, 1),
+]
+
+
+def to_frame(rd: dict) -> pd.DataFrame:
+    """한 영역의 14일 예측을 표 한 장으로 (엑셀용)."""
+    rows = []
+    for d in rd["days"]:
+        v = d["vars"]
+        row = {"날짜": pd.Timestamp(d["date"]).date(), "요일": d["label"][-2], "예보일(일 뒤)": d["lead"],
+               "하늘": sky_label(v.get("cloud"))}
+        for head, var, key, mul, dig in XLSX_COLS:
+            x = (v.get(var) or {}).get(key)
+            row[head] = None if x is None else round(float(x) * mul, dig)
+        for k, p in ((v.get("cloud") or {}).get("sky") or {}).items():
+            row[f"{k} 확률(%)"] = round(p * 100)
+        row["사용 모델"] = ", ".join(MODEL_LABEL.get(m, m) for m in d.get("models", []))
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def to_excel(result: dict, path) -> Path:
+    """2주 일별 예측을 엑셀(.xlsx)로: 영역마다 시트 1장 + 설명 시트."""
+    from openpyxl.styles import Alignment, Font, PatternFill
+    from openpyxl.utils import get_column_letter
+    path = Path(path)
+    with pd.ExcelWriter(path, engine="openpyxl") as xw:
+        for region, rd in result["regions"].items():
+            name = REGION_LABELS.get(region, region)[:31]
+            to_frame(rd).to_excel(xw, sheet_name=name, index=False)
+            ws = xw.sheets[name]
+            ws.freeze_panes = "B2"
+            head = PatternFill("solid", fgColor="E8EEF8")
+            for c in ws[1]:
+                c.font = Font(bold=True)
+                c.fill = head
+                c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            ws.row_dimensions[1].height = 32
+            for i, c in enumerate(ws[1], start=1):
+                ws.column_dimensions[get_column_letter(i)].width = 30 if c.value == "사용 모델" else (
+                    12 if c.value == "날짜" else 10)
+            for row in ws.iter_rows(min_row=2, max_col=1):
+                row[0].number_format = "yyyy-mm-dd"
+        models = ", ".join(f"{MODEL_LABEL.get(k, k)}({v}멤버)" for k, v in result["models"].items())
+        info = pd.DataFrame({"항목": [
+            "발표일", "대상", "사용 모델", "중앙·10%·90%", "평년", "강수확률·눈 확률", "하늘",
+            "8일 이후", "만든 곳"], "설명": [
+            result["issue"], "발표 다음 날부터 14일, 영역평균(주요 지점 단순평균)", models,
+            "앙상블 멤버들의 가운데 값과 10~90% 범위 (10번 중 8번은 이 안에 든다는 뜻)",
+            "1991~2020년 같은 날짜 평균 (31일 평활)",
+            "'평균적인 지점'에서 1 mm 이상 비(눈)가 올 확률",
+            "운량 55% 미만 맑음, 55~85% 구름많음, 85% 이상 흐림",
+            "불확실성이 커서 참고용",
+            "kwagent (https://dhpaeng81-crypto.github.io/kwagent/)"]})
+        info.to_excel(xw, sheet_name="설명", index=False)
+        ws = xw.sheets["설명"]
+        ws.column_dimensions["A"].width = 18
+        ws.column_dimensions["B"].width = 80
+        for c in ws[1]:
+            c.font = Font(bold=True)
+    return path

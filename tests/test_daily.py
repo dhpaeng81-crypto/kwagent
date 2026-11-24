@@ -67,4 +67,8 @@ def test_daily_end_to_end(cfg):
     html = (s / "daily.html").read_text(encoding="utf-8")
     assert "2주 일별 예측" in html and "최고<span" in html and "중부권" in html
     assert (s / "img" / f"daily_{result['issue']}_korea.png").exists()
+    assert "c-korea-temp" in html and "daily.js" in html and (s / "chart.umd.min.js").exists()
+    import pandas as pd
+    xl = pd.read_excel(s / f"daily_{result['issue']}.xlsx", sheet_name=None)
+    assert {"전국", "중부권", "설명"} <= set(xl) and len(xl["전국"]) == 14 and "최고기온(°C)" in xl["전국"]
     assert "2주 일별 예측" in (s / "verification.html").read_text(encoding="utf-8")

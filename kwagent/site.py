@@ -52,6 +52,11 @@ td.warm{background:#fbe3df}td.cool{background:#dfe8f8}
 .note{font-size:13px;color:var(--quiet)}.pos{color:#1f7a4d;font-weight:600}.neg{color:#b3372d}
 .narr h2{font-size:17px;margin-top:4px}.narr ul{padding-left:20px}
 footer{margin:40px 0 30px;color:var(--quiet);font-size:12px}
+.headrow{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:8px 16px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;
+font-size:14px;font-weight:600;margin-bottom:18px;white-space:nowrap}.btn:hover{filter:brightness(1.08)}
+.chartcard{padding:16px 20px 12px;margin:0 0 22px}.chartcard h3{margin:0 0 2px;font-size:17px}.chartcard .note{margin:0 0 6px}
+.cbox{position:relative;height:300px}
 th,td{word-break:keep-all}th .u{display:block;font-size:11px;font-weight:400}
 .card.tbl{overflow-x:auto}
 @media (max-width:640px){
@@ -65,6 +70,7 @@ h1{font-size:22px;margin-top:20px}.sub{font-size:13px}
 th,td{padding:7px 3px;font-size:13px}th{font-size:12px}
 td small{display:block;font-size:10.5px;line-height:1.3}
 table.daily td.l{white-space:nowrap;font-size:12.5px}
+.cbox{height:240px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
 }
 """
 
@@ -74,7 +80,7 @@ FONT = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
 
 
 STATIC = Path(__file__).parent / "static"
-ICON_FILES = ("favicon.svg", "favicon-32.png", "apple-touch-icon.png", "icon-192.png", "icon-512.png",
+ICON_FILES = ("chart.umd.min.js", "daily.js", "favicon.svg", "favicon-32.png", "apple-touch-icon.png", "icon-192.png", "icon-512.png",
               "icon-maskable-512.png")
 ICON_HEAD = ('<link rel="icon" href="{root}favicon.svg" type="image/svg+xml">'
              '<link rel="icon" href="{root}favicon-32.png" sizes="32x32" type="image/png">'
@@ -201,12 +207,21 @@ def forecast_body(result: dict, img_prefix: str) -> str:
     return "".join(parts)
 
 
+DAILY_CHARTS = (
+    ("temp", "기온", "빨강 최고기온 · 파랑 최저기온"),
+    ("precip", "강수", "막대는 강수량(진한 색 중앙값, 연한 색 많으면), 선은 강수확률"),
+    ("cloud", "구름(운량)", "운량 55% 미만 맑음 · 55~85% 구름많음 · 85% 이상 흐림"),
+    ("srad", "일사량", "하루 동안 땅에 닿는 햇빛 에너지"),
+)
+
+
 def daily_body(result: dict, img_prefix: str) -> str:
     from .daily import MODEL_LABEL, num, sky_label
     issue = result["issue"]
     models = ", ".join(f"{MODEL_LABEL.get(k, k)}({v}멤버)" for k, v in result["models"].items()) or "없음"
-    parts = [f"<h1>2주 일별 예측</h1><p class='sub'>발표 {issue} · 내일부터 14일 · "
-             "괄호는 10~90% 범위 · 빨강/파랑 칸은 평년보다 2°C 이상 높음/낮음</p>"]
+    parts = [f"<div class='headrow'><div><h1>2주 일별 예측</h1><p class='sub'>발표 {issue} · 내일부터 14일 · "
+             "띠는 10~90% 범위, 점선은 평년 · 그래프에 마우스를 올리거나 눌러 보면 수치가 나옵니다</p></div>"
+             f"<a class='btn' href='daily_{issue}.xlsx' download>엑셀로 받기</a></div>"]
     regions = list(result["regions"])
     if len(regions) > 1:
         parts.append('<div class="tabs">' + "".join(
@@ -224,8 +239,12 @@ def daily_body(result: dict, img_prefix: str) -> str:
     for region in regions:
         rd = result["regions"][region]
         parts.append(f'<h2 id="d-{region}">{REGION_LABELS.get(region, region)}</h2>')
-        parts.append(f'<img class="chart" alt="{REGION_LABELS.get(region, region)} 2주 일별" '
-                     f'src="{img_prefix}daily_{issue}_{region}.png">')
+        for kind, title, desc in DAILY_CHARTS:
+            parts.append(f"<div class='card chartcard'><h3>{title}</h3><p class='note'>{desc}</p>"
+                         f"<div class='cbox'><canvas id='c-{region}-{kind}' aria-label='{title}'></canvas></div></div>")
+        parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 2주 일별" '
+                     f'src="{img_prefix}daily_{issue}_{region}.png"></noscript>')
+        parts.append("<h3>날짜별 표</h3>")
         rows = []
         for day in rd["days"]:
             v = day["vars"]
@@ -247,8 +266,13 @@ def daily_body(result: dict, img_prefix: str) -> str:
                      "<th>하늘</th><th>강수<br>확률</th><th>강수량<span class='u'>mm</span></th><th>눈</th>"
                      "<th>일사량<span class='u'>MJ/m²</span></th></tr>"
                      + "".join(rows) + "</table></div>")
-    parts.append(f"<p class='note'>사용한 모델: {models}. 8일 이후(흐린 글씨)는 불확실성이 커서 "
+    parts.append(f"<p class='note'>사용한 모델: {models}. 8일 이후(그래프 점선·표의 흐린 글씨)는 불확실성이 커서 "
                  "평년과 크게 다르지 않으면 참고만 하세요.</p>")
+    data = {"regions": {r: {"label": REGION_LABELS.get(r, r), "days": result["regions"][r]["days"]}
+                        for r in regions}}
+    blob = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    parts.append(f'<script id="ddata" type="application/json">{blob}</script>'
+                 '<script src="chart.umd.min.js"></script><script src="daily.js"></script>')
     return "".join(parts)
 
 
@@ -414,6 +438,8 @@ def build(cfg, store, out: str | Path | None = None) -> str:
             shutil.copy2(png, img / png.name)
         latest = json.loads(dailies[-1].read_text(encoding="utf-8"))
         body = daily_body(latest, "img/")
+        from .daily import to_excel
+        to_excel(latest, site / f"daily_{latest['issue']}.xlsx")
     else:
         body = "<h1>2주 일별 예측</h1><div class='card'>아직 일별 예측이 없습니다. 매일 아침 6시 40분에 만들어집니다.</div>"
     page = _page("2주 일별 예측", body, "daily")

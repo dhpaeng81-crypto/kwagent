@@ -48,7 +48,8 @@ kwagent/
   narrative.py    LLM 해설(ANTHROPIC_API_KEY 있을 때, 없으면 규칙 기반)
   report.py       md 표 + matplotlib 확률 막대
   site.py         정적 웹사이트(site/): index(=2주 일별, 기본), daily(같은 내용·옛 주소), month(1개월), f/<날짜>, archive, verification
-  static/         홈 화면 아이콘(icon.svg 원본 → PNG 들). 아이콘을 바꾸면 PNG 도 다시 만들 것(Playwright 로 렌더)
+  static/         홈 화면 아이콘(icon.svg 원본 → PNG 들, mkicons.js 로 다시 렌더), chart.umd.min.js(Chart.js 4.4.4, npm 에서 복사),
+                  daily.js(일별 대화형 그래프: 페이지의 <script id=ddata> JSON 사용)
   doctor.py       실자료원 점검 (단기 앙상블 모델 포함)
   daily.py        2주 일별 예측: 단기 앙상블 혼합·편향보정·범위/확률·채점·보고서
 .github/workflows/weekly.yml  목 07:10 KST: (모델 없으면 train) → run → site → 기록 커밋 → Pages 배포
@@ -120,7 +121,9 @@ kwagent/
   편향 보정(기온·운량·일사량 차감, 강수 비율 0.5~2). 표 `daily_forecasts.mean_raw` 를 지우지 말 것.
 - 저장소 표 `daily_forecasts`, `daily_verification` 은 CREATE IF NOT EXISTS 로 추가(기존 DB 자동 이행).
 - 웹사이트: index.html = 2주 일별(2026-11-24 사용자 요청으로 기본 화면), 1개월은 month.html. 모바일 홈 화면 추가용 manifest·아이콘 포함.
-  일별 화면, 정확도 탭 아래 일별 성적(1~3/4~7/8~14일: 평균오차, 평년 대비 개선, 범위 적중률, 강수확률 Brier).
+  일별 화면은 변수별 카드 4개(기온·강수·운량·일사량) 대화형 그래프(마우스 올리면 수치) + 표 + '엑셀로 받기'
+  (site 빌드 때 `daily.to_excel` 로 daily_<발표일>.xlsx 생성, openpyxl). matplotlib PNG 는 noscript·보고서용으로 유지.
+  정확도 탭 아래 일별 성적(1~3/4~7/8~14일: 평균오차, 평년 대비 개선, 범위 적중률, 강수확률 Brier).
 - 2단계(예정): Open-Meteo Historical Forecast/Previous Runs API 로 과거 예측 받아 첫날부터 보정, EMOS 퍼짐 보정,
   성적 기반 가중치. 3단계: 도시별(21지점), 기상청 GDAPS(결정론) 추가 검토.
 
