@@ -106,8 +106,10 @@ kwagent/
   강수확률, 눈 확률. 출력은 날짜별 10/50/90% 범위와 1991~2020 일평년(31일 평활).
 - 강수확률·눈 확률은 **'평균적인 지점' 기준** = 비(눈) 온 지점 비율의 기대값 (`region_daily` 의 wet/snowd).
   영역평균 강수량 ≥1 mm 로 정하면 한 곳만 와도 '비'가 돼서 평년 확률이 90% 넘게 나왔음.
-- 모델(config `daily.models`, Open-Meteo ensemble API): ecmwf_ifs025(51), ecmwf_aifs025, ncep_gefs025, icon_seamless(7일).
-  **모델 id·변수 제공 여부는 미확인** → `kwagent doctor` 로 확인(실패 모델은 자동 제외). 가중치는 사전값.
+- 모델(config `daily.models`, Open-Meteo ensemble API) — **2026-11-24 실자료 확인**:
+  ecmwf_ifs025(51멤버, ~14일), ecmwf_aifs025(51, ~14일), ncep_gefs_seamless(31, 30일+), icon_seamless(40, 7일).
+  모든 모델이 temp·tmax·tmin·cloud·srad·precip·rain 제공. `ncep_gefs025` 는 9일까지만 값이 있어 seamless 로 바꿈.
+  모델 예측이 끝나는 마지막 날은 부분 집계라 최고·최저가 치우쳐서 버림(`forecast` 의 areas). 가중치는 사전값.
 - 개선 루프: 매일 `daily_verification` 에 채점 → 같은 모델·변수·예보일(±1일) 최근 60건 중 10건 이상이면
   편향 보정(기온·운량·일사량 차감, 강수 비율 0.5~2). 표 `daily_forecasts.mean_raw` 를 지우지 말 것.
 - 저장소 표 `daily_forecasts`, `daily_verification` 은 CREATE IF NOT EXISTS 로 추가(기존 DB 자동 이행).

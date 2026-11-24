@@ -134,7 +134,12 @@ def forecast(agent, issue: date | None = None, obs: pd.DataFrame | None = None) 
     for region in cfg.regions:
         normals = daily_normals(region_daily(obs, region, wet_mm, snow_thr), tuple(cfg["normal_period"]), wet_mm) \
             if obs is not None and not obs.empty else pd.DataFrame()
-        areas = {k: region_daily(v, region, wet_mm, snow_thr) for k, v in ens.items()}
+        areas = {}
+        for k, v in ens.items():
+            a = region_daily(v, region, wet_mm, snow_thr)
+            # 모델 예측이 끝나는 날은 하루 중 일부 시간만으로 계산돼 최고·최저가 치우친다 → 빼기
+            last = a.loc[a["temp"].notna(), "date"].max()
+            areas[k] = a[a["date"] < last] if pd.notna(last) else a
         days = []
         for lead in range(1, ndays + 1):
             d = issue + timedelta(days=lead)
@@ -144,7 +149,7 @@ def forecast(agent, issue: date | None = None, obs: pd.DataFrame | None = None) 
             per_model = {}
             for name, a in areas.items():
                 sub = a[a["date"] == ts]
-                if len(sub) >= 3:
+                if sub["temp"].notna().sum() >= 3:          # 예측 기간이 끝난 모델은 빼기
                     per_model[name] = sub
             if not per_model:
                 continue
