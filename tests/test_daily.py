@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 @pytest.fixture()
 def cfg(tmp_path):
     raw = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
-    raw["regions_active"] = ["korea", "central"]
+    raw["regions_active"] = ["korea", "central", "honam"]
     raw["narrative"]["enabled"] = False
     raw["daily"]["bias_min_n"] = 4
     (tmp_path / "config.yaml").write_text(yaml.safe_dump(raw, allow_unicode=True), encoding="utf-8")
@@ -65,13 +65,13 @@ def test_daily_end_to_end(cfg):
     from kwagent import site
     s = Path(site.build(cfg, agent.store))
     html = (s / "daily.html").read_text(encoding="utf-8")
-    assert "2주 일별 예측" in html and "최고<span" in html and "중부권" in html
+    assert "2주 일별 예측" in html and "최고<span" in html and "data-r='honam'" in html
     assert (s / "img" / f"daily_{result['issue']}_korea.png").exists()
     assert "c-korea-temp" in html and "daily.js" in html and (s / "chart.umd.min.js").exists()
     import pandas as pd
     xl = pd.read_excel(s / f"daily_{result['issue']}.xlsx", sheet_name=None)
-    assert {"전국", "중부권", "설명"} <= set(xl) and len(xl["전국"]) == 14 and "최고기온(°C)" in xl["전국"]
+    assert {"전국", "중부", "호남", "설명"} <= set(xl) and len(xl["전국"]) == 14 and "최고기온(°C)" in xl["전국"]
     vh = (s / "verification.html").read_text(encoding="utf-8")
-    assert "2주 일별 예측" in vh and "v-daily-skill" in vh and "verify.js" in vh
+    assert "2주 일별 예측" in vh and "v-daily-skill-honam" in vh and "verify.js" in vh
     vx = pd.read_excel(s / "verification.xlsx", sheet_name=None)
     assert "2주 일별 정확도" in vx and len(vx["2주 일별 정확도"]) > 10

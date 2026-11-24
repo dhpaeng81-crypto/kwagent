@@ -1,9 +1,10 @@
 # 한국 1개월 기상예측 에이전트 설정
 # ---------------------------------------------------------------
 # 단계 1: regions_active: [korea]
-# 단계 2: regions_active: [korea, central, south]
+# 단계 2: regions_active: [korea, central, south]   (옛 중부/남부)
+# 단계 3 (2026-11-24): 전국 + 중부(강원 포함)·호남·경상, 제주는 전국에만
 
-regions_active: [korea]
+regions_active: [korea, central, honam, yeongnam]
 
 # 평년(삼분위 기준) 기간 — 기상청과 동일하게 1991~2020
 normal_period: [1991, 2020]

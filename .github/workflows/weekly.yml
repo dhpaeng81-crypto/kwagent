@@ -78,7 +78,8 @@ jobs:
 
       - name: 최초 1회 학습 (모델이 없을 때만)
         if: steps.backfill.outputs.complete == 'true'
-        run: test -f data/models/statistical_korea.joblib || kwagent train
+        run: |   # 권역 중 하나라도 모델이 없으면 학습 (권역을 늘렸을 때)
+          python -c "from kwagent.config import load_config as L; c=L('config.yaml'); import sys; sys.exit(0 if all((c.path('models')/f'statistical_{r}.joblib').exists() for r in c.regions) else 1)" || kwagent train
 
       - name: 검증 + 예측
         if: steps.backfill.outputs.complete == 'true'

@@ -60,9 +60,10 @@
   }
 
   // ---- 2주 일별: 변수별 평년 대비 개선(막대, 예보일 구간별)
-  const DY = D.daily;
-  if (DY) {
-    const c = document.getElementById("v-daily-skill");
+  const DD = D.daily;
+  for (const [rid, R] of Object.entries((DD && DD.regions) || {})) {
+    const DY = { bins: DD.bins, vars: R.vars, models: R.models };
+    const c = document.getElementById(`v-daily-skill-${rid}`);
     if (c) {
       new Chart(c, {
         type: "bar",
@@ -94,7 +95,7 @@
       });
     }
     // 모델별 평균 오차: 변수 고르기
-    const mc = document.getElementById("v-daily-models"), sel = document.getElementById("v-daily-var");
+    const mc = document.getElementById(`v-daily-models-${rid}`), sel = document.getElementById(`v-daily-var-${rid}`);
     if (mc && sel && DY.models) {
       let chart;
       const draw = () => {

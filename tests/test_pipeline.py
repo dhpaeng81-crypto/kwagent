@@ -47,7 +47,7 @@ def test_index_parsers():
 def cfg(tmp_path):
     raw = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
     raw["train_start_year"] = 2008
-    raw["regions_active"] = ["korea", "central", "south"]
+    raw["regions_active"] = ["korea", "central", "honam", "yeongnam"]
     raw["narrative"]["enabled"] = False
     (tmp_path / "config.yaml").write_text(yaml.safe_dump(raw, allow_unicode=True), encoding="utf-8")
     return load_config(tmp_path / "config.yaml")
@@ -57,7 +57,7 @@ def test_end_to_end_offline(cfg):
     start, end = date(2025, 1, 2), date(2025, 2, 27)
     agent = Agent(cfg, offline=True, asof=end + timedelta(days=40))
     rep = agent.train(end=start - timedelta(days=1))
-    assert set(rep["region"]) == {"korea", "central", "south"}
+    assert set(rep["region"]) == {"korea", "central", "honam", "yeongnam"}
     issue = start
     while issue <= end:
         agent.verify(until=issue - timedelta(days=5))
@@ -65,7 +65,7 @@ def test_end_to_end_offline(cfg):
         issue += timedelta(days=7)
     summ = agent.verify()
     assert {"statistical", "ec46", "gefs", "combined"} <= set(summ["source"])
-    for region in ("korea", "central", "south"):
+    for region in ("korea", "central", "honam", "yeongnam"):
         for wk in result["regions"][region]["weeks"]:
             for v in ("temp", "cloud", "precip"):
                 assert sum(wk["vars"][v]["prob"]) == pytest.approx(1, abs=2e-3)
@@ -73,7 +73,7 @@ def test_end_to_end_offline(cfg):
             assert 0 <= wk["ptype"]["p_snow"] <= 1
     out = publish(agent, result)
     md = Path(out["markdown"]).read_text(encoding="utf-8")
-    assert "중부권" in md and "남부권" in md and "강수형태" in md
+    assert "중부" in md and "호남" in md and "경상" in md and "강수형태" in md
     assert all(Path(p).exists() for p in out["png"])
 
     from kwagent import site
@@ -82,10 +82,10 @@ def test_end_to_end_offline(cfg):
                  f"f/{result['issue']}.html", "apple-touch-icon.png", "icon-512.png", "manifest.webmanifest"):
         assert (s / name).exists(), name
     month = (s / "month.html").read_text(encoding="utf-8")
-    assert "중부권" in month and "m-korea-temp" in month and "month.js" in month
+    assert "data-r='honam'" in month and "m-yeongnam-temp" in month and "m-korea-temp" in month and "month.js" in month
     assert '../chart.umd.min.js' in (s / "f" / f"{result['issue']}.html").read_text(encoding="utf-8")
     import pandas as pd
     xl = pd.read_excel(s / f"forecast_{result['issue']}.xlsx", sheet_name=None)
-    assert {"전국 확률", "전국 강수형태", "중부권 확률", "설명"} <= set(xl) and len(xl["전국 강수형태"]) == 4
+    assert {"전국 확률", "전국 강수형태", "중부 확률", "호남 확률", "경상 강수형태", "설명"} <= set(xl) and len(xl["전국 강수형태"]) == 4
     index = (s / "index.html").read_text(encoding="utf-8")
     assert "2주 일별 예측" in index and 'rel="apple-touch-icon"' in index
