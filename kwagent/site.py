@@ -56,7 +56,7 @@ footer{margin:40px 0 30px;color:var(--quiet);font-size:12px}
 .btn{display:inline-block;padding:8px 16px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;
 font-size:14px;font-weight:600;margin-bottom:18px;white-space:nowrap}.btn:hover{filter:brightness(1.08)}
 .chartcard{padding:16px 20px 12px;margin:0 0 22px}.chartcard h3{margin:0 0 2px;font-size:17px}.chartcard .note{margin:0 0 6px}
-.cbox{position:relative;height:300px}
+.cbox{position:relative;height:300px}.cbox.m{height:230px}table.mt{margin-top:12px}
 th,td{word-break:keep-all}th .u{display:block;font-size:11px;font-weight:400}
 .card.tbl{overflow-x:auto}
 @media (max-width:640px){
@@ -70,7 +70,7 @@ h1{font-size:22px;margin-top:20px}.sub{font-size:13px}
 th,td{padding:7px 3px;font-size:13px}th{font-size:12px}
 td small{display:block;font-size:10.5px;line-height:1.3}
 table.daily td.l{white-space:nowrap;font-size:12.5px}
-.cbox{height:240px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
+.cbox{height:240px}.cbox.m{height:220px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
 }
 """
 
@@ -80,7 +80,7 @@ FONT = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
 
 
 STATIC = Path(__file__).parent / "static"
-ICON_FILES = ("chart.umd.min.js", "daily.js", "favicon.svg", "favicon-32.png", "apple-touch-icon.png", "icon-192.png", "icon-512.png",
+ICON_FILES = ("chart.umd.min.js", "daily.js", "month.js", "favicon.svg", "favicon-32.png", "apple-touch-icon.png", "icon-192.png", "icon-512.png",
               "icon-maskable-512.png")
 ICON_HEAD = ('<link rel="icon" href="{root}favicon.svg" type="image/svg+xml">'
              '<link rel="icon" href="{root}favicon-32.png" sizes="32x32" type="image/png">'
@@ -169,7 +169,10 @@ def forecast_body(result: dict, img_prefix: str) -> str:
     issue = result["issue"]
     ix = result.get("indices", {})
     regions = list(result["regions"])
-    parts = [f"<h1>1개월 기상전망</h1><p class='sub'>발표 {issue} · 다음다음 주 월요일부터 4주</p>"]
+    root = img_prefix[:-len("img/")]
+    parts = [f"<div class='headrow'><div><h1>1개월 기상전망</h1><p class='sub'>발표 {issue} · 다음다음 주 월요일부터 4주 · "
+             "막대에 마우스를 올리거나 눌러 보면 평년 범위와 모델별 확률이 나옵니다</p></div>"
+             f"<a class='btn' href='{root}forecast_{issue}.xlsx' download>엑셀로 받기</a></div>"]
     if len(regions) > 1:
         parts.append('<div class="tabs">' + "".join(
             f'<a href="#{r}">{REGION_LABELS.get(r, r)}</a>' for r in regions) + "</div>")
@@ -178,10 +181,12 @@ def forecast_body(result: dict, img_prefix: str) -> str:
     for region in regions:
         rd = result["regions"][region]
         parts.append(f'<h2 id="{region}">{REGION_LABELS.get(region, region)}</h2>')
-        parts.append(f'<img class="chart" alt="{REGION_LABELS.get(region, region)} 확률" '
-                     f'src="{img_prefix}forecast_{issue}_{region}.png">')
+        parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 확률" '
+                     f'src="{img_prefix}forecast_{issue}_{region}.png"></noscript>')
         for v in result_vars(rd):
             name, lo, mid, hi, unit = VAR_LABEL[v]
+            chart = (f"<p class='note'>{MONTH_DESC.get(v, '')}</p>"
+                     f"<div class='cbox m'><canvas id='m-{region}-{v}' aria-label='{name} 확률'></canvas></div>")
             rows = []
             for wk in rd["weeks"]:
                 d = wk["vars"][v]
@@ -189,14 +194,17 @@ def forecast_body(result: dict, img_prefix: str) -> str:
                 rows.append(f"<tr><td class='l'>{wk['label']}</td><td>{a}~{b}</td>"
                             f"{_prob_cells(d['display'], v)}<td class='verdict l'>"
                             f"{_verdict(d['display'], v)}</td></tr>")
-            parts.append(f"<div class='card'><h3>{name}</h3><table><tr><th class='l'>주</th>"
+            parts.append(f"<div class='card chartcard'><h3>{name}</h3>{chart}<table class='mt'><tr><th class='l'>주</th>"
                          f"<th>평년비슷범위({unit})</th><th>{lo}</th><th>{mid}</th><th>{hi}</th>"
                          f"<th class='l'>전망</th></tr>{''.join(rows)}</table></div>")
         rows = "".join(
             f"<tr><td class='l'>{wk['label']}</td><td>{wk['ptype']['rain_days']:.1f}</td>"
             f"<td>{wk['ptype']['snow_days']:.1f}</td><td>{wk['ptype']['p_snow']*100:.0f}%</td>"
             f"<td>{wk['ptype']['climatology']['p_snow']*100:.0f}%</td></tr>" for wk in rd["weeks"])
-        parts.append("<div class='card'><h3>강수형태 (비/눈)</h3><table><tr><th class='l'>주</th>"
+        parts.append("<div class='card chartcard'><h3>강수형태 (비/눈)</h3>"
+                     "<p class='note'>막대는 주별 비·눈 오는 날 수, 선은 눈이 하루라도 올 확률</p>"
+                     f"<div class='cbox m'><canvas id='m-{region}-ptype' aria-label='강수형태'></canvas></div>"
+                     "<table class='mt'><tr><th class='l'>주</th>"
                      "<th>비 오는 날(일)</th><th>눈 오는 날(일)</th><th>눈 올 확률</th><th>평년 눈 확률</th>"
                      f"</tr>{rows}</table></div>")
         src = ", ".join(SOURCE_LABEL.get(s, s) for s in rd.get("dynamical_sources", [])) or "없음(통계모델만)"
@@ -204,7 +212,33 @@ def forecast_body(result: dict, img_prefix: str) -> str:
     if ix:
         parts.append("<p class='note'>발표 시점 기후지수 — Niño3.4 {nino34:+.2f}, AO(7일) {ao:+.2f}, "
                      "MJO RMM1/RMM2 {rmm1:+.2f}/{rmm2:+.2f}</p>".format(**ix))
+    data = {"regions": {}}
+    for region in regions:
+        rd = result["regions"][region]
+        vs = result_vars(rd)
+        data["regions"][region] = {
+            "vars": [{"key": v, "cats": list(VAR_LABEL[v][1:4]), "unit": VAR_LABEL[v][4]} for v in vs],
+            "weeks": [{"name": wk["label"].split(" ")[0],
+                       "range": wk["label"].split(" ", 1)[1].strip("()") if " " in wk["label"] else "",
+                       "ptype": {"rain_days": wk["ptype"]["rain_days"], "snow_days": wk["ptype"]["snow_days"],
+                                 "p_snow": wk["ptype"]["p_snow"], "clim": wk["ptype"]["climatology"]},
+                       "vars": {v: {"display": wk["vars"][v]["display"], "normal": wk["vars"][v]["normal_range"],
+                                    "center": wk["vars"][v].get("ens_mean_corrected"),
+                                    "sources": wk["vars"][v].get("sources"), "weights": wk["vars"][v].get("weights"),
+                                    "verdict": _verdict(wk["vars"][v]["display"], v)} for v in vs}}
+                      for wk in rd["weeks"]]}
+    blob = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    parts.append(f'<script id="mdata" type="application/json">{blob}</script>'
+                 f'<script src="{root}chart.umd.min.js"></script><script src="{root}month.js"></script>')
     return "".join(parts)
+
+
+MONTH_DESC = {
+    "temp": "주평균 기온이 평년(1991~2020)보다 낮을/비슷할/높을 확률",
+    "cloud": "주평균 운량(하늘을 덮은 구름 비율)이 평년보다 적을/비슷할/많을 확률",
+    "srad": "주평균 일사량(땅에 닿는 햇빛 에너지)이 평년보다 적을/비슷할/많을 확률",
+    "precip": "한 주 강수량 합계가 평년보다 적을/비슷할/많을 확률",
+}
 
 
 DAILY_CHARTS = (
@@ -413,7 +447,9 @@ def build(cfg, store, out: str | Path | None = None) -> str:
     else:
         (site / "month.html").write_text(_page("1개월 기상전망", "<h1>아직 전망이 없습니다</h1>", "month"),
                                          encoding="utf-8")
+    from .report import to_excel as month_excel
     for r in results:
+        month_excel(r, site / f"forecast_{r['issue']}.xlsx")
         (site / "f" / f"{r['issue']}.html").write_text(
             _page(f"1개월 기상전망 {r['issue']}", forecast_body(r, "../img/"), "archive", root="../"),
             encoding="utf-8")

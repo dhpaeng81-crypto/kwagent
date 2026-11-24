@@ -81,6 +81,11 @@ def test_end_to_end_offline(cfg):
     for name in ("index.html", "month.html", "archive.html", "verification.html", "img/verification.png",
                  f"f/{result['issue']}.html", "apple-touch-icon.png", "icon-512.png", "manifest.webmanifest"):
         assert (s / name).exists(), name
-    assert "중부권" in (s / "month.html").read_text(encoding="utf-8")
+    month = (s / "month.html").read_text(encoding="utf-8")
+    assert "중부권" in month and "m-korea-temp" in month and "month.js" in month
+    assert '../chart.umd.min.js' in (s / "f" / f"{result['issue']}.html").read_text(encoding="utf-8")
+    import pandas as pd
+    xl = pd.read_excel(s / f"forecast_{result['issue']}.xlsx", sheet_name=None)
+    assert {"전국 확률", "전국 강수형태", "중부권 확률", "설명"} <= set(xl) and len(xl["전국 강수형태"]) == 4
     index = (s / "index.html").read_text(encoding="utf-8")
     assert "2주 일별 예측" in index and 'rel="apple-touch-icon"' in index
