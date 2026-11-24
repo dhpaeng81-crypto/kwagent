@@ -71,4 +71,7 @@ def test_daily_end_to_end(cfg):
     import pandas as pd
     xl = pd.read_excel(s / f"daily_{result['issue']}.xlsx", sheet_name=None)
     assert {"전국", "중부권", "설명"} <= set(xl) and len(xl["전국"]) == 14 and "최고기온(°C)" in xl["전국"]
-    assert "2주 일별 예측" in (s / "verification.html").read_text(encoding="utf-8")
+    vh = (s / "verification.html").read_text(encoding="utf-8")
+    assert "2주 일별 예측" in vh and "v-daily-skill" in vh and "verify.js" in vh
+    vx = pd.read_excel(s / "verification.xlsx", sheet_name=None)
+    assert "2주 일별 정확도" in vx and len(vx["2주 일별 정확도"]) > 10

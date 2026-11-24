@@ -56,7 +56,8 @@ footer{margin:40px 0 30px;color:var(--quiet);font-size:12px}
 .btn{display:inline-block;padding:8px 16px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;
 font-size:14px;font-weight:600;margin-bottom:18px;white-space:nowrap}.btn:hover{filter:brightness(1.08)}
 .chartcard{padding:16px 20px 12px;margin:0 0 22px}.chartcard h3{margin:0 0 2px;font-size:17px}.chartcard .note{margin:0 0 6px}
-.cbox{position:relative;height:300px}.cbox.m{height:230px}table.mt{margin-top:12px}
+.cbox{position:relative;height:300px}h3.rg{font-size:18px;margin:26px 0 10px}
+.sel{font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-bottom:8px}.cbox.m{height:230px}table.mt{margin-top:12px}
 th,td{word-break:keep-all}th .u{display:block;font-size:11px;font-weight:400}
 .card.tbl{overflow-x:auto}
 @media (max-width:640px){
@@ -80,7 +81,7 @@ FONT = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
 
 
 STATIC = Path(__file__).parent / "static"
-ICON_FILES = ("chart.umd.min.js", "daily.js", "month.js", "favicon.svg", "favicon-32.png", "apple-touch-icon.png", "icon-192.png", "icon-512.png",
+ICON_FILES = ("chart.umd.min.js", "daily.js", "month.js", "verify.js", "favicon.svg", "favicon-32.png", "apple-touch-icon.png", "icon-192.png", "icon-512.png",
               "icon-maskable-512.png")
 ICON_HEAD = ('<link rel="icon" href="{root}favicon.svg" type="image/svg+xml">'
              '<link rel="icon" href="{root}favicon-32.png" sizes="32x32" type="image/png">'
@@ -316,10 +317,31 @@ def daily_verification_body(store) -> str:
     head = ("<h2>2주 일별 예측</h2><p class='sub'>정답 ERA5. 평년 대비 개선 = 1 − 오차/평년예보 오차 "
             "(0보다 크면 평년보다 나음). 범위 적중률은 10~90% 범위에 실제 값이 든 비율(80%가 이상적).</p>")
     if s.empty:
-        return head + "<div class='card'>아직 채점된 일별 예측이 없습니다. 첫 예측 후 약 1주가 지나면 나타납니다.</div>"
+        return head + "<div class='card'>아직 채점된 일별 예측이 없습니다. 첫 예측 후 약 1주가 지나면 나타납니다.</div>", None
     region = "korea" if "korea" in set(s["region"]) else s["region"].iloc[0]
     c = s[(s["region"] == region) & (s["source"] == "combined")]
     bins = [b for _, _, b in LEAD_BINS]
+    _num = lambda x: None if pd.isna(x) else round(float(x), 3)  # noqa: E731
+    vdata = {"region": region, "bins": bins, "vars": [], "models": {}}
+    for var in DLABEL:
+        sub = c[c["var"] == var].set_index("bin")
+        if sub.empty:
+            continue
+        vdata["vars"].append({"key": var, "name": DLABEL[var][0], "unit": DLABEL[var][1],
+                              "bins": {b: {k: _num(sub.at[b, k]) for k in ("mae", "mae_clim", "skill", "cover",
+                                                                          "bias", "bss")} | {"n": int(sub.at[b, "n"])}
+                                       for b in bins if b in sub.index}})
+        m = s[(s["region"] == region) & (s["var"] == var)]
+        vdata["models"][var] = {src: {r.bin: {"mae": _num(r.mae), "bias": _num(r.bias), "n": int(r.n)}
+                                      for r in g.itertuples()} for src, g in m.groupby("source")}
+    opts = "".join(f"<option value='{v['key']}'>{v['name']}</option>" for v in vdata["vars"])
+    charts = ("<div class='card chartcard'><h3>평년 대비 개선 (최종 예측)</h3>"
+              "<p class='note'>막대가 0보다 높을수록 '평년값으로 찍기'보다 정확. 진한 색일수록 가까운 날</p>"
+              "<div class='cbox'><canvas id='v-daily-skill' aria-label='평년 대비 개선'></canvas></div></div>"
+              "<div class='card chartcard'><div class='headrow'><div><h3>모델별 평균 오차</h3>"
+              "<p class='note'>어느 모델이 잘 맞는지 비교 (막대가 낮을수록 정확)</p></div>"
+              f"<select id='v-daily-var' class='sel'>{opts}</select></div>"
+              "<div class='cbox'><canvas id='v-daily-models' aria-label='모델별 평균 오차'></canvas></div></div>")
     rows = []
     for var in DLABEL:
         sub = c[c["var"] == var].set_index("bin")
@@ -335,7 +357,7 @@ def daily_verification_body(store) -> str:
                                                  f"{r['skill']:+.2f}</span>")
             cells.append(f"<td>{r['mae']:.2f} {sk}<small> · 적중 {r['cover']*100:.0f}% · {int(r['n'])}건</small></td>")
         rows.append(f"<tr><td class='l'>{DLABEL[var][0]} ({DLABEL[var][1]})</td>{''.join(cells)}</tr>")
-    out = head + ("<div class='card'><h3>최종(결합) — 평균 오차 · 평년 대비 개선</h3><table><tr><th class='l'>변수</th>"
+    out = head + charts + ("<div class='card'><h3>최종(결합) — 평균 오차 · 평년 대비 개선</h3><table><tr><th class='l'>변수</th>"
                   + "".join(f"<th>{b}</th>" for b in bins) + "</tr>" + "".join(rows) + "</table></div>")
     pc = c[c["var"] == "precip"].set_index("bin")
     if not pc.empty and pc["brier"].notna().any():
@@ -353,26 +375,32 @@ def daily_verification_body(store) -> str:
             for b in bins) + "</tr>" for src in piv.index)
         out += ("<div class='card'><h3>모델별 최고기온 평균 오차(°C)</h3><table><tr><th class='l'>모델</th>"
                 + "".join(f"<th>{b}</th>" for b in bins) + "</tr>" + rows + "</table></div>")
-    return out
+    return out, vdata
 
 
 def verification_body(store, img_dir: Path) -> str:
     summ = store.summary()
-    parts = ["<h1>정확도</h1><p class='sub'>RPSS = 평년(33/33/33%) 예보 대비 개선율. "
-             "0보다 크면 평년 예보보다 낫습니다. 4주 전 예측을 ERA5 로 채점해 매주 쌓입니다.</p>"]
+    parts = ["<h2>1개월 전망</h2><p class='sub'>RPSS = 평년(33/33/33%) 예보 대비 개선율. "
+             "0보다 크면 평년 예보보다 낫습니다. 지난 예측을 ERA5 로 채점해 매주 쌓입니다.</p>"]
     if summ.empty:
-        parts.append("<div class='card'>아직 채점된 예측이 없습니다. 첫 예측 후 약 5주가 지나면 나타납니다.</div>")
-        return "".join(parts)
+        parts.append("<div class='card'>아직 채점된 1개월 전망이 없습니다. 첫 전망의 대상 기간(4주)이 지나고 "
+                     "약 1주 뒤부터 나타납니다.</div>")
+        return "".join(parts), None
     summ = summ[summ["source"] != "blend_raw"]
     _plot_verification(summ, img_dir / "verification.png")
-    parts.append('<img class="chart" alt="RPSS" src="img/verification.png">')
+    parts.append('<noscript><img class="chart" alt="RPSS" src="img/verification.png"></noscript>')
+    mdata = {"regions": {}}
     order = [r for r in ("korea", "central", "south") if r in set(summ["region"])]
     for region in order + [r for r in summ["region"].unique() if r not in order]:
-        parts.append(f"<h2>{REGION_LABELS.get(region, region)}</h2>")
+        parts.append(f"<h3 class='rg'>{REGION_LABELS.get(region, region)}</h3>")
+        mdata["regions"][region] = {"vars": []}
         for v in VARS:
             sub = summ[(summ["region"] == region) & (summ["var"] == v)]
             if sub.empty:
                 continue
+            mdata["regions"][region]["vars"].append({"key": v, "name": VAR_LABEL[v][0], "sources": {
+                s: [{"lead": int(r.lead), "rpss": float(r.rpss), "n": int(r.n)} for r in g.sort_values("lead").itertuples()]
+                for s, g in sub.groupby("source")}})
             piv = sub.pivot_table(index="source", columns="lead", values="rpss")
             cnt = sub.groupby("source")["n"].max()
             head = "".join(f"<th>{c}주</th>" for c in piv.columns)
@@ -385,7 +413,10 @@ def verification_body(store, img_dir: Path) -> str:
                     f"<td class='{'pos' if x > 0 else 'neg'}'>{x:+.2f}</td>" for x in piv.loc[s])
                 rows.append(f"<tr><td class='l'>{SOURCE_LABEL.get(s, s)}</td>{cells}"
                             f"<td>{int(cnt.get(s, 0))}</td></tr>")
-            parts.append(f"<div class='card'><h3>{VAR_LABEL[v][0]}</h3><table><tr><th class='l'>예측원</th>"
+            parts.append(f"<div class='card chartcard'><h3>{VAR_LABEL[v][0]}</h3>"
+                         "<p class='note'>몇 주 앞 예측인지(가로)에 따른 정확도. 선이 0보다 위면 평년보다 나음</p>"
+                         f"<div class='cbox m'><canvas id='v-{region}-{v}' aria-label='{VAR_LABEL[v][0]} RPSS'></canvas></div>"
+                         f"<table class='mt'><tr><th class='l'>예측원</th>"
                          f"{head}<th>채점 수</th></tr>{''.join(rows)}</table></div>")
     snow = store.df("SELECT region, lead, p_snow, obs_snow FROM ptype_verification WHERE source='combined'")
     if not snow.empty:
@@ -395,7 +426,77 @@ def verification_body(store, img_dir: Path) -> str:
                        f"<td>{r.mean:.3f}</td><td>{r.size}</td></tr>" for r in t.itertuples())
         parts.append("<div class='card'><h3>눈 올 확률 (Brier 점수, 0이 완벽)</h3><table><tr>"
                      f"<th class='l'>영역</th><th>주</th><th>Brier</th><th>채점 수</th></tr>{rows}</table></div>")
-    return "".join(parts)
+    return "".join(parts), mdata
+
+
+def verification_page(store, img_dir: Path) -> str:
+    month_html, mdata = verification_body(store, img_dir)
+    daily_html, ddata = daily_verification_body(store)
+    head = ("<div class='headrow'><div><h1>정확도</h1><p class='sub'>지난 예측을 실제 날씨(ERA5)와 맞춰 본 성적표 · "
+            "그래프에 마우스를 올리거나 눌러 보면 수치가 나옵니다</p></div>"
+            "<a class='btn' href='verification.xlsx' download>엑셀로 받기</a></div>")
+    out = head + daily_html + month_html
+    if mdata or ddata:
+        blob = json.dumps({"month": mdata, "daily": ddata}, ensure_ascii=False,
+                          separators=(",", ":")).replace("</", "<\\/")
+        out += (f'<script id="vdata" type="application/json">{blob}</script>'
+                '<script src="chart.umd.min.js"></script><script src="verify.js"></script>')
+    return out
+
+
+def verification_excel(store, path: Path, daily_days: int = 120) -> Path:
+    """정확도 기록을 엑셀로: 요약(1개월 RPSS, 일별 성적)과 채점 기록 원자료."""
+    from openpyxl.styles import Alignment, Font, PatternFill
+    from .daily import DLABEL, MODEL_LABEL, summary
+    src_name = {**SOURCE_LABEL, **MODEL_LABEL, "combined": "최종(결합)"}
+    var_name = {**{k: v[0] for k, v in VAR_LABEL.items()}, **{k: v[0] for k, v in DLABEL.items()}}
+
+    def nice(d: pd.DataFrame, cols: dict) -> pd.DataFrame:
+        if d.empty:
+            return pd.DataFrame({"안내": ["아직 채점된 기록이 없습니다"]})
+        d = d.copy()
+        if "region" in d:
+            d["region"] = d["region"].map(lambda r: REGION_LABELS.get(r, r))
+        if "source" in d:
+            d["source"] = d["source"].map(lambda s: src_name.get(s, s))
+        if "var" in d:
+            d["var"] = d["var"].map(lambda v: var_name.get(v, v))
+        return d[[c for c in cols if c in d]].rename(columns=cols)
+
+    m = store.summary()
+    if not m.empty:
+        m = m[m["source"] != "blend_raw"]
+    sheets = {
+        "1개월 정확도": nice(m, {"region": "영역", "var": "변수", "source": "예측원", "lead": "몇 주 앞",
+                              "rpss": "RPSS", "rps": "RPS", "rps_clim": "평년 RPS", "n": "채점 수"}),
+        "1개월 채점 기록": nice(store.df("SELECT * FROM verification WHERE source != 'blend_raw' ORDER BY issue, region, var, lead"),
+                             {"issue": "발표일", "region": "영역", "var": "변수", "source": "예측원", "lead": "몇 주 앞",
+                              "start": "대상 주 시작", "obs": "실제 값", "obs_cat": "실제 구간(0낮음·1비슷·2높음)",
+                              "rps": "RPS", "rps_clim": "평년 RPS", "err": "오차"}),
+        "2주 일별 정확도": nice(summary(store), {"region": "영역", "var": "변수", "source": "예측원", "bin": "예보일",
+                                           "mae": "평균 오차", "mae_clim": "평년 오차", "skill": "평년 대비 개선",
+                                           "bias": "치우침", "cover": "범위 적중률", "brier": "강수확률 Brier",
+                                           "bss": "Brier 개선", "n": "채점 수"}),
+        f"2주 일별 채점(최근 {daily_days}일)": nice(
+            store.df("SELECT * FROM daily_verification WHERE date >= (SELECT date(max(date), ?) FROM daily_verification) "
+                     "ORDER BY date, region, var, source, lead",
+                     (f"-{daily_days} day",)),
+            {"issue": "발표일", "date": "날짜", "region": "영역", "var": "변수", "source": "예측원", "lead": "며칠 앞",
+             "obs": "실제 값", "mean_raw": "보정 전 예측", "err": "오차", "abs_err": "절대 오차",
+             "clim_abs_err": "평년 절대 오차", "in_band": "10~90% 범위 안", "brier": "강수확률 Brier"}),
+    }
+    with pd.ExcelWriter(path, engine="openpyxl") as xw:
+        for name, d in sheets.items():
+            d.to_excel(xw, sheet_name=name[:31], index=False)
+            ws = xw.sheets[name[:31]]
+            for c in ws[1]:
+                c.font = Font(bold=True)
+                c.fill = PatternFill("solid", fgColor="E8EEF8")
+                c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+                ws.column_dimensions[c.column_letter].width = 12
+            ws.row_dimensions[1].height = 32
+            ws.freeze_panes = "A2"
+    return path
 
 
 def _plot_verification(summ: pd.DataFrame, path: Path):
@@ -463,9 +564,9 @@ def build(cfg, store, out: str | Path | None = None) -> str:
                                               "<tr><th class='l'>발표일</th><th class='l'>1주 기온</th></tr>"
                                               + "".join(items) + "</table></div>", "archive"),
                                        encoding="utf-8")
-    (site / "verification.html").write_text(
-        _page("정확도", verification_body(store, img) + daily_verification_body(store), "verify"),
-        encoding="utf-8")
+    (site / "verification.html").write_text(_page("정확도", verification_page(store, img), "verify"),
+                                            encoding="utf-8")
+    verification_excel(store, site / "verification.xlsx")
     # 2주 일별 예측 (최신 1개)
     dd = rep / "daily"
     dailies = sorted(dd.glob("daily_*.json")) if dd.exists() else []

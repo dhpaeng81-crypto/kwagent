@@ -48,8 +48,10 @@ kwagent/
   narrative.py    LLM 해설(ANTHROPIC_API_KEY 있을 때, 없으면 규칙 기반)
   report.py       md 표 + matplotlib 확률 막대(noscript·보고서용) + to_excel(1개월 → site/forecast_<발표일>.xlsx)
   site.py         정적 웹사이트(site/): index(=2주 일별, 기본), daily(같은 내용·옛 주소), month(1개월), f/<날짜>, archive, verification
+                  엑셀: daily_<발표일>.xlsx, forecast_<발표일>.xlsx, verification.xlsx(요약 + 채점 기록, 일별은 최근 120일)
   static/         홈 화면 아이콘(icon.svg 원본 → PNG 들, mkicons.js 로 다시 렌더), chart.umd.min.js(Chart.js 4.4.4, npm 에서 복사),
                   daily.js(일별 대화형 그래프: <script id=ddata> JSON), month.js(1개월 확률 막대·강수형태: <script id=mdata>)
+                  verify.js(정확도: 1개월 주차별 RPSS 선, 일별 평년 대비 개선 막대·모델별 오차(변수 선택): <script id=vdata>)
   doctor.py       실자료원 점검 (단기 앙상블 모델 포함)
   daily.py        2주 일별 예측: 단기 앙상블 혼합·편향보정·범위/확률·채점·보고서
 .github/workflows/weekly.yml  목 07:10 KST: (모델 없으면 train) → run → site → 기록 커밋 → Pages 배포
