@@ -1,0 +1,47 @@
+# 매주 목요일 12:10 KST: 기상청 1개월전망(11시 발표) PDF 를 받아 주·권역별 확률을 저장 → 정확도 화면에서 같은 기준으로 비교.
+# 지난 발표분은 기상청 사이트에서 사라지므로 발표 당일 받는다. 금요일에 한 번 더 시도(놓쳤을 때).
+name: kma-benchmark
+
+on:
+  schedule:
+    - cron: "10 3 * * 4"         # 목 03:10 UTC = 12:10 KST
+    - cron: "10 3 * * 5"         # 금 (예비)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kwagent
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Seoul
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  kma:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: 도구
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+      - name: 설치
+        run: pip install -e .
+      - name: 기상청 1개월전망 받기
+        run: kwagent kma
+      - name: 기록 커밋
+        run: |
+          git config user.name  "kwagent-bot"
+          git config user.email "kwagent-bot@users.noreply.github.com"
+          for f in data/kma data/store.sqlite; do if [ -e "$f" ]; then git add "$f"; fi; done
+          git commit -m "기상청 1개월전망 $(date +%F)" || echo "변경 없음"
+          git pull --rebase --autostash origin main || { git rebase --abort; echo '::error::기록 충돌'; exit 1; }
+          git push

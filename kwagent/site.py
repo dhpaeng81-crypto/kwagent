@@ -28,7 +28,7 @@ from .features import VARS
 from .report import VAR_LABEL, _verdict, result_vars
 
 SOURCE_LABEL = {"combined": "최종(결합)", "statistical": "통계모델", "ec46": "ECMWF EC46",
-                "gefs": "NOAA GEFS", "blend_raw": "결합(수축 전)"}
+                "gefs": "NOAA GEFS", "blend_raw": "결합(수축 전)", "kma": "기상청 1개월전망"}
 
 CSS = """
 :root{--ink:#1d2329;--quiet:#5b6670;--line:#e3e6ea;--bg:#fafbfc;--card:#fff;
@@ -682,10 +682,17 @@ def month_verification_parts(store, img_dir: Path):
             if not comb.empty:
                 x = float(comb["rpss"].mean())
                 tiles.append(_tile(f"{x:+.2f}", f"1개월 {VAR_LABEL[v][0]} · RPSS<br>{'평년 예보보다 나음' if x > 0 else '평년 예보보다 못함'}", x > 0))
+                kma = sub[sub["source"] == "kma"]
+                if not kma.empty:   # 같은 주차끼리 비교
+                    both = comb.merge(kma, on="lead", suffixes=("", "_k"))
+                    if not both.empty:
+                        d = float((both["rpss"] - both["rpss_k"]).mean())
+                        tiles.append(_tile(f"{d:+.2f}", f"1개월 {VAR_LABEL[v][0]} · 기상청 대비<br>"
+                                                         f"{'이 사이트가 더 정확' if d > 0 else '기상청이 더 정확'}", d > 0))
             piv = sub.pivot_table(index="source", columns="lead", values="rpss")
             cnt = sub.groupby("source")["n"].max()
             rows = []
-            for s_ in ["combined", "statistical", "ec46", "gefs"]:
+            for s_ in ["combined", "kma", "statistical", "ec46", "gefs"]:
                 if s_ not in piv.index:
                     continue
                 cells = "".join("<td>-</td>" if pd.isna(x) else

@@ -6,7 +6,7 @@
   const f2 = (v, d = 2) => (v == null || isNaN(v) ? "-" : (+v).toFixed(d));
   const sg = (v) => (v == null || isNaN(v) ? "-" : (v > 0 ? "+" : "") + (+v).toFixed(2));
   const SRC = { combined: ["최종(결합)", "#2f6fdb"], statistical: ["통계모델", "#8a939c"],
-                ec46: ["ECMWF EC46", "#c9473b"], gefs: ["NOAA GEFS", "#2e8a5a"] };
+                ec46: ["ECMWF EC46", "#c9473b"], gefs: ["NOAA GEFS", "#2e8a5a"], kma: ["기상청", "#111827"] };
   const MOD = { combined: ["최종(결합)", "#2f6fdb"], ecmwf_ens: ["ECMWF 앙상블", "#c9473b"],
                 ecmwf_aifs: ["ECMWF AI 앙상블", "#e08a12"], gefs: ["NOAA GEFS", "#2e8a5a"],
                 icon_eps: ["DWD ICON 앙상블", "#7b5cc4"] };

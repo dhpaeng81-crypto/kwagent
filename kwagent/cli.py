@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 import json
 import logging
 from datetime import date, timedelta
@@ -88,13 +89,14 @@ def _backfill(agent: Agent) -> bool:
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="kwagent")
     ap.add_argument("command", choices=["backfill", "train", "run", "forecast", "verify", "backtest", "status",
-                                        "site", "doctor", "daily"])
+                                        "site", "doctor", "daily", "kma"])
     ap.add_argument("--config", default=None)
     ap.add_argument("--issue", type=_d)
     ap.add_argument("--asof", type=_d, help="기준일(기본: 어제)")
     ap.add_argument("--start", type=_d)
     ap.add_argument("--end", type=_d)
     ap.add_argument("--offline", action="store_true")
+    ap.add_argument("--file", help="kma: 받아 둔 기상청 PDF 글자(txt) 파일로 저장만")
     ap.add_argument("-v", "--verbose", action="store_true")
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if a.verbose else logging.INFO,
@@ -118,6 +120,14 @@ def main(argv=None):
     agent = Agent(cfg, offline=a.offline, asof=a.asof)
     if a.command == "backfill":
         _backfill(agent)
+        return
+    if a.command == "kma":        # 기상청 1개월전망 수집(벤치마크)
+        from . import kma
+        if a.file:
+            parsed = kma.parse(Path(a.file).read_text(encoding="utf-8"))
+            print(json.dumps({"issue": str(parsed["issue"]), "saved": kma.save(agent.store, parsed, cfg.regions)}))
+        else:
+            print(json.dumps(kma.collect(agent, a.issue), ensure_ascii=False))
         return
     if a.command == "daily":
         import os
