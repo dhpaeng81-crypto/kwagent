@@ -65,7 +65,9 @@ kwagent/
 .github/workflows/daily.yml   매일 06:40 KST: kwagent daily → site → 기록 커밋 → Pages 배포
 ```
 
-## 저장소·게시 구조 (2026-11-24 사용자 결정: 코드 비공개 + 사이트만 공개, 무료)
+## 저장소·게시 구조 (2026-11-24: 비공개 전환을 준비했으나 사용자가 '코드 공개 유지'로 결정 — 아래는 나중을 위한 준비물)
+- 현재: 저장소 `kwagent` 공개, 이 저장소 Pages 로 배포. 보호는 권리 표시·이용약관·noai/TDM 메타·엑셀 저작권 시트·워터마크·LICENSE.
+- 도메인 맨 앞 robots.txt 는 `dhpaeng81-crypto.github.io` 저장소가 있어야 적용됨(지금은 없음 → 페이지 meta 만 작동).
 - 목표 구조: 코드 저장소 `kwagent-src`(비공개) → Actions 가 `deploy/publish_site.sh` 로 site/ 를 공개 저장소 `kwagent`
   (https://dhpaeng81-crypto.github.io/kwagent/ 유지)에, site_root/ 를 `dhpaeng81-crypto.github.io`(robots.txt 등)에 푸시.
 - 비밀값 `SITE_TOKEN`(두 공개 저장소 Contents 쓰기, fine-grained)이 있으면 이 방식, 없으면 예전처럼 이 저장소 Pages 배포.
