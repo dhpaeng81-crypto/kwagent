@@ -23,6 +23,8 @@ env:
 jobs:
   daily:
     runs-on: ubuntu-latest
+    outputs:
+      publish: 'true'
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -69,5 +71,15 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
+
+  # 배포는 별도 작업(GitHub 권장 방식): 같은 작업에서 올리자마자 배포하면 'artifact 0개' 오류가 남
+  deploy:
+    needs: daily
+    if: needs.daily.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - id: deploy
         uses: actions/deploy-pages@v4
