@@ -7,6 +7,9 @@ name: weekly-forecast
 on:
   schedule:
     - cron: "10 22 * * 3"        # 수 22:10 UTC = 목 07:10 KST
+    # GitHub 예약 실행은 몇 시간씩 늦거나 빠질 때가 있어 예비 시각을 둔다 (이미 이번 주 전망이 있으면 바로 끝남)
+    - cron: "47 23 * * 3"        # 목 08:47 KST
+    - cron: "13 3 * * 4"         # 목 12:13 KST
   workflow_dispatch:
     inputs:
       issue:
@@ -41,8 +44,11 @@ jobs:
       - name: 할 일 판단
         id: mode
         run: |
+          thu=$(date -d "$(date +%F) -$(( ($(date +%u) + 3) % 7 )) days" +%F)   # 이번 주(KST) 목요일
           if [ "${{ github.event.schedule }}" = "17 */2 * * *" ] && [ -f data/models/statistical_korea.joblib ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"; echo "이미 준비 완료 — 이번 2시간 실행은 건너뜀"
+          elif [ -n "${{ github.event.schedule }}" ] && [ -f "reports/forecast_${thu}.json" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"; echo "이번 주(${thu}) 전망은 이미 있음 — 예비 실행은 건너뜀"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi

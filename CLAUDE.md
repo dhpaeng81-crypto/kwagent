@@ -125,6 +125,8 @@ kwagent/
 
 ### 운영 메모 (2026-11-24)
 - ERA5 재수집(일사량·최고·최저) 21지점 완료, 통계모델 재학습(기온 CV-RPSS 0.03~0.04, 나머지 0 근처). 첫 2주 일별 예측 배포됨.
+- (2026-11-26) GitHub 예약 실행이 몇 시간 늦거나 빠짐(11-25 일별 7시간 지연, 11-26 주간 미실행) → 예비 cron 추가:
+  daily 08:17·10:43 KST, weekly 목 08:47·12:13 KST. 예약 실행은 오늘(이번 주) 결과가 이미 있으면 건너뜀(daily 는 check 작업).
 - 워크플로 교훈: (1) 대기하던 실행은 버튼 누른 시점 커밋으로 시작 → checkout `ref: main` 필수(아니면 store·era5 바이너리 충돌).
   (2) 같은 작업에서 upload-pages-artifact 직후 deploy-pages 하면 'artifact 0개'로 실패 → 배포는 별도 `deploy` 작업(environment github-pages).
 
