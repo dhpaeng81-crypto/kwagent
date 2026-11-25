@@ -49,6 +49,8 @@ kwagent/
   verify.py       RPS/RPSS/신뢰도/Brier
   narrative.py    LLM 해설(ANTHROPIC_API_KEY 있을 때, 없으면 규칙 기반)
   report.py       md 표 + matplotlib 확률 막대(noscript·보고서용) + to_excel(1개월 → site/forecast_<발표일>.xlsx)
+  (site.py 새로고침) 머리의 '새로고침' 버튼(.rf, REFRESH_JS): version.json 의 built 와 화면 meta kw-built 비교 → 다르면 ?r= 붙여 다시 불러옴.
+                  화면을 다시 열 때도 확인해 알림. 홈 화면 앱엔 브라우저 새로고침이 없어서 추가(2026-11-25). 꼬리말에 관리자용 '예측 다시 돌리기' 링크.
   rights.py       저작권·AI 수집 거부(2026-11-24 사용자 요청): 꼬리말·이용약관(terms.html)·noai/TDM 메타·엑셀 '저작권' 시트·
                   그래프 워터마크, 도메인 맨 앞용 robots.txt/ai.txt/.well-known/tdmrep.json(site_root/). 권리자 표기 dhpaeng81-crypto
   methods.py      화면 맨 아래 '예측 방법'(눌러서 펼치는 항목, 화면별 daily·month·verify). **방법을 바꾸면 이 글도 같이 고칠 것**

@@ -91,6 +91,7 @@ def test_end_to_end_offline(cfg):
     assert "2주 일별 예측" in index and 'rel="apple-touch-icon"' in index
     # 저작권·AI 수집 거부
     assert 'content="index, follow, noai, noimageai"' in index and 'tdm-reservation' in index and "All rights reserved" in index
+    assert 'class="rf"' in index and 'name="kw-built"' in index and (s / "version.json").exists()   # 새로고침 버튼
     assert (s / "terms.html").exists() and "TDM" in (s / "terms.html").read_text(encoding="utf-8")
     robots = (s.parent / "site_root" / "robots.txt").read_text(encoding="utf-8")
     assert "User-agent: GPTBot" in robots and "User-agent: ClaudeBot" in robots and "Allow: /" in robots

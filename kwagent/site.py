@@ -37,7 +37,18 @@ CSS = """
 color:var(--ink);background:var(--bg);line-height:1.6}
 header{background:var(--card);border-bottom:1px solid var(--line)}
 .wrap{max-width:980px;margin:0 auto;padding:0 20px}
-header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+header .wrap{display:flex;align-items:center;height:60px;gap:8px}header nav{margin-left:auto}
+.rf{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:13px;color:var(--accent);background:var(--card);
+border:1px solid var(--line);border-radius:999px;padding:5px 11px 5px 9px;cursor:pointer;margin-left:10px}
+.rf:hover{border-color:var(--accent)}.rf.spin svg{animation:kwspin .6s linear infinite}
+@keyframes kwspin{to{transform:rotate(360deg)}}
+#kwToast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:rgba(24,30,38,.94);color:#fff;
+padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:50;
+max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+#kwToast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#kwToast{display:flex;align-items:center;gap:10px;white-space:nowrap}
+#kwToast button{font:inherit;margin-left:0;flex:none;background:#fff;color:var(--accent);border:0;border-radius:8px;padding:4px 10px;
+font-weight:600;cursor:pointer}
 header a.brand{font-weight:700;font-size:18px;color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
 nav a{margin-left:18px;color:var(--quiet);text-decoration:none;font-size:14px}nav a.on{color:var(--accent);font-weight:600}
 h1{font-size:26px;margin:28px 0 4px}h2{font-size:20px;margin:32px 0 10px}h3{font-size:16px;margin:22px 0 8px}
@@ -146,7 +157,8 @@ line-height:1.25;min-width:0}
 /*METHODS*/@media (max-width:640px){
 .wrap{padding:0 14px}
 header .wrap{height:auto;flex-wrap:wrap;padding-top:10px;padding-bottom:4px;row-gap:2px}
-header a.brand{font-size:17px;white-space:nowrap}
+header a.brand{font-size:17px;white-space:nowrap;order:1}
+.rf{order:2;margin-left:auto}header nav{order:3;margin-left:0}
 nav{width:100%;display:flex;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
 nav a{margin:0 16px 0 0;padding:6px 0;font-size:14.5px}nav a.on{border-bottom:2px solid var(--accent)}
 h1{font-size:22px;margin-top:20px}.sub{font-size:13px}
@@ -193,7 +205,11 @@ MANIFEST = {
 }
 
 
+_BUILT: str | None = None     # 이번 사이트 생성 시각 (version.json 과 같은 값 → 새로고침 버튼이 비교)
+
+
 def _page(title: str, body: str, active: str, root: str = "") -> str:
+    built = _BUILT or f"{datetime.now():%Y-%m-%d %H:%M}"
     nav = "".join(f'<a href="{root}{href}" class="{"on" if key == active else ""}">{name}</a>'
                   for key, href, name in (("daily", "index.html", "4주 일별"),
                                           ("month", "month.html", "1개월 전망"),
@@ -202,11 +218,15 @@ def _page(title: str, body: str, active: str, root: str = "") -> str:
     return f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)}</title>{FONT}
 {ICON_HEAD.format(root=root)}{rights.HEAD_META}
+<meta name="kw-built" content="{built}">
 <style>{CSS}</style></head><body><header><div class="wrap"><a class="brand" href="{root}index.html">
-<img src="{root}favicon.svg" alt="" width="26" height="26">한국 기상전망</a><nav>{nav}</nav></div></header><main class="wrap">{body}</main>{REGION_JS}
+<img src="{root}favicon.svg" alt="" width="26" height="26">한국 기상전망</a><nav>{nav}</nav>
+<button type="button" class="rf" data-root="{root}" aria-label="새 자료 확인" title="새 자료 확인 · {built} 갱신"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg><span>새로고침</span></button>
+</div></header><main class="wrap">{body}</main>{REGION_JS}{REFRESH_JS}
 <footer class="wrap"><p class="cr">{rights.COPYRIGHT}. All rights reserved. 무단 전재·재배포·상업적 이용과
 AI 학습·자동 수집을 금지합니다. <a href="{root}terms.html">이용약관</a></p>
-<p>{rights.SOURCES} 평년은 1991~2020 · 생성 {datetime.now():%Y-%m-%d %H:%M}</p></footer></body></html>"""
+<p>{rights.SOURCES} 평년은 1991~2020 · 갱신 {built} ·
+<a href="https://github.com/{rights.OWNER}/kwagent/actions/workflows/daily.yml" rel="nofollow">예측 다시 돌리기(관리자용)</a></p></footer></body></html>"""
 
 
 def _region_tabs(regions) -> str:
@@ -218,6 +238,23 @@ def _region_tabs(regions) -> str:
         f"<button type='button' role='tab' data-r='{r}'>{REGION_LABELS.get(r, r)}</button>" for r in regions)
         + "</div>")
 
+
+# 새로고침: 서버의 version.json 과 이 화면의 생성 시각을 비교. 다르면 새로 불러오고(주소에 ?r= 를 붙여 캐시를 피함),
+# 같으면 '이미 최신'. 화면을 다시 열 때도 몰래 확인해 새 예측이 있으면 알림. (홈 화면 앱에는 브라우저 새로고침이 없음)
+REFRESH_JS = """<script>(function(){var b=document.querySelector('.rf');if(!b)return;
+var m=document.querySelector('meta[name="kw-built"]'),built=m?m.content:'',root=b.dataset.root||'';
+function go(){location.replace(location.pathname+'?r='+Date.now()+location.hash)}
+function toast(h,keep){var e=document.getElementById('kwToast');if(!e){e=document.createElement('div');e.id='kwToast';
+e.setAttribute('role','status');document.body.appendChild(e)}e.innerHTML=h;e.className='show';clearTimeout(e._t);
+e._t=setTimeout(function(){e.className=''},keep?9000:3500);var x=e.querySelector('button');if(x)x.onclick=go}
+function check(manual){return fetch(root+'version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()})
+.then(function(v){if(v.built&&v.built!==built){if(manual){toast('새 자료를 불러옵니다…');setTimeout(go,350)}
+else toast('새 예측이 나왔습니다 <button type="button">불러오기</button>',true)}
+else if(manual)toast('이미 최신입니다 · '+built+' 갱신')})
+.catch(function(){if(manual){toast('화면을 다시 불러옵니다…');setTimeout(go,350)}})}
+b.addEventListener('click',function(){b.classList.add('spin');check(true).then(function(){setTimeout(function(){b.classList.remove('spin')},500)})});
+setTimeout(function(){check(false)},1500);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)check(false)})})();</script>"""
 
 REGION_JS = """<script>document.querySelectorAll('.seggroup').forEach(function(g){var bs=g.querySelectorAll('.seg button');
 bs.forEach(function(b){b.addEventListener('click',function(){bs.forEach(function(x){x.classList.toggle('on',x===b)});
@@ -831,6 +868,8 @@ def _plot_verification(summ: pd.DataFrame, path: Path):
 
 
 def build(cfg, store, out: str | Path | None = None) -> str:
+    global _BUILT
+    _BUILT = f"{datetime.now():%Y-%m-%d %H:%M}"
     rep = cfg.path("reports")
     site = Path(out) if out else cfg.root / "site"
     (site / "f").mkdir(parents=True, exist_ok=True)
@@ -892,6 +931,7 @@ def build(cfg, store, out: str | Path | None = None) -> str:
     (site / "manifest.webmanifest").write_text(json.dumps(MANIFEST, ensure_ascii=False, indent=1),
                                                encoding="utf-8")
     (site / ".nojekyll").write_text("")
+    (site / "version.json").write_text(json.dumps({"built": _BUILT}), encoding="utf-8")
     # 저작권·AI 수집 거부: 이용약관, (참고용) robots/ai.txt, 도메인 맨 앞에 올릴 파일(site_root/)
     (site / "terms.html").write_text(_page("이용약관과 저작권", rights.TERMS_HTML, "terms"), encoding="utf-8")
     (site / "robots.txt").write_text(rights.robots_txt(), encoding="utf-8")
