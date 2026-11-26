@@ -28,6 +28,9 @@ def test_regions_weighted():
     # 중부 2주 기온: 서울경기(3)·영서(2)·영동(1) 은 20/50/30, 충남(2)·충북(2) 은 20/40/40 → 비중 평균
     c = r["central"]["temp"][1]
     assert c == pytest.approx([0.2, (6 * 0.5 + 4 * 0.4) / 10, (6 * 0.3 + 4 * 0.4) / 10])
+    # 경상 2주 기온: 경북·경남 모두 20/40/40 → 그대로 (북한 '함경남북도'의 '경남'이 섞이면 안 됨)
+    assert r["yeongnam"]["temp"][1] == pytest.approx([0.2, 0.4, 0.4])
+    assert kma.classify("함경남북도") is None and kma.classify("평안남북도ㆍ황해도") is None
     for reg in r.values():
         for probs in reg.values():
             for p in probs:

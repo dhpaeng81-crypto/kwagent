@@ -37,9 +37,14 @@ _WEEK = re.compile(r"(\d)주\s*\((\d{1,2})\.(\d{1,2})\.?\s*~\s*(\d{1,2})\.(\d{1,
 _ISSUE = re.compile(r"(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일\s*\d{1,2}시\s*발표")
 
 
+_SKIP = ("함경", "평안", "황해", "제주")     # 북한·제주: 권역에 넣지 않음 ('함경남북도'에 '경남'이 들어 있어 주의)
+
+
 def classify(name: str) -> str | None:
     if "전국" in name:
         return "korea"
+    if any(k in name for k in _SKIP):
+        return None
     for keys, region, _ in REGION_MAP:
         if any(k in name for k in keys):
             return region
