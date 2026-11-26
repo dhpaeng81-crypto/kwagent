@@ -146,7 +146,7 @@ details.fold.narr .foldbody{font-size:14px}.foldbody h2{display:none}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 .tile b{display:block;font-size:24px;line-height:1.2;margin-bottom:2px}.tile span{display:block;font-size:13px;color:var(--quiet);line-height:1.45}
 .tile.good b{color:#1f7a4d}.tile.bad b{color:#b3372d}
-.card.empty{color:var(--quiet);font-size:14px}.card.empty b{color:var(--ink)}
+.card.empty{color:var(--quiet);font-size:14px;text-align:center;justify-content:center;padding:28px 18px}.card.empty b{color:var(--ink);font-size:15px}.card.empty p{margin:6px 0 0}
 .seggroup .sel{margin:0 0 6px}
 .tcal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:4px}
 .tc{border-radius:10px;padding:6px 2px 7px;text-align:center;background:color-mix(in srgb,var(--c) calc(var(--s)*100%),white);
@@ -168,7 +168,7 @@ line-height:1.25;min-width:0}
 header .wrap{height:64px}
 .dgrid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px;align-items:start}
 .dgrid.st{align-items:stretch}.dgrid.st .gcol{display:flex;flex-direction:column}
-.dgrid.st .gcol>.card{flex:1;display:flex;flex-direction:column;margin-bottom:0}
+.dgrid.st .gcol>.card{flex:1;display:flex;flex-direction:column;margin-top:0;margin-bottom:0}
 .dgrid.st .segpane:not([hidden]){flex:1;display:flex;flex-direction:column}
 .dgrid.st .card.grid4{justify-content:space-between}.dgrid.st .card.grid4 table{flex:1}
 .dgrid.m+details.narr{margin-top:16px}
@@ -820,11 +820,13 @@ def verification_page(store, img_dir: Path) -> str:
         out += f"<section class='rsec' data-region='{region}'>"
         if dt or mt:
             out += "<div class='tiles'>" + "".join(dt + mt) + "</div>"
-        out += ("<div class='dgrid eq'><div class='gcol'><h3 class='sec'>일별 예측</h3>"
-                + (dcard or "<div class='card empty'>아직 채점된 일별 예측이 없습니다. 첫 예측 후 약 1주가 지나면 나타납니다.</div>")
-                + "</div><div class='gcol'><h3 class='sec'>1개월 전망</h3>"
-                + (mcard or "<div class='card empty'>아직 채점된 1개월 전망이 없습니다. "
-                            "첫 전망의 대상 4주가 지나고 약 1주 뒤부터 나타납니다.</div>") + "</div></div>")
+        # PC: 일별·1개월 성적 카드를 같은 줄·같은 높이로 (휴대폰은 위아래)
+        out += ("<div class='dgrid eq st'><div class='gcol'><h3 class='sec'>일별 예측 "
+                "<span class='q'>· 날마다 실제 날씨와 비교</span></h3>"
+                + (dcard or "<div class='card empty'><b>아직 채점 전</b><p>첫 예측 후 약 1주가 지나면 나타납니다.</p></div>")
+                + "</div><div class='gcol'><h3 class='sec'>1개월 전망 <span class='q'>· 주별 확률, 4주가 지난 뒤 채점</span></h3>"
+                + (mcard or "<div class='card empty'><b>아직 채점 전</b><p>첫 전망의 대상 4주가 지나고 "
+                            "약 1주 뒤부터 나타납니다.</p></div>") + "</div></div>")
         out += "</section>"
     out += methods_block("verify")
     if mdata or ddata:

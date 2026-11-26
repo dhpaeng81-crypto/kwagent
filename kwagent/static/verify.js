@@ -29,6 +29,8 @@
       for (const s of Object.values(o.scales || {})) if (s.title) s.title.display = false;
       const pl = (o.plugins = o.plugins || {}), lg = (pl.legend = pl.legend || {}), lb = (lg.labels = lg.labels || {});
       lb.font = { size: 11 }; lb.boxWidth = 10; lb.padding = 8;
+      const x = o.scales && o.scales.x;  // 변수 이름을 눕히지 않고 가로로
+      if (x && x.type !== "linear") x.ticks = Object.assign({}, x.ticks, { maxRotation: 0, autoSkip: false, font: { size: 10.5 } });
     } });
   }
   // 저작권 워터마크 (그래프 오른쪽 아래)
