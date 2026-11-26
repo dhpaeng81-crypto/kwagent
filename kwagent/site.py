@@ -210,7 +210,7 @@ table.daily td.l{white-space:nowrap;font-size:12.5px}
 .cbox{height:240px}.cbox.m{height:220px}
 .phead{margin-top:20px}.hl{font-size:14.5px}.heads{padding:2px 14px}.dc{flex-basis:62px}
 .dhead,.drow summary{grid-template-columns:74px 26px 1fr 42px 12px;padding:10px 12px}
-table.mgrid th.l{width:58px;font-size:12.5px}table.mgrid td{height:50px;border-width:2px}table.mgrid td b{font-size:12.5px}.chip{font-size:14px;padding:6px 12px}.tcal{gap:4px}.tc b{font-size:11px}.tc .td{font-size:11px}.tc .tp{font-size:10.5px}.tiles{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:10px 12px}.tile b{font-size:20px}.tile span{font-size:12px}.seg button{font-size:13px}.dmore{padding:6px 12px 14px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
+table.mgrid th.l{width:58px;font-size:12.5px}table.mgrid td{height:50px;border-width:2px}table.mgrid td b{font-size:12.5px}.chip{font-size:14px;padding:6px 12px}.tcal{gap:4px}.tc b{font-size:11px}.tc .td{font-size:11px}.tc .tp{font-size:10.5px}.tiles{grid-template-columns:1fr 1fr;gap:8px}.tiles:has(>.tile:nth-child(3):last-child){grid-template-columns:repeat(3,1fr)}.tiles:has(>.tile:nth-child(3):last-child) .tile span{font-size:11px}.tiles:has(>.tile:nth-child(3):last-child) .tile{padding:10px}.tile{padding:10px 12px}.tile b{font-size:20px}.tile span{font-size:12px}.seg button{font-size:13px}.dmore{padding:6px 12px 14px}.chartcard{padding:12px 8px 8px;margin-bottom:16px}.btn{margin:0 0 14px;padding:6px 14px;font-size:13px}
 }
 """
 CSS = CSS.replace("/*METHODS*/", METHODS_CSS)

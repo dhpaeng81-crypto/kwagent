@@ -81,14 +81,17 @@
   // ---- 2주 일별: 변수별 평년 대비 개선(막대, 예보일 구간별)
   const DD = D.daily;
   for (const [rid, R] of Object.entries((DD && DD.regions) || {})) {
-    const DY = { bins: DD.bins, vars: R.vars, models: R.models };
+    // 아직 채점이 없는 예보일 구간(예: 15~28일)은 빼서 빈 칸이 생기지 않게. 색은 원래 순서대로
+    const mods = Object.values(R.models || {});
+    const bins = DD.bins.filter((b) => R.vars.some((v) => v.bins[b]) || mods.some((M) => Object.values(M).some((by) => by[b])));
+    const DY = { bins, vars: R.vars, models: R.models };
     const c = document.getElementById(`v-daily-skill-${rid}`);
     if (c) {
       new Chart(c, {
         type: "bar",
         data: { labels: DY.vars.map((v) => v.name), datasets: DY.bins.map((b, k) => ({
           label: b, bin: b, data: DY.vars.map((v) => (v.bins[b] ? v.bins[b].skill : null)),
-          backgroundColor: BIN_COL[k], borderRadius: 3, barPercentage: 0.8, categoryPercentage: 0.75 })) },
+          backgroundColor: BIN_COL[DD.bins.indexOf(b)], borderRadius: 3, barPercentage: 0.8, categoryPercentage: 0.75 })) },
         options: {
           responsive: true, maintainAspectRatio: false, animation: false,
           interaction: { mode: "index", intersect: false },
