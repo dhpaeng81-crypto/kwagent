@@ -727,14 +727,21 @@ def daily_verification_parts(store):
                                                               f"{pc.at[b, 'bss']:+.2f}</span>") + "</td>" for b in bins)
             t1 += ("<table class='mt'><tr><th class='l'>강수확률 Brier</th>" + "".join(f"<th>{b}</th>" for b in bins)
                    + f"</tr><tr><td class='l'>최종(결합)</td>{cells}</tr></table>")
-        m = s[(s["region"] == region) & (s["var"] == "tmax")]
-        t2 = ""
-        if not m.empty:
+        # 모델별 오차 표: 변수마다 하나씩, 위 선택 상자(그래프와 같은 변수)에 맞춰 바뀜
+        t2s = []
+        for i, vv in enumerate(rv["vars"]):
+            var, (vname, unit) = vv["key"], DLABEL[vv["key"]][:2]
+            m = s[(s["region"] == region) & (s["var"] == var)]
+            if m.empty:
+                continue
             piv = m.pivot_table(index="source", columns="bin", values="mae")
-            t2 = ("<table class='mt'><tr><th class='l'>최고기온 오차(°C)</th>" + "".join(f"<th>{b}</th>" for b in bins)
-                  + "</tr>" + "".join(f"<tr><td class='l'>{MODEL_LABEL.get(src, src)}</td>" + "".join(
-                      "<td>-</td>" if b not in piv.columns or pd.isna(piv.at[src, b]) else f"<td>{piv.at[src, b]:.2f}</td>"
-                      for b in bins) + "</tr>" for src in piv.index) + "</table>")
+            order = [x for x in ("combined",) if x in piv.index] + [x for x in piv.index if x != "combined"]
+            t2s.append(f"<table class='mt' data-v='{var}'{'' if i == 0 else ' hidden'}><tr><th class='l'>{vname} 오차({unit})</th>"
+                       + "".join(f"<th>{b}</th>" for b in bins) + "</tr>" + "".join(
+                           f"<tr><td class='l'>{MODEL_LABEL.get(src, src)}</td>" + "".join(
+                               "<td>-</td>" if b not in piv.columns or pd.isna(piv.at[src, b]) else f"<td>{piv.at[src, b]:.2f}</td>"
+                               for b in bins) + "</tr>" for src in order) + "</table>")
+        t2 = f"<div id='v-daily-tabs-{region}'>{''.join(t2s)}</div>" if t2s else ""
         opts = "".join(f"<option value='{v['key']}'>{v['name']}</option>" for v in rv["vars"])
         card = _seg_card([
             ("skill", "평년 대비 개선", "막대가 0보다 높을수록 '평년값으로 찍기'보다 정확 · 진한 색일수록 가까운 날",

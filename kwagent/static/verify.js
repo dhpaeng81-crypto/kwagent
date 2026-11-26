@@ -122,6 +122,8 @@
         const ds = Object.entries(M).filter(([s]) => MOD[s]).map(([s, by]) => ({
           label: MOD[s][0], by, data: DY.bins.map((b) => (by[b] ? by[b].mae : null)),
           backgroundColor: MOD[s][1], borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.8 }));
+        const tb = document.getElementById(`v-daily-tabs-${rid}`);   // 아래 '표로 보기'도 같은 변수로
+        if (tb) tb.querySelectorAll("table[data-v]").forEach((el) => { el.hidden = el.dataset.v !== key; });
         if (chart) chart.destroy();
         chart = new Chart(mc, {
           type: "bar", data: { labels: DY.bins, datasets: ds },
