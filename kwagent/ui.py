@@ -100,14 +100,14 @@ TREND_WORDS = {"temp": ("쌀쌀", "비슷", "따뜻"), "precip": ("건조", "비
 
 
 def trend_cell(tr: dict | None, var: str) -> tuple[str, str, float, str]:
-    """경향 달력 한 칸: (말, 색, 진하기, 확률 글자). 가장 큰 쪽 확률이 45% 미만이면 '불확실'."""
+    """경향 달력 한 칸: (말, 색, 진하기, 확률 글자). 가장 큰 쪽 확률이 45% 미만이면 '–'(뚜렷한 쪽 없음)."""
     if not tr:
         return "-", "#e5e8ec", 0.0, ""
     p = tr["p"]
     i = max(range(3), key=lambda k: p[k])
     col = CAT_COLORS.get(var, CAT_COLORS["temp"])
     if p[i] < 0.45:
-        return "불확실", "#c7cdd4", 0.15, f"{p[i]*100:.0f}%"
+        return "–", "#c7cdd4", 0.0, ""
     return TREND_WORDS[var][i], col[i], max(0.0, min(1.0, (p[i] - 0.4) / 0.35)), f"{p[i]*100:.0f}%"
 
 
