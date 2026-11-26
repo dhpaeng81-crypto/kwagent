@@ -167,6 +167,13 @@ line-height:1.25;min-width:0}
 .wrap{max-width:1360px;padding:0 36px}
 header .wrap{height:64px}
 .dgrid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px;align-items:start}
+.dgrid.d{align-items:stretch}.dgrid.d .gcol{display:flex;flex-direction:column}
+.dgrid.d .gcol>.card{flex:1;display:flex;flex-direction:column;margin-bottom:0}
+.dgrid.d .segpane:not([hidden]){flex:1;display:flex;flex-direction:column}
+.dgrid.d .tcal{flex:1;grid-auto-rows:1fr;gap:8px;margin-top:8px}
+.dgrid.d .tc{display:flex;flex-direction:column;justify-content:center;padding:8px 2px}
+.dgrid.d .tc .td{font-size:13px}.dgrid.d .tc b{font-size:15px;margin-top:6px}.dgrid.d .tc .tp{font-size:12.5px;margin-top:2px}
+.dgrid.d .tc .tb{height:5px;margin:8px 10px 0}
 .dgrid.m{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
 .dgrid.eq{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .gcol>:first-child{margin-top:0}.gcol>.chips:first-child{margin-top:4px}
@@ -592,7 +599,7 @@ def daily_body(result: dict, img_prefix: str) -> str:
             trend_html = (f"<h3 class='sec'>3~4주 뒤 경향 <span class='q'>· {span} · 평년보다 어느 쪽일지</span></h3>"
                           + _seg_card(tabs))
         # PC 에서는 그래프(왼쪽 넓게)와 3~4주 경향(오른쪽)을 나란히, 휴대폰은 위아래로
-        parts.append(f"<div class='dgrid'><div class='gcol'>{chart_html}</div>"
+        parts.append(f"<div class='dgrid d'><div class='gcol'>{chart_html}</div>"
                      + (f"<div class='gcol'>{trend_html}</div>" if trend_html else "") + "</div>")
         parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 일별 예측" '
                      f'src="{img_prefix}daily_{issue}_{region}.png"></noscript>')
