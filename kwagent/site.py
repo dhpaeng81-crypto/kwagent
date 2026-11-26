@@ -94,8 +94,10 @@ padding:9px 2px 10px;text-align:center}
 .dc.far{opacity:.5}
 .dd{font-size:13px;font-weight:600;line-height:1.3}.dd span{display:block;font-size:11.5px;color:var(--quiet);font-weight:400}
 .dc .wx{display:block;margin:5px auto 3px}
-.tt{display:flex;justify-content:center;gap:5px;font-size:14px;line-height:1.3}.tt .lo{color:var(--quiet);font-weight:500}
-b.hi.warm,b.lo.warm{color:var(--above)}b.hi.cool,b.lo.cool{color:var(--below)}
+.tt{display:flex;justify-content:center;align-items:baseline;gap:2px;font-size:14px;line-height:1.3}.tt i{font-style:normal;color:#c3c9d0;font-size:12px}
+.pp .drop{width:8px;height:10px;fill:currentColor;margin-right:2px;vertical-align:-1px;opacity:.75}
+.tt,.drow summary,table,.tc,.tile b{font-variant-numeric:tabular-nums}.drow.far summary b{opacity:.8}
+b.hi{color:#d0453a}b.lo{color:#2f6fd0}
 .pp{font-size:12px;color:var(--quiet);margin-top:3px;min-height:16px}.pp.wet{color:#2563c9;font-weight:600}
 .hint{font-size:12px;color:var(--quiet);margin:0 0 20px}
 .seg{display:flex;gap:4px;background:#eef1f5;border-radius:11px;padding:4px;margin-bottom:10px}
@@ -152,6 +154,7 @@ line-height:1.25;min-width:0}
 .tc .td{display:block;font-size:12px;font-weight:600;color:var(--ink)}.tc .td i{font-style:normal;font-weight:400;color:var(--quiet);margin-left:2px}
 .tc b{display:block;font-size:13px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tc .tp{font-size:11.5px;opacity:.8}
+.tc .tb{display:flex;height:4px;border-radius:2px;overflow:hidden;margin:5px 7px 0;box-shadow:0 0 0 1px rgba(255,255,255,.6)}.tc .tb i{display:block;height:100%}
 .warn{font-size:12.5px;color:#8a5a00;background:#fff6e0;border-radius:8px;padding:7px 10px;margin:0 0 8px}
 .warn.soft{color:#3d5a80;background:#eef4fb}.tc.dk,.tc.dk .td,.tc.dk .td i{color:#fff}
 /*METHODS*//* ---- 넓은 화면(PC): 화면을 넓게 쓰고 두 칸 배치. 휴대폰·좁은 창은 위아래 한 줄 그대로 ---- */
@@ -393,9 +396,8 @@ def forecast_body(result: dict, img_prefix: str) -> str:
         if rd.get("dynamical_sources"):
             raw_vars = [VAR_LABEL[v][0] for v in vs if v != "temp" and v not in bsrc]
             if raw_vars:
-                parts.append(f"<p class='warn'>보정 전: {'·'.join(raw_vars)}은(는) 아직 예측모델의 치우침을 바로잡기 전입니다. "
-                             "장기 모델은 비·구름을 많게 예측하는 버릇이 있어 '많음' 쪽으로 기울 수 있습니다 "
-                             "(채점이 쌓이면 약 3주 뒤부터 자동 보정).</p>")
+                parts.append(f"<p class='warn'>보정 전: {'·'.join(raw_vars)}은(는) 모델 버릇 때문에 비·구름 '많음' 쪽으로 "
+                             "기울 수 있습니다 · 약 3주 뒤부터 자동 보정</p>")
         head = "".join(f"<th>{wk['label'].split(' ')[0]}<span>{wk['start'][5:].replace('-', '.')}~</span></th>"
                        for wk in rd["weeks"])
         rows = []
@@ -493,9 +495,13 @@ DAILY_CHARTS = (
 )
 
 
+_DROP = ('<svg class="drop" viewBox="0 0 10 12" aria-hidden="true">'
+         '<path d="M5 0C5 0 0 6 0 8.2A5 5 0 0 0 10 8.2C10 6 5 0 5 0Z"/></svg>')
+
+
 def daily_body(result: dict, img_prefix: str) -> str:
     from .daily import MODEL_LABEL, num, sky_label
-    from .ui import WX_LABEL, daily_headlines, trend_cell, wx_icon, wx_kind
+    from .ui import CAT_COLORS, WX_LABEL, daily_headlines, trend_cell, wx_icon, wx_kind
     issue = result["issue"]
     y, m, d = issue.split("-")
     models = ", ".join(f"{MODEL_LABEL.get(k, k)}({v}멤버)" for k, v in result["models"].items()) or "없음"
@@ -542,9 +548,9 @@ def daily_body(result: dict, img_prefix: str) -> str:
             cards.append(
                 f"<div class='dc{' far' if day['lead'] >= 8 else ''}' title='{day['label']} {WX_LABEL[k]}'>"
                 f"<div class='dd'>{top}<span>{day['label'][-2]}</span></div>{wx_icon(k)}"
-                f"<div class='tt'><b class='hi{tcls(v.get('tmax'))}'>{num(v['tmax']['q50'])}°</b>"
-                f"<b class='lo{tcls(v.get('tmin'))}'>{num(v['tmin']['q50'])}°</b></div>"
-                f"<div class='pp{' wet' if pop and pop >= 0.4 else ''}'>{'' if pop is None else f'{pop*100:.0f}%'}</div></div>")
+                f"<div class='tt'><b class='lo'>{num(v['tmin']['q50'])}°</b><i>/</i>"
+                f"<b class='hi'>{num(v['tmax']['q50'])}°</b></div>"
+                f"<div class='pp{' wet' if pop and pop >= 0.4 else ''}'>{'' if pop is None else _DROP + f'{pop*100:.0f}%'}</div></div>")
         parts.append("<div class='strip' role='list' aria-label='14일 요약'>" + "".join(cards) + "</div>"
                      "<p class='hint'><span class='m-only'>옆으로 넘겨 보세요 · </span>흐린 칸(8일 이후)은 참고용</p>")
         # 2) 그래프: 버튼으로 골라 보기
@@ -571,7 +577,8 @@ def daily_body(result: dict, img_prefix: str) -> str:
                            if tr else x["label"])
                     cells.append(f"<div class='tc{' dk' if s >= 0.75 else ''}' style='--c:{col};--s:{0.12 + 0.78 * s:.2f}' "
                                  f"title='{tip}'><span class='td'>{top}<i>{x['label'][-2]}</i></span>"
-                                 f"<b>{word}</b><span class='tp'>{pct}</span></div>")
+                                 f"<b>{word}</b><span class='tp'>{pct or '&nbsp;'}</span>"
+                                 + ("<span class='tb'>" + "".join(f"<i style='width:{q*100:.0f}%;background:{c}'></i>" for q, c in zip(tr['p'], CAT_COLORS.get(var, CAT_COLORS['temp']))) + "</span>" if tr else "") + "</div>")
                 cals = {(x["trend"].get(var) or {}).get("cal") for x in tdays}
                 warn = ""
                 if var != "temp" and not (cals & {"own", "proxy"}):
@@ -579,10 +586,10 @@ def daily_body(result: dict, img_prefix: str) -> str:
                             "기울어 보일 수 있습니다. 채점이 쌓이면(약 3주 뒤부터) 자동으로 바로잡습니다.</p>")
                 elif "own" not in cals and "proxy" in cals:
                     warn = "<p class='warn soft'>임시 보정: 2주 무렵 채점에서 구한 모델 치우침을 적용했습니다.</p>"
-                tabs.append((var, name, f"그날을 가운데 둔 5일 평균이 평년(1991~2020)보다 {TREND_DESC[var]} 가능성 · "
-                                        "색이 진할수록 확률이 높음", warn + "<div class='tcal'>" + "".join(cells) + "</div>"))
+                tabs.append((var, name, f"그날 앞뒤 5일 평균이 평년보다 {TREND_DESC[var]} 가능성 · "
+                                        "진한 색 = 확률 높음 · 막대 = 세 경우의 확률 · '–' = 뚜렷한 쪽 없음", warn + "<div class='tcal'>" + "".join(cells) + "</div>"))
             span = f"{tdays[0]['label'].split('(')[0]}~{tdays[-1]['label'].split('(')[0]}"
-            trend_html = (f"<h3 class='sec'>3~4주 뒤 경향 <span class='q'>· {span} · 날짜별 값 대신 평년보다 어느 쪽일지</span></h3>"
+            trend_html = (f"<h3 class='sec'>3~4주 뒤 경향 <span class='q'>· {span} · 평년보다 어느 쪽일지</span></h3>"
                           + _seg_card(tabs))
         # PC 에서는 그래프(왼쪽 넓게)와 3~4주 경향(오른쪽)을 나란히, 휴대폰은 위아래로
         parts.append(f"<div class='dgrid'><div class='gcol'>{chart_html}</div>"
@@ -603,8 +610,8 @@ def daily_body(result: dict, img_prefix: str) -> str:
             rows.append(
                 f"<details class='drow{' far' if day['lead'] >= 8 else ''}'><summary>"
                 f"<span class='c-d'>{day['label']}</span>{wx_icon(k, 26)}"
-                f"<span class='c-t'><b class='lo{tcls(v.get('tmin'))}'>{num(v['tmin']['q50'])}°</b> / "
-                f"<b class='hi{tcls(v.get('tmax'))}'>{num(v['tmax']['q50'])}°</b></span>"
+                f"<span class='c-t'><b class='lo'>{num(v['tmin']['q50'])}°</b> / "
+                f"<b class='hi'>{num(v['tmax']['q50'])}°</b></span>"
                 f"<span class='c-p'>{popt}</span></summary>"
                 "<dl class='dmore'>"
                 f"<dt>하늘</dt><dd>{sky_label(v.get('cloud'))} <span class='q'>("
@@ -616,7 +623,7 @@ def daily_body(result: dict, img_prefix: str) -> str:
                 f"<dt>운량</dt><dd>{rng(v.get('cloud'), '%')}</dd>"
                 f"<dt>일사량</dt><dd>{rng(v.get('srad'), ' MJ/m²', 1)}</dd></dl></details>")
         head = ("<div class='dhead'><span>날짜</span><span></span><span>최저 / 최고</span>"
-                "<span>강수</span><span></span></div>")
+                "<span>강수확률</span><span></span></div>")
         half = (len(rows) + 1) // 2     # PC 에서는 1주째·2주째를 나란히 두 칸으로
         parts.append("<h3 class='sec'>날짜별 자세히 <span class='q'>· 날짜를 누르면 범위와 평년이 펼쳐집니다</span></h3>"
                      f"<div class='days2'><div class='card days'>{head}{''.join(rows[:half])}</div>"

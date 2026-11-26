@@ -18,11 +18,12 @@
   if (kwMark) Chart.register({ id: "kwMark", afterDraw(ch) {
     const { ctx, chartArea: a } = ch; if (!a) return;
     ctx.save(); ctx.font = "10px 'Noto Sans KR', sans-serif"; ctx.fillStyle = "rgba(110,120,130,0.55)";
-    ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText(kwMark.content + " · kwagent", a.right - 4, a.bottom - 3);
+    ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText(kwMark.content + " · kwagent", ch.width - 2, ch.height - 1);
     ctx.restore();
   } });
   Chart.defaults.font.family = "'Noto Sans KR', system-ui, sans-serif";
   Chart.defaults.font.size = 12;
+  Chart.defaults.layout.padding = { bottom: 14 };  // 워터마크 자리(그래프 아래)
   Chart.defaults.color = C.ink;
 
   const base = (yTitle, extra = {}) => ({
