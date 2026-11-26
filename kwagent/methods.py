@@ -129,7 +129,7 @@ def methods_block(kind: str) -> str:
     body = "".join(_item(t, b) for _, t, b in items)
     body += "".join(_item(*COMMON[k]) for k in common)
     return ("<section class='methods'><h3>예측 방법 <span class='q'>· 항목을 누르면 펼쳐집니다</span></h3>"
-            f"{body}</section>")
+            f"<div class='mgrid2'>{body}</div></section>")
 
 
 METHODS_CSS = """

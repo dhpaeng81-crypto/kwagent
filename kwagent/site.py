@@ -154,7 +154,32 @@ line-height:1.25;min-width:0}
 .tc .tp{font-size:11.5px;opacity:.8}
 .warn{font-size:12.5px;color:#8a5a00;background:#fff6e0;border-radius:8px;padding:7px 10px;margin:0 0 8px}
 .warn.soft{color:#3d5a80;background:#eef4fb}.tc.dk,.tc.dk .td,.tc.dk .td i{color:#fff}
-/*METHODS*/@media (max-width:640px){
+/*METHODS*//* ---- 넓은 화면(PC): 화면을 넓게 쓰고 두 칸 배치. 휴대폰·좁은 창은 위아래 한 줄 그대로 ---- */
+@media (max-width:1099px){
+.days2 .card.days:first-child{border-bottom:0;border-radius:14px 14px 0 0;margin-bottom:0}
+.days2 .card.days:last-child{border-radius:0 0 14px 14px;margin-top:0}
+.days2 .card.days:last-child .dhead{display:none}
+}
+@media (min-width:1100px){
+.wrap{max-width:1360px;padding:0 36px}
+header .wrap{height:64px}
+.dgrid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px;align-items:start}
+.dgrid.m{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
+.dgrid.eq{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.gcol>:first-child{margin-top:0}.gcol>.chips:first-child{margin-top:4px}
+.dgrid .gcol>h3.sec:first-child{margin-top:24px}.dgrid.m .gcol>h3.sec:first-child{margin-top:6px}
+.days2{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.days2 .card.days{margin:0}
+.heads{display:grid;grid-template-columns:1fr 1fr;column-gap:36px;padding:4px 20px}
+.heads .hl{border-top:1px solid #eef0f3}.heads .hl:nth-child(-n+2){border-top:0}
+.strip{overflow:visible;padding-bottom:6px}.dc{flex:1 1 0;min-width:0}
+.m-only{display:none}
+.cbox{height:340px}.cbox.m{height:250px}
+.mgrid2{columns:2;column-gap:20px}.mgrid2 details.mth{break-inside:avoid;display:block}
+.tiles{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+table.mgrid td{height:58px}
+}
+@media (max-width:640px){
 .wrap{padding:0 14px}
 header .wrap{height:auto;flex-wrap:wrap;padding-top:10px;padding-bottom:4px;row-gap:2px}
 header a.brand{font-size:17px;white-space:nowrap;order:1}
@@ -359,8 +384,8 @@ def forecast_body(result: dict, img_prefix: str) -> str:
     for region in regions:
         rd = result["regions"][region]
         vs = result_vars(rd)
-        parts.append(f"<section class='rsec' data-region='{region}'>")
-        # 1) 한눈에: 4주 경향 낱말 + 4주 × 변수 색깔표
+        parts.append(f"<section class='rsec' data-region='{region}'><div class='dgrid m'><div class='gcol'>")
+        # 1) 한눈에: 4주 경향 낱말 + 4주 × 변수 색깔표  (PC: 왼쪽 칸, 그래프는 오른쪽 칸)
         chips = month_chips(rd, vs)
         parts.append("<div class='chips'>" + "".join(
             f"<span class='chip' style='--c:{c}'>{w}</span>" for _, c, w in chips) + "</div>")
@@ -420,8 +445,8 @@ def forecast_body(result: dict, img_prefix: str) -> str:
                      f"<div class='cbox m'><canvas id='m-{region}-ptype' aria-label='강수형태'></canvas></div>"
                      + _fold("표로 보기", "<table class='mt'><tr><th class='l'>주</th><th>비 오는 날</th><th>눈 오는 날</th>"
                                        f"<th>눈 확률</th><th>평년 눈 확률</th></tr>{trs}</table>")))
-        parts.append("<h3 class='sec'>주별 확률 <span class='q'>· 막대를 누르면 평년 범위와 모델별 확률</span></h3>")
-        parts.append(_seg_card(tabs))
+        parts.append("</div><div class='gcol'><h3 class='sec first'>주별 확률 <span class='q'>· 막대를 누르면 평년 범위와 모델별 확률</span></h3>")
+        parts.append(_seg_card(tabs) + "</div></div>")
         parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 확률" '
                      f'src="{img_prefix}forecast_{issue}_{region}.png"></noscript></section>')
     srcs = sorted({s for rd in result["regions"].values() for s in rd.get("dynamical_sources", [])})
@@ -521,7 +546,7 @@ def daily_body(result: dict, img_prefix: str) -> str:
                 f"<b class='lo{tcls(v.get('tmin'))}'>{num(v['tmin']['q50'])}°</b></div>"
                 f"<div class='pp{' wet' if pop and pop >= 0.4 else ''}'>{'' if pop is None else f'{pop*100:.0f}%'}</div></div>")
         parts.append("<div class='strip' role='list' aria-label='14일 요약'>" + "".join(cards) + "</div>"
-                     "<p class='hint'>옆으로 넘겨 보세요 · 흐린 칸(8일 이후)은 참고용</p>")
+                     "<p class='hint'><span class='m-only'>옆으로 넘겨 보세요 · </span>흐린 칸(8일 이후)은 참고용</p>")
         # 2) 그래프: 버튼으로 골라 보기
         seg = "".join(f"<button type='button' data-k='{kind}'{' class=on' if i == 0 else ''}>{title}</button>"
                       for i, (kind, title, _) in enumerate(DAILY_CHARTS))
@@ -530,7 +555,9 @@ def daily_body(result: dict, img_prefix: str) -> str:
                         for i, (kind, title, _) in enumerate(DAILY_CHARTS))
         notes = "".join(f"<p class='note' data-k='{kind}'{'' if i == 0 else ' hidden'}>{desc}</p>"
                         for i, (kind, _, desc) in enumerate(DAILY_CHARTS))
-        parts.append(f"<div class='card chartcard seggroup'><div class='seg' role='tablist'>{seg}</div>{notes}{boxes}</div>")
+        chart_html = (f"<h3 class='sec'>날씨 흐름 <span class='q'>· {len(alldays)}일</span></h3>"
+                      f"<div class='card chartcard seggroup'><div class='seg' role='tablist'>{seg}</div>{notes}{boxes}</div>")
+        trend_html = ""
         if tdays:
             tabs = []
             for var, name in (("temp", "기온"), ("precip", "강수"), ("cloud", "구름"), ("srad", "일사량")):
@@ -555,8 +582,11 @@ def daily_body(result: dict, img_prefix: str) -> str:
                 tabs.append((var, name, f"그날을 가운데 둔 5일 평균이 평년(1991~2020)보다 {TREND_DESC[var]} 가능성 · "
                                         "색이 진할수록 확률이 높음", warn + "<div class='tcal'>" + "".join(cells) + "</div>"))
             span = f"{tdays[0]['label'].split('(')[0]}~{tdays[-1]['label'].split('(')[0]}"
-            parts.append(f"<h3 class='sec'>3~4주 뒤 경향 <span class='q'>· {span} · 날짜별 값 대신 평년보다 어느 쪽일지</span></h3>"
-                         + _seg_card(tabs))
+            trend_html = (f"<h3 class='sec'>3~4주 뒤 경향 <span class='q'>· {span} · 날짜별 값 대신 평년보다 어느 쪽일지</span></h3>"
+                          + _seg_card(tabs))
+        # PC 에서는 그래프(왼쪽 넓게)와 3~4주 경향(오른쪽)을 나란히, 휴대폰은 위아래로
+        parts.append(f"<div class='dgrid'><div class='gcol'>{chart_html}</div>"
+                     + (f"<div class='gcol'>{trend_html}</div>" if trend_html else "") + "</div>")
         parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 일별 예측" '
                      f'src="{img_prefix}daily_{issue}_{region}.png"></noscript>')
         # 3) 날짜별 자세히: 누르면 펼침
@@ -585,9 +615,12 @@ def daily_body(result: dict, img_prefix: str) -> str:
                 f"<dt>강수량</dt><dd>{amt}</dd><dt>눈 확률</dt><dd>{snow}</dd>"
                 f"<dt>운량</dt><dd>{rng(v.get('cloud'), '%')}</dd>"
                 f"<dt>일사량</dt><dd>{rng(v.get('srad'), ' MJ/m²', 1)}</dd></dl></details>")
+        head = ("<div class='dhead'><span>날짜</span><span></span><span>최저 / 최고</span>"
+                "<span>강수</span><span></span></div>")
+        half = (len(rows) + 1) // 2     # PC 에서는 1주째·2주째를 나란히 두 칸으로
         parts.append("<h3 class='sec'>날짜별 자세히 <span class='q'>· 날짜를 누르면 범위와 평년이 펼쳐집니다</span></h3>"
-                     "<div class='card days'><div class='dhead'><span>날짜</span><span></span><span>최저 / 최고</span>"
-                     "<span>강수</span><span></span></div>" + "".join(rows) + "</div></section>")
+                     f"<div class='days2'><div class='card days'>{head}{''.join(rows[:half])}</div>"
+                     f"<div class='card days'>{head}{''.join(rows[half:])}</div></div></section>")
     parts.append(f"<p class='note'>이번 발표에 쓴 모델: {models}</p>" + methods_block("daily"))
     data = {"regions": {r: {"label": REGION_LABELS.get(r, r), "days": result["regions"][r]["days"]}
                         for r in regions}}
@@ -767,10 +800,11 @@ def verification_page(store, img_dir: Path) -> str:
         out += f"<section class='rsec' data-region='{region}'>"
         if dt or mt:
             out += "<div class='tiles'>" + "".join(dt + mt) + "</div>"
-        out += "<h3 class='sec'>일별 예측</h3>" + (dcard or "<div class='card empty'>아직 채점된 일별 예측이 없습니다. "
-                                                         "첫 예측 후 약 1주가 지나면 나타납니다.</div>")
-        out += "<h3 class='sec'>1개월 전망</h3>" + (mcard or "<div class='card empty'>아직 채점된 1개월 전망이 없습니다. "
-                                                      "첫 전망의 대상 4주가 지나고 약 1주 뒤부터 나타납니다.</div>")
+        out += ("<div class='dgrid eq'><div class='gcol'><h3 class='sec'>일별 예측</h3>"
+                + (dcard or "<div class='card empty'>아직 채점된 일별 예측이 없습니다. 첫 예측 후 약 1주가 지나면 나타납니다.</div>")
+                + "</div><div class='gcol'><h3 class='sec'>1개월 전망</h3>"
+                + (mcard or "<div class='card empty'>아직 채점된 1개월 전망이 없습니다. "
+                            "첫 전망의 대상 4주가 지나고 약 1주 뒤부터 나타납니다.</div>") + "</div></div>")
         out += "</section>"
     out += methods_block("verify")
     if mdata or ddata:
