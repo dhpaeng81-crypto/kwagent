@@ -44,3 +44,20 @@ def test_save(tmp_path):
     assert n == 4 * 2 * 4
     d = s.df("SELECT * FROM forecasts WHERE source='kma' AND region='honam' AND var='precip' AND lead=1")
     assert d.iloc[0]["start"] == "2026-11-30" and d.iloc[0]["p2"] == pytest.approx(0.5)
+
+
+def test_compare_table(tmp_path):
+    """정확도 화면 '기상청과 나란히' 표: 같은 발표일의 이 사이트 전망이 있으면 권역별로 나온다(채점 전에도)."""
+    from kwagent.site import kma_compare_parts
+    from kwagent.store import Store
+    s = Store(tmp_path / "s.sqlite")
+    parsed = kma.parse(TEXT)
+    kma.save(s, parsed, ["korea", "central"])
+    assert kma_compare_parts(s) == {}                     # 이 사이트 전망이 없으면 표도 없음
+    for lead, (start, _) in enumerate(parsed["weeks"], start=1):
+        for var in ("temp", "precip"):
+            s.save_forecast(parsed["issue"], "korea", "combined", var, lead, start, [0.2, 0.3, 0.5])
+    s.commit()
+    out = kma_compare_parts(s)
+    assert list(out) == ["korea"]
+    assert "기상청과 나란히" in out["korea"] and "20·30·50" in out["korea"] and "같은 칸" in out["korea"]

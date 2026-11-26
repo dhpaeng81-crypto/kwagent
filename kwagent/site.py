@@ -135,6 +135,10 @@ table.mgrid td b{display:block;font-size:14px}table.mgrid td span{font-size:12px
 table.mgrid td.dk{color:#fff}
 table.mgrid td.sn{background:#f1f4f8;--c:#fff}table.mgrid td.sn.up{background:#e2ecfb;color:#2357a8}
 table.mgrid td.sn b{font-size:14px}
+.kc .kchead{margin:2px 4px 8px;font-size:14px}.kc table.mgrid tr.src th{font-size:11.5px;color:var(--quiet);font-weight:500;padding-top:0}
+.kc table.mgrid th.l span{display:block;font-size:11px;color:var(--quiet);font-weight:400}
+.kc table.mgrid td{height:50px}.kc table.mgrid td:nth-child(3),.kc table.mgrid td:nth-child(5){box-shadow:inset 0 0 0 1.5px rgba(17,24,39,.18)}
+.dgrid.st .gcol>.card.kc{flex:none;margin-bottom:14px}
 .grid4 .note{margin:6px 4px 2px;font-size:12px}
 details.fold{margin:10px 0 0}details.fold>summary{cursor:pointer;font-size:13.5px;color:var(--accent);font-weight:600;
 list-style:none;padding:6px 0}details.fold>summary::-webkit-details-marker{display:none}
@@ -804,10 +808,62 @@ def month_verification_parts(store, img_dir: Path):
     return out, mdata
 
 
+def kma_compare_parts(store) -> dict:
+    """기상청 1개월전망과 같은 발표일의 이 사이트 전망을 나란히: {권역: html}. 채점 전에도 보여 준다."""
+    from .models.combine import to_display
+    from .ui import month_cell
+    df = store.df("SELECT issue, region, source, var, lead, start, p0, p1, p2 FROM forecasts "
+                  "WHERE source IN ('kma', 'combined') AND var IN ('temp', 'precip')")
+    if df.empty:
+        return {}
+    both = sorted(set(df.loc[df["source"] == "kma", "issue"]) & set(df.loc[df["source"] == "combined", "issue"]))
+    if not both:
+        return {}
+    issue = both[-1]
+    d = df[df["issue"] == issue]
+    out = {}
+    has = d.groupby("region")["source"].nunique()
+    for region in _order(has[has == 2].index):        # 둘 다 있는 권역만
+        r = d[d["region"] == region]
+        leads = sorted(r["lead"].unique())
+        rows, same, total = [], 0, 0
+        for lead in leads:
+            st = r.loc[r["lead"] == lead, "start"].iloc[0]
+            cells = []
+            for v in ("temp", "precip"):
+                tops = []
+                for src in ("combined", "kma"):
+                    x = r[(r["lead"] == lead) & (r["var"] == v) & (r["source"] == src)]
+                    if x.empty:
+                        cells.append("<td>-</td>")
+                        tops.append(None)
+                        continue
+                    disp = to_display(x[["p0", "p1", "p2"]].to_numpy()[0])
+                    word, col, sv = month_cell(disp, v, tuple(VAR_LABEL[v][1:4]))
+                    cells.append(f"<td style='--c:{col};--s:{0.18 + 0.72 * sv:.2f}' class='{'dk' if sv >= 0.8 else ''}' "
+                                 f"title='낮음·비슷·높음 {disp[0]}/{disp[1]}/{disp[2]}%'><b>{word}</b>"
+                                 f"<span>{disp[0]}·{disp[1]}·{disp[2]}</span></td>")
+                    tops.append(word)
+                if None not in tops:
+                    total += 1
+                    same += tops[0] == tops[1]
+            rows.append(f"<tr><th class='l'>{lead}주<span>{st[5:].replace('-', '.')}~</span></th>{''.join(cells)}</tr>")
+        head = ("<tr><th></th><th colspan='2'>기온</th><th colspan='2'>강수량</th></tr>"
+                "<tr class='src'><th></th><th>이 사이트</th><th>기상청</th><th>이 사이트</th><th>기상청</th></tr>")
+        lead_txt = f"{issue[5:7].lstrip('0')}월 {issue[8:].lstrip('0')}일 발표"
+        out[region] = (f"<div class='card grid4 kc'><p class='kchead'><b>기상청과 나란히</b> <span class='q'>· {lead_txt} · "
+                       f"가장 큰 쪽이 같은 칸 {same}/{total}</span></p>"
+                       f"<table class='mgrid'>{head}{''.join(rows)}</table>"
+                       "<p class='note'>숫자는 낮음·비슷·높음(강수: 적음·비슷·많음) 확률 · 기상청 권역 값은 지역별 확률을 "
+                       "이 사이트 지점 수 비중으로 평균 · 채점은 각 주가 지나고 약 1주 뒤</p></div>")
+    return out
+
+
 def verification_page(store, img_dir: Path) -> str:
     dparts, ddata = daily_verification_parts(store)
     mparts, mdata = month_verification_parts(store, img_dir)
-    regions = _order(list(dparts) + list(mparts))
+    kparts = kma_compare_parts(store)
+    regions = _order(list(dparts) + list(mparts) + list(kparts))
     head = ("<div class='phead'><div><h1>정확도</h1><p class='meta'>지난 예측을 실제 날씨(ERA5)와 맞춰 본 성적</p></div>"
             "<a class='btn ghost' href='verification.xlsx' download>엑셀</a></div>")
     out = head + _region_tabs(regions)
@@ -825,6 +881,7 @@ def verification_page(store, img_dir: Path) -> str:
                 "<span class='q'>· 날마다 실제 날씨와 비교</span></h3>"
                 + (dcard or "<div class='card empty'><b>아직 채점 전</b><p>첫 예측 후 약 1주가 지나면 나타납니다.</p></div>")
                 + "</div><div class='gcol'><h3 class='sec'>1개월 전망 <span class='q'>· 주별 확률, 4주가 지난 뒤 채점</span></h3>"
+                + kparts.get(region, "")
                 + (mcard or "<div class='card empty'><b>아직 채점 전</b><p>첫 전망의 대상 4주가 지나고 "
                             "약 1주 뒤부터 나타납니다.</p></div>") + "</div></div>")
         out += "</section>"
