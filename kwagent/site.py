@@ -167,9 +167,11 @@ line-height:1.25;min-width:0}
 .wrap{max-width:1360px;padding:0 36px}
 header .wrap{height:64px}
 .dgrid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px;align-items:start}
-.dgrid.d{align-items:stretch}.dgrid.d .gcol{display:flex;flex-direction:column}
-.dgrid.d .gcol>.card{flex:1;display:flex;flex-direction:column;margin-bottom:0}
-.dgrid.d .segpane:not([hidden]){flex:1;display:flex;flex-direction:column}
+.dgrid.st{align-items:stretch}.dgrid.st .gcol{display:flex;flex-direction:column}
+.dgrid.st .gcol>.card{flex:1;display:flex;flex-direction:column;margin-bottom:0}
+.dgrid.st .segpane:not([hidden]){flex:1;display:flex;flex-direction:column}
+.dgrid.st .card.grid4{justify-content:space-between}.dgrid.st .card.grid4 table{flex:1}
+.dgrid.m+details.narr{margin-top:16px}
 .dgrid.d .tcal{flex:1;grid-auto-rows:1fr;gap:8px;margin-top:8px}
 .dgrid.d .tc{display:flex;flex-direction:column;justify-content:center;padding:8px 2px}
 .dgrid.d .tc .td{font-size:13px}.dgrid.d .tc b{font-size:15px;margin-top:6px}.dgrid.d .tc .tp{font-size:12.5px;margin-top:2px}
@@ -177,7 +179,7 @@ header .wrap{height:64px}
 .dgrid.m{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
 .dgrid.eq{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .gcol>:first-child{margin-top:0}.gcol>.chips:first-child{margin-top:4px}
-.dgrid .gcol>h3.sec:first-child{margin-top:24px}.dgrid.m .gcol>h3.sec:first-child{margin-top:6px}
+.dgrid .gcol>h3.sec:first-child{margin-top:24px}
 .days2{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
 .days2 .card.days{margin:0}
 .heads{display:grid;grid-template-columns:1fr 1fr;column-gap:36px;padding:4px 20px}
@@ -394,7 +396,7 @@ def forecast_body(result: dict, img_prefix: str) -> str:
     for region in regions:
         rd = result["regions"][region]
         vs = result_vars(rd)
-        parts.append(f"<section class='rsec' data-region='{region}'><div class='dgrid m'><div class='gcol'>")
+        parts.append(f"<section class='rsec' data-region='{region}'>")
         # 1) 한눈에: 4주 경향 낱말 + 4주 × 변수 색깔표  (PC: 왼쪽 칸, 그래프는 오른쪽 칸)
         chips = month_chips(rd, vs)
         parts.append("<div class='chips'>" + "".join(
@@ -405,6 +407,9 @@ def forecast_body(result: dict, img_prefix: str) -> str:
             if raw_vars:
                 parts.append(f"<p class='warn'>보정 전: {'·'.join(raw_vars)}은(는) 모델 버릇 때문에 비·구름 '많음' 쪽으로 "
                              "기울 수 있습니다 · 약 3주 뒤부터 자동 보정</p>")
+        # PC: 색깔표(왼쪽)와 주별 확률 그래프(오른쪽)를 같은 높이로 나란히
+        parts.append("<div class='dgrid m st'><div class='gcol'><h3 class='sec first'>4주 한눈에 "
+                     "<span class='q'>· 칸 색이 진할수록 확률이 높음</span></h3>")
         head = "".join(f"<th>{wk['label'].split(' ')[0]}<span>{wk['start'][5:].replace('-', '.')}~</span></th>"
                        for wk in rd["weeks"])
         rows = []
@@ -426,11 +431,12 @@ def forecast_body(result: dict, img_prefix: str) -> str:
             for wk in rd["weeks"])
         rows.append(f"<tr><th class='l'>눈 올 확률</th>{snow}</tr>")
         parts.append(f"<div class='card grid4'><table class='mgrid'><tr><th></th>{head}</tr>{''.join(rows)}</table>"
-                     "<p class='note'>칸 색이 진할수록 확률이 높음 · 숫자는 가장 큰 쪽 확률</p></div>")
+                     "<p class='note'>숫자는 가장 큰 쪽 확률 · 눈은 하루라도 올 확률</p></div>")
+        narr_html = ""
         if narr and narr.get(region):
-            parts.append(_fold("자동 해설 전문", md_to_html(narr[region]), "narr"))
+            narr_html = _fold("자동 해설 전문", md_to_html(narr[region]), "narr")
         elif narr is None and result.get("narrative") and region == regions[0]:
-            parts.append(_fold("자동 해설 전문", md_to_html(result["narrative"]), "narr"))
+            narr_html = _fold("자동 해설 전문", md_to_html(result["narrative"]), "narr")
         # 2) 그래프: 변수 버튼 + 표 접기
         tabs = []
         for v in vs:
@@ -455,7 +461,7 @@ def forecast_body(result: dict, img_prefix: str) -> str:
                      + _fold("표로 보기", "<table class='mt'><tr><th class='l'>주</th><th>비 오는 날</th><th>눈 오는 날</th>"
                                        f"<th>눈 확률</th><th>평년 눈 확률</th></tr>{trs}</table>")))
         parts.append("</div><div class='gcol'><h3 class='sec first'>주별 확률 <span class='q'>· 막대를 누르면 평년 범위와 모델별 확률</span></h3>")
-        parts.append(_seg_card(tabs) + "</div></div>")
+        parts.append(_seg_card(tabs) + "</div></div>" + narr_html)
         parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 확률" '
                      f'src="{img_prefix}forecast_{issue}_{region}.png"></noscript></section>')
     srcs = sorted({s for rd in result["regions"].values() for s in rd.get("dynamical_sources", [])})
@@ -599,7 +605,7 @@ def daily_body(result: dict, img_prefix: str) -> str:
             trend_html = (f"<h3 class='sec'>3~4주 뒤 경향 <span class='q'>· {span} · 평년보다 어느 쪽일지</span></h3>"
                           + _seg_card(tabs))
         # PC 에서는 그래프(왼쪽 넓게)와 3~4주 경향(오른쪽)을 나란히, 휴대폰은 위아래로
-        parts.append(f"<div class='dgrid d'><div class='gcol'>{chart_html}</div>"
+        parts.append(f"<div class='dgrid d st'><div class='gcol'>{chart_html}</div>"
                      + (f"<div class='gcol'>{trend_html}</div>" if trend_html else "") + "</div>")
         parts.append(f'<noscript><img class="chart" alt="{REGION_LABELS.get(region, region)} 일별 예측" '
                      f'src="{img_prefix}daily_{issue}_{region}.png"></noscript>')
